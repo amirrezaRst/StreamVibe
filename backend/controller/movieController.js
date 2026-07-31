@@ -380,8 +380,13 @@ exports.downloadMovie = async (req, res) => {
     }
 
     try {
-        const file = path.join(__dirname, "..", `public`, "videos", url);
-        // console.log(file)
+        const videosDir = path.join(__dirname, "..", "public", "videos");
+        const file = path.join(videosDir, path.basename(url));
+
+        if (path.dirname(file) !== videosDir) {
+            return res.status(400).json({ status: 400, message: "Invalid file path" });
+        }
+
         res.download(file)
     } catch (err) {
         res.status(500).json({
