@@ -17,6 +17,7 @@ const reviewModel = mongoose.Schema({
     media: {
         type: mongoose.Schema.Types.ObjectId,
         required: [true, 'Media is required'],
+        index: true
     },
     text: {
         type: String,

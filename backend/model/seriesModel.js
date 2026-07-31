@@ -65,7 +65,8 @@ const seriesModel = mongoose.Schema({
             'animation',
             'war'
         ],
-        required: [true, 'Category is required']
+        required: [true, 'Category is required'],
+        index: true
     },
     country: {
         type: String,
@@ -144,11 +145,13 @@ const seriesModel = mongoose.Schema({
     },
     publish_date: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+        index: true
     },
     views: {
         type: Number,
-        default: 0
+        default: 0,
+        index: true
     },
     actors: {
         type: [mongoose.Schema.Types.ObjectId],
