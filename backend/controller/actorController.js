@@ -1,11 +1,11 @@
 const path = require('path');
-const fs = require('fs');
 
 const { createActorValidation, editActorValidation } = require('../validation/actorValidation');
 const Actor = require('../model/actorModel');
 const Movie = require('../model/movieModel');
 const Series = require('../model/seriesModel');
 const uploadImage = require('../utils/upload');
+const { deleteFileIfExists } = require('../utils/fileUtils');
 
 //! config uploader
 const upload = uploadImage({
@@ -290,7 +290,7 @@ exports.updateActor = [upload, editActorValidation, async (req, res) => {
         if (!actor) return res.status(404).json({ status: 404, message: "Actor not found" });
 
         if (req.body.profile && actor.profile) {
-            fs.unlinkSync(path.join(__dirname, '../public/actor/', actor.profile));
+            await deleteFileIfExists(path.join(__dirname, '../public/actor/', actor.profile));
         }
 
         const updatedActor = await Actor.findByIdAndUpdate(actorId, req.body, {
@@ -315,7 +315,7 @@ exports.deleteActor = async (req, res) => {
             return res.status(404).json({ status: 404, message: "Actor not found" });
         }
         if (actor.profile) {
-            fs.unlinkSync(path.join(__dirname, '../public/actor/', actor.profile));
+            await deleteFileIfExists(path.join(__dirname, '../public/actor/', actor.profile));
         }
 
         res.status(200).json({ status: 200, message: "Actor deleted" });

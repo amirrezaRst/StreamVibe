@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 
 const Director = require('../model/directorModel');
@@ -6,6 +5,7 @@ const Movie = require('../model/movieModel');
 const Series = require('../model/seriesModel');
 const uploadImage = require('../utils/upload');
 const { createDirectorValidation, editDirectorValidation } = require('../validation/directorValidation');
+const { deleteFileIfExists } = require('../utils/fileUtils');
 
 
 //! config uploader
@@ -284,7 +284,7 @@ exports.updateDirector = [upload, editDirectorValidation, async (req, res) => {
         if (!director) return res.status(404).json({ status: 404, message: "Director not found" });
 
         if (req.body.profile && director.profile) {
-            fs.unlinkSync(path.join(__dirname, '../public/director/', director.profile));
+            await deleteFileIfExists(path.join(__dirname, '../public/director/', director.profile));
         }
 
         const updatedDirector = await Director.findByIdAndUpdate(directorId, req.body, {
