@@ -16,7 +16,7 @@ exports.getAllSeries = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: '500',
-            message: err
+            message: err.message
         });
     }
 };
@@ -78,7 +78,7 @@ exports.getSeries = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: '500',
-            message: err
+            message: err.message
         });
     }
 };
@@ -469,7 +469,7 @@ exports.createSeries = [seriesUploader, createSeriesValidation, async (req, res)
     } catch (err) {
         res.status(500).json({
             status: '500',
-            message: err
+            message: err.message
         });
     }
 }];
@@ -490,7 +490,7 @@ exports.updateSeries = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: '500',
-            message: err
+            message: err.message
         });
     }
 };
@@ -510,7 +510,7 @@ exports.deleteSeries = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: '500',
-            message: err
+            message: err.message
         });
     }
 };

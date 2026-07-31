@@ -15,7 +15,7 @@ exports.getAllSupportTickets = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: 500,
-            message: err
+            message: err.message
         });
     }
 };
@@ -39,7 +39,7 @@ exports.getSupportTicketById = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: 500,
-            message: err
+            message: err.message
         });
     }
 };
@@ -56,7 +56,7 @@ exports.createSupportTicket = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: 500,
-            message: err
+            message: err.message
         });
     }
 };
@@ -85,7 +85,7 @@ exports.updateSupportTicket = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: 500,
-            message: err
+            message: err.message
         });
     }
 };
@@ -107,7 +107,7 @@ exports.deleteSupportTicket = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: 500,
-            message: err
+            message: err.message
         });
     }
 };

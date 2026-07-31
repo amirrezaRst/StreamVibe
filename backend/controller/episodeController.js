@@ -21,8 +21,7 @@ exports.getEpisodeById = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
@@ -105,8 +104,7 @@ exports.createEpisode = [episodeUploader, createEpisodeValidation, async (req, r
     } catch (err) {
         res.status(400).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 }];
@@ -128,8 +126,7 @@ exports.updateEpisode = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
@@ -146,8 +143,7 @@ exports.deleteEpisode = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };

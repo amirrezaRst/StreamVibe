@@ -33,7 +33,7 @@ exports.getAllDirectors = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: 500,
-            message: err
+            message: err.message
         });
     }
 };
@@ -122,7 +122,7 @@ exports.getDirector = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: 500,
-            message: err
+            message: err.message
         });
     }
 };
@@ -271,7 +271,7 @@ exports.createDirector = [upload, createDirectorValidation, async (req, res) => 
     } catch (err) {
         res.status(500).json({
             status: 500,
-            message: err
+            message: err.message
         });
     }
 }];
@@ -313,7 +313,7 @@ exports.deleteDirector = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: 500,
-            message: err
+            message: err.message
         });
     }
 };

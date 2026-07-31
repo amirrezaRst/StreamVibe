@@ -17,8 +17,7 @@ exports.getSeason = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
@@ -38,8 +37,7 @@ exports.getSeasonsBySeries = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
@@ -73,8 +71,7 @@ exports.createSeason = async (req, res) => {
     } catch (err) {
         res.status(400).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
@@ -98,8 +95,7 @@ exports.updateSeason = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
@@ -126,8 +122,7 @@ exports.deleteSeason = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
