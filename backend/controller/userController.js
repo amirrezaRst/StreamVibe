@@ -135,7 +135,11 @@ exports.registerUser = async (req, res) => {
         // });
         setTokenCookie(res, token);
 
-        res.status(201).json({ status: 201, message: "User created", user: newUser });
+        const safeUser = newUser.toObject();
+        delete safeUser.password;
+        delete safeUser.refreshToken;
+
+        res.status(201).json({ status: 201, message: "User created", user: safeUser });
     }
     catch (error) {
         res.status(500).json({ status: 500, message: error.message });
