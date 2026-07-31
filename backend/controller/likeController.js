@@ -3,7 +3,8 @@ const Like = require("../model/likeModel");
 
 //! Post Request
 exports.like = async (req, res) => {
-    const { userId, media } = req.body;
+    const userId = req.user.id;
+    const { media } = req.body;
     try {
         const existingLike = await Like.findOne({ userId, media });
         if (existingLike) {
@@ -20,7 +21,8 @@ exports.like = async (req, res) => {
 };
 
 exports.unlike = async (req, res) => {
-    const { userId, media } = req.body;
+    const userId = req.user.id;
+    const { media } = req.body;
     try {
         const like = await Like.findOneAndDelete({ userId, media });
         if (!like) {
