@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useRouter } from "next/navigation";
 
 import useUserStore from "@/stores/useUserStore";
+import { apiFetch } from "@/services/apiClient";
 
 
 const LoginPage = ({ page, setPage }) => {
@@ -17,13 +18,9 @@ const LoginPage = ({ page, setPage }) => {
         const { email, password, remember } = data;
 
         try {
-            const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/login`, {
+            const loginResponse = await apiFetch('/user/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 body: JSON.stringify({ email, password, remember }),
-                credentials: 'include'
             });
 
             if (!loginResponse.ok) {

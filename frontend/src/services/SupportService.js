@@ -1,9 +1,8 @@
+import { apiFetch } from "./apiClient";
+
 export const sendSupportRequest = async (data) => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/support/`, {
+    const response = await apiFetch('/support/', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
         body: JSON.stringify(data),
     });
 

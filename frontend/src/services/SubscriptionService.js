@@ -1,11 +1,9 @@
+import { apiFetch } from "./apiClient";
+
 export const handleActivateSubscription = async (id, freeTrial, time, plan) => {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/addSubscription/${id}`, {
+        const response = await apiFetch(`/user/addSubscription/${id}`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: 'include',
             body: JSON.stringify({ freeTrial, time, plan })
         });
 

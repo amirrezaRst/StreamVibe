@@ -1,6 +1,8 @@
+import { apiFetch } from "./apiClient";
+
 export const fetchMovieCategories = async () => {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/movie/categories`);
+        const response = await apiFetch('/movie/categories');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
@@ -14,7 +16,7 @@ export const fetchMovieCategories = async () => {
 
 
 export const fetchTopRatedCategories = async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/movie/top-rated?limit=4`);
+    const response = await apiFetch('/movie/top-rated?limit=4');
     if (!response.ok) {
         throw new Error('Network response was not ok');
     }
@@ -25,7 +27,7 @@ export const fetchTopRatedCategories = async () => {
 
 export const getTrendingMovies = async (currentPage, page) => {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/movie/trending-movies?page=${currentPage || page || 1}`);
+        const response = await apiFetch(`/movie/trending-movies?page=${currentPage || page || 1}`);
         const data = await response.json();
         return data;
     } catch (error) {
@@ -36,7 +38,7 @@ export const getTrendingMovies = async (currentPage, page) => {
 
 export const getNewReleasedMovies = async (currentPage, page) => {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/movie/new-released?page=${currentPage || page || 1}`);
+        const response = await apiFetch(`/movie/new-released?page=${currentPage || page || 1}`);
         const data = await response.json();
         return data;
     } catch (error) {
@@ -46,7 +48,7 @@ export const getNewReleasedMovies = async (currentPage, page) => {
 
 export const getPopularMovies = async (currentPage, page) => {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/movie/popular-movies?page=${currentPage || page || 1}`);
+        const response = await apiFetch(`/movie/popular-movies?page=${currentPage || page || 1}`);
         const data = await response.json();
         return data;
     } catch (error) {
@@ -55,26 +57,15 @@ export const getPopularMovies = async (currentPage, page) => {
 }
 
 export const fetchSingleMovies = async (slug) => {
-    console.log(slug)
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/movie/${slug}`,
-        {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }
-    );
+    const res = await apiFetch(`/movie/${slug}`);
     const data = await res.json();
     return data;
 }
 
 export const downloadMovieApi = async (url) => {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/movie/download`, {
+        const response = await apiFetch('/movie/download', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify({ url }),
         });
         if (!response.ok) {
@@ -89,7 +80,7 @@ export const downloadMovieApi = async (url) => {
 
 export const fetchGenreMovies = async (genre, currentPage, page, topRated) => {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/movie/moviesByGenre/${genre}?page=${currentPage || page || 1}&topRated=${topRated}`);
+        const response = await apiFetch(`/movie/moviesByGenre/${genre}?page=${currentPage || page || 1}&topRated=${topRated}`);
         const data = await response.json();
         return data;
     } catch (error) {

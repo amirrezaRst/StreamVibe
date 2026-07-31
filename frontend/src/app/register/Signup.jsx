@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
 import useUserStore from "@/stores/useUserStore";
+import { apiFetch } from "@/services/apiClient";
 
 
 const SignupPage = ({ page, setPage }) => {
@@ -17,18 +18,14 @@ const SignupPage = ({ page, setPage }) => {
         const { fullName, email, password, remember } = data;
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/register`, {
+            const response = await apiFetch('/user/register', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 body: JSON.stringify({
                     fullName,
                     email,
                     password,
                     remember
                 }),
-                credentials: "include"
             });
 
             if (!response.ok) {
