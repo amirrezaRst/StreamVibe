@@ -11,12 +11,12 @@ const router = express.Router();
 
 
 router.route("/")
-    .get([Authenticate, Authorize("admin")], getAllSupportTickets)
+    .get([Authenticate, Authorize(["admin"])], getAllSupportTickets)
     .post(createSupportTicketValidation, createSupportTicket);
 
 router.route("/:id")
     .get(ValidateObjectId, getSupportTicketById)
-    .put([Authenticate, Authorize("admin"), updateSupportTicketValidation], ValidateObjectId, updateSupportTicket)
-    .delete([Authenticate, Authorize("admin")], ValidateObjectId, deleteSupportTicket);
+    .put([Authenticate, Authorize(["admin"]), updateSupportTicketValidation], ValidateObjectId, updateSupportTicket)
+    .delete([Authenticate, Authorize(["admin"])], ValidateObjectId, deleteSupportTicket);
 
 module.exports = router;
