@@ -10,7 +10,7 @@ const router = Router();
 
 router.get("/users", [Authenticate, Authorize(["admin"])], allUser);
 
-router.get("/getWatchList/:id", ValidateObjectId, getWatchList);
+router.get("/getWatchList/:id", Authenticate, ValidateObjectId, getWatchList);
 
 router.get("/userData", singleUser);
 router.route("/user/:id")

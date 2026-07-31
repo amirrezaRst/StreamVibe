@@ -64,6 +64,9 @@ exports.getWatchList = async (req, res) => {
     const limit = 12;
     const skip = (page - 1) * limit;
 
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+        return res.status(403).json({ status: 403, message: "You can only view your own watchlist" });
+    }
 
     try {
         const user = await userModel.findById(userId)
@@ -262,6 +265,11 @@ exports.deleteUser = async (req, res) => {
 //? Subscription Controller
 exports.addSubscription = async (req, res) => {
     const userId = req.params.id;
+
+    if (req.user.id !== userId && req.user.role !== 'admin') {
+        return res.status(403).json({ status: 403, message: "You can only manage your own subscription" });
+    }
+
     try {
         const { plan, time, freeTrial } = req.body;
 
