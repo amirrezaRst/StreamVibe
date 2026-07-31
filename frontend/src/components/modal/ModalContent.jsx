@@ -16,7 +16,7 @@ const ModalContent = ({ user, title, isOpen, setIsOpen, children }) => {
                 </button>
             </div>
 
-            {user === null || user === undefined && (
+            {(user === null || user === undefined) && (
                 <>
                     <span className="block text-center text-lg font-bold text-white">
                         Log In to Add a Review
