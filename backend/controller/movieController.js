@@ -403,16 +403,15 @@ exports.updateMovie = async (req, res) => {
     const movieId = req.params.id;
 
     try {
-        const movie = await movieModel.findById(movieId);
+        const movie = await Movie.findByIdAndUpdate(movieId, req.body, {
+            new: true,
+            runValidators: true
+        });
         if (!movie) {
-            return res.status(404).json({ message: "Movie not found" });
+            return res.status(404).json({ status: 404, message: "Movie not found" });
         }
 
-        if (createMovieValidation(req.body).error)
-            return res.status(400).json({ text: createMovieValidation(req.body).error.message });
-
-        await movieModel.findByIdAndUpdate(movieId, req.body, { new: true });
-        res.status(200).json({ status: 200, message: "Movie updated" });
+        res.status(200).json({ status: 200, message: "Movie updated", movie });
     } catch (error) {
         res.status(500).json({ status: 500, message: error.message });
     }
