@@ -74,7 +74,7 @@ exports.createReview = async (req, res) => {
     //! must send review category in the request body => [movie or series]
 
     try {
-        const newReview = await Review.create(req.body);
+        const newReview = await Review.create({ ...req.body, user: req.user.id });
         res.status(201).json({
             status: 201,
             message: 'Review created successfully',
@@ -84,17 +84,26 @@ exports.createReview = async (req, res) => {
         });
     } catch (err) {
         res.status(400).json({
-            status: 404,
-            message: err
+            status: 400,
+            message: err.message
         });
     }
 };
 
 
-//! This controller is not very useful in a real-world application
 exports.updateReview = async (req, res) => {
     try {
-        const review = await Review.findByIdAndUpdate(req.params.id, req.body, {
+        const existingReview = await Review.findById(req.params.id);
+        if (!existingReview) {
+            return res.status(404).json({ status: 404, message: 'No review found with that ID' });
+        }
+        if (existingReview.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ status: 403, message: 'You can only edit your own review' });
+        }
+
+        const { user, ...updateData } = req.body; //! ownership can't be reassigned via the request body
+
+        const review = await Review.findByIdAndUpdate(req.params.id, updateData, {
             new: true,
             runValidators: true
         });
@@ -108,29 +117,34 @@ exports.updateReview = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: err
+            message: err.message
         });
     }
 };
 
 exports.deleteReview = async (req, res) => {
     try {
-        const review = await Review.findByIdAndDelete(req.params.id);
+        const review = await Review.findById(req.params.id);
         if (!review) {
             return res.status(404).json({
                 status: 404,
                 message: 'No review found with that ID'
             });
         }
+        if (review.user.toString() !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ status: 403, message: 'You can only delete your own review' });
+        }
+
+        await review.deleteOne();
 
         res.status(200).json({
-            status: 204,
+            status: 200,
             message: 'Review deleted successfully',
         });
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: err
+            message: err.message
         });
     }
 };
