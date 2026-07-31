@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react";
 import useUserStore from "@/stores/useUserStore";
 import Footer from "./footer/Footer";
 import Navbar from "./navbar/Navbar";
@@ -7,7 +8,9 @@ import Navbar from "./navbar/Navbar";
 const MainLayout = ({ children }) => {
     const fetchUser = useUserStore((state) => state.fetchUser);
 
-    fetchUser();
+    useEffect(() => {
+        fetchUser();
+    }, [fetchUser]);
 
     return (
         <>
