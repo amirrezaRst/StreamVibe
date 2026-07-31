@@ -52,24 +52,6 @@ exports.getMovieReview = async (req, res) => {
 //     return data;
 // };
 
-exports.getReview = async (req, res) => {
-    try {
-        const review = await Review.findById(req.params.id);
-        res.status(200).json({
-            status: 200,
-            message: "fetch data successfully",
-            data: {
-                review
-            }
-        });
-    } catch (err) {
-        res.status(404).json({
-            status: 404,
-            message: err
-        });
-    }
-};
-
 exports.createReview = async (req, res) => {
     //! must send review category in the request body => [movie or series]
 

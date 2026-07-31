@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllReviews, createReview, getReview, updateReview, deleteReview, getMovieReview } = require('../controller/reviewController');
+const { getAllReviews, createReview, updateReview, deleteReview, getMovieReview } = require('../controller/reviewController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
 const Authenticate = require('../middleware/Authenticate');
 const { createReviewValidation } = require('../validation/reviewValidation');
@@ -14,7 +14,6 @@ router.route("/")
 router
     .route('/:id')
     .get(ValidateObjectId, getMovieReview)
-    .get(ValidateObjectId, getReview)
     .put(Authenticate, ValidateObjectId, updateReview)
     .delete(Authenticate, ValidateObjectId, deleteReview);
 
