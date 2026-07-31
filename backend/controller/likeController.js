@@ -6,17 +6,15 @@ exports.like = async (req, res) => {
     const userId = req.user.id;
     const { media } = req.body;
     try {
-        const existingLike = await Like.findOne({ userId, media });
-        if (existingLike) {
-            return res.status(400).json({ message: 'You have already liked this media' });
-        }
-
         const like = new Like({ userId, media });
         await like.save();
         res.status(201).json({ message: 'Liked successfully' });
     } catch (error) {
+        if (error.code === 11000) { //! unique index on (userId, media) rejects a duplicate like
+            return res.status(400).json({ message: 'You have already liked this media' });
+        }
         console.log(error)
-        res.status(500).json({ error, message: "failed to like" });
+        res.status(500).json({ message: "failed to like" });
     }
 };
 

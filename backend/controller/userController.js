@@ -115,27 +115,17 @@ exports.registerUser = async (req, res) => {
 
         const token = generateAccessToken(tokenData);
 
+        let refreshToken;
+        if (remember) {
+            refreshToken = generateRefreshToken(tokenData);
+            newUser.refreshToken = refreshToken; //! must be set before save() or it never gets persisted
+        }
+
         await newUser.save();
 
         if (remember) {
-            const refreshToken = generateRefreshToken(tokenData);
-
-            newUser.refreshToken = refreshToken; //! Save refresh token to user database
-            // res.cookie('refreshToken', refreshToken, {
-            //     httpOnly: true,
-            //     sameSite: 'strict',
-            //     secure: process.env.NODE_ENV == "production",
-            //     maxAge: 86400000 * 30, // 30 day
-            //     path: '/api/user/refreshToken'   //! This is important and should be the same as the route path
-            // });
             setRefreshTokenCookie(res, refreshToken);
         }
-        // res.cookie('token', token, {
-        //     httpOnly: true,
-        //     sameSite: 'strict',
-        //     secure: process.env.NODE_ENV == "production",
-        //     maxAge: 86400000 // 1 day
-        // });
         setTokenCookie(res, token);
 
         const safeUser = newUser.toObject();
