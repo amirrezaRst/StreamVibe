@@ -95,18 +95,11 @@ exports.topRatedMovies = async (req, res) => {
 
 exports.trendingMovies = async (req, res) => {
     try {
-        const currentDate = new Date();
-
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 12;
         const skip = (page - 1) * limit;
 
         const recentMovies = await Movie.aggregate([
-            // {
-            //     $match: {
-            //         publish_date: { $gte: new Date(currentDate.setDate(currentDate.getDate() - 60)) }
-            //     }
-            // },
             {
                 $lookup: {
                     from: 'reviews',
@@ -140,9 +133,7 @@ exports.trendingMovies = async (req, res) => {
             }
         ]);
 
-        const totalMovies = await Movie.countDocuments({
-            publish_date: { $gte: new Date(currentDate.setDate(currentDate.getDate() - 30)) }
-        });
+        const totalMovies = await Movie.countDocuments();
         const totalPages = Math.ceil(totalMovies / limit);
 
         res.status(200).json({

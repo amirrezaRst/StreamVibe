@@ -151,18 +151,11 @@ exports.topRatedSeries = async (req, res) => {
 
 exports.trendingSeries = async (req, res) => {
     try {
-        const currentDate = new Date();
-
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 12;
         const skip = (page - 1) * limit;
 
         const recentSeries = await Series.aggregate([
-            // {
-            //     $match: {
-            //         publish_date: { $gte: new Date(currentDate.setDate(currentDate.getDate() - 30)) }
-            //     }
-            // },
             {
                 $lookup: {
                     from: 'reviews',
@@ -209,9 +202,7 @@ exports.trendingSeries = async (req, res) => {
             }
         ]);
 
-        const totalSeries = await Series.countDocuments({
-            publish_date: { $gte: new Date(currentDate.setDate(currentDate.getDate() - 30)) }
-        });
+        const totalSeries = await Series.countDocuments();
         const totalPages = Math.ceil(totalSeries / limit);
 
         res.status(200).json({
