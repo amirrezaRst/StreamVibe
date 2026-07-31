@@ -135,6 +135,9 @@ exports.deleteEpisode = async (req, res) => {
     try {
         const episode = await Episode.findByIdAndDelete(req.params.id);
         if (!episode) return res.status(404).json({ status: 404, message: "Episode not found" });
+
+        await Season.updateOne({ episodes: episode._id }, { $pull: { episodes: episode._id } });
+
         res.status(200).json({
             status: 204,
             message: "Episode deleted successfully",

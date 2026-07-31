@@ -3,6 +3,7 @@ const Series = require('../model/seriesModel');
 const Episodes = require('../model/episodeModel');
 const { seriesUploader } = require('../utils/videoUploader');
 const { createSeriesValidation } = require('../validation/seriesValidation');
+const { deleteSeasonsOfSeries, deleteMediaReferences } = require('../utils/cascadeDelete');
 
 
 exports.getAllSeries = async (req, res) => {
@@ -500,7 +501,8 @@ exports.deleteSeries = async (req, res) => {
         const series = await Series.findByIdAndDelete(req.params.id);
         if (!series) return res.status(404).json({ status: 404, message: "Series not found" });
 
-        //! must delete all episodes and season in the series
+        await deleteSeasonsOfSeries(series._id);
+        await deleteMediaReferences(series._id);
 
         res.status(200).json({
             status: '200',

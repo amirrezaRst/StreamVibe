@@ -1,6 +1,7 @@
 const { isValidObjectId } = require('mongoose');
 const Season = require('../model/seasonModel');
 const Series = require('../model/seriesModel');
+const { deleteEpisodesOfSeason } = require('../utils/cascadeDelete');
 
 
 //! Get Request
@@ -107,6 +108,8 @@ exports.deleteSeason = async (req, res) => {
     try {
         const season = await Season.findByIdAndDelete(req.params.id);
         if (!season) return res.status(404).json({ message: "Season not found" });
+
+        await deleteEpisodesOfSeason(season);
 
         //! find series and delete season from seasons field in series
         const series = await Series.findById(season.series);

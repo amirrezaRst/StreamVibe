@@ -4,6 +4,7 @@ const Movie = require("../model/movieModel");
 const Review = require("../model/reviewModel");
 const { createMovieValidation } = require("../validation/movieValidation");
 const { movieUploader } = require('../utils/videoUploader');
+const { deleteMediaReferences } = require('../utils/cascadeDelete');
 
 
 //! Get Request
@@ -417,6 +418,9 @@ exports.deleteMovie = async (req, res) => {
         if (!movie) {
             return res.status(404).json({ message: "Movie not found" });
         }
+
+        await deleteMediaReferences(movie._id);
+
         res.status(200).json({ status: 200, message: "Movie deleted successfully" });
     } catch (error) {
         res.status(500).json({ status: 500, message: error.message });
