@@ -22,14 +22,6 @@ router.post("/login", loginValidation, login);
 router.post('/logout', logout);
 router.get("/refreshToken", refreshToken);
 
-
-router.get("/setCookie", (req, res) => {
-    res.cookie("token2", "15687sdf9", {
-        httpOnly: true,
-        expires: new Date(Date.now() + 1000 * 40), //! 40 seconds
-    }).send("Cookie set");
-});
-
 //? Subscription Route
 router.post("/addSubscription/:id", [Authenticate, ValidateObjectId, addSubscriptionValidation], addSubscription);
 
