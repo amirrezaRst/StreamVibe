@@ -53,11 +53,7 @@ const SignupPage = ({ page, setPage }) => {
             router.push("/");
             toast.success('Signup successful!');
         } catch (err) {
-            if (err.message === "Network Error") {
-                return toast.error("Something went wrong! Please try again later.");
-            }
-
-            toast.error("Signup failed! Please try again.");
+            toast.error("Something went wrong! Please try again later.");
         }
     };
 
@@ -77,7 +73,7 @@ const SignupPage = ({ page, setPage }) => {
                     <div>
                         <label htmlFor={"fullName"} className="text-white lg:text-super-sm md:text-sm mb-1">Full name</label>
                         <input
-                            type="fullName"
+                            type="text"
                             id="fullName"
                             className={`support-input-field bg-c-black-10`}
                             placeholder="Enter your full name"
@@ -113,7 +109,7 @@ const SignupPage = ({ page, setPage }) => {
                             <input
                                 type="checkbox"
                                 id="remember"
-                                {...register('remember', { valueAsBoolean: true })}
+                                {...register('remember')}
                             />
                             <label htmlFor="remember" className="text-white">Remember me</label>
                         </div>

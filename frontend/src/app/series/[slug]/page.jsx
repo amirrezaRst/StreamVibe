@@ -19,8 +19,7 @@ const fetchSingleSeries = async (slug) => {
 const SingleSeries = async ({ params }) => {
     const { slug } = params;
 
-    const seriesData = await fetchSingleSeries(slug).then(data => data.series);
-    const pictures = await fetchSingleSeries(slug).then(data => data.pictures);
+    const { series: seriesData, pictures } = await fetchSingleSeries(slug);
 
     if (!seriesData || !pictures) return <SinglePageSkeleton />;
 

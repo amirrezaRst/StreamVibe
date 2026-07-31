@@ -34,7 +34,7 @@ const LoginPage = ({ page, setPage }) => {
             router.push("/");
             toast.success('Login successful!');
         } catch (err) {
-            if (err.message === "Network Error") {
+            if (!err.status) { //! a real network/fetch failure, not the {status, message} we threw above
                 return toast.error("Something went wrong! Please try again later.");
             }
 
@@ -97,7 +97,7 @@ const LoginPage = ({ page, setPage }) => {
                             <input
                                 type="checkbox"
                                 id="remember"
-                                {...register('remember', { valueAsBoolean: true })}
+                                {...register('remember')}
                             />
                             <label htmlFor="remember" className="text-white">Remember me</label>
                         </div>
