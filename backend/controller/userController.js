@@ -229,7 +229,8 @@ exports.refreshToken = async (req, res) => {
 exports.logout = (req, res) => {
     try {
         res.cookie('token', '', { httpOnly: true, sameSite: 'strict', expires: new Date(0) });
-        res.cookie('refreshToken', '', { httpOnly: true, sameSite: 'strict', expires: new Date(0) });
+        //! path must match the one used in setRefreshTokenCookie, or the browser won't clear it
+        res.cookie('refreshToken', '', { httpOnly: true, sameSite: 'strict', expires: new Date(0), path: '/api/user/refreshToken' });
 
         res.status(200).json({ status: 200, message: "Logout Successfully" });
     }

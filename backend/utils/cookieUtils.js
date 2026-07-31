@@ -11,8 +11,7 @@ const createCommonCookieOptions = (maxAge, path = '/') => ({
 });
 
 const setRefreshTokenCookie = (res, refreshToken) => {
-    const path = `${process.env.FRONT_ADDRESS}/api/user/refreshToken`;
-    const options = createCommonCookieOptions(86400000 * 30, path); // 30 days
+    const options = createCommonCookieOptions(86400000 * 30, '/api/user/refreshToken'); // 30 days
     setCookie(res, 'refreshToken', refreshToken, options);
 };
 
