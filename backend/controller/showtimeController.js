@@ -1,6 +1,8 @@
 const Movie = require('../model/movieModel');
 const Hall = require('../model/hallModel');
 const Showtime = require('../model/showtimeModel');
+const BookedSeat = require('../model/bookedSeatModel');
+const Booking = require('../model/bookingModel');
 const { escapeRegex } = require('../utils/escapeRegex');
 
 //! gap between the end of one screening and the start of the next in the same
@@ -70,12 +72,18 @@ exports.getShowtime = async (req, res) => {
 
         if (!showtime) return res.status(404).json({ status: 404, message: "Showtime not found" });
 
+        //! lapsed holds are excluded explicitly rather than trusting the TTL
+        //! monitor, which only sweeps about once a minute
+        const claimed = await BookedSeat.find({
+            showtime: showtime._id,
+            $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }],
+        }).select('seatLabel');
+
         res.status(200).json({
             status: 200,
             message: "Showtime fetched successfully",
             showtime,
-            //! nothing can be taken yet — seat holds arrive with the booking engine
-            bookedSeats: [],
+            bookedSeats: claimed.map(seat => seat.seatLabel),
         });
     } catch (error) {
         res.status(500).json({ status: 500, message: error.message });
@@ -170,8 +178,23 @@ exports.updateShowtime = async (req, res) => {
 //! Delete Request
 exports.deleteShowtime = async (req, res) => {
     try {
-        const showtime = await Showtime.findByIdAndDelete(req.params.id);
+        const showtime = await Showtime.findById(req.params.id);
         if (!showtime) return res.status(404).json({ status: 404, message: "Showtime not found" });
+
+        //! people hold tickets against this screening — deleting it would strand
+        //! them. Cancelling the showtime is the honest way to call one off.
+        const sold = await Booking.countDocuments({ showtime: showtime._id, status: 'confirmed' });
+        if (sold > 0) {
+            return res.status(409).json({
+                status: 409,
+                message: `This showtime has ${sold} confirmed booking(s). Cancel it instead of deleting it.`
+            });
+        }
+
+        //! only unpaid holds remain, so releasing them costs nobody a ticket
+        await BookedSeat.deleteMany({ showtime: showtime._id });
+        await Booking.deleteMany({ showtime: showtime._id, status: { $in: ['pending', 'expired'] } });
+        await showtime.deleteOne();
 
         res.status(200).json({ status: 200, message: "Showtime deleted successfully" });
     } catch (error) {
