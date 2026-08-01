@@ -51,6 +51,8 @@ app.use('/api/episode', require('./router/episodeRoutes'));
 app.use("/api/support", require('./router/supportRoutes'));
 app.use("/api/like", require('./router/likeRoutes'));
 app.use("/api/search", require('./router/searchRoutes'));
+app.use("/api/cinema", require('./router/cinemaRoutes'));
+app.use("/api/showtime", require('./router/showtimeRoutes'));
 
 //! Global error handler — last resort for thrown/next(err) errors that
 //! bypassed a controller's own try/catch (e.g. middleware, multer, bad JSON body)
