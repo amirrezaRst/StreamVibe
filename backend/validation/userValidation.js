@@ -44,6 +44,34 @@ exports.loginValidation = (req, res, next) => {
 
 //! must add edit user validation here
 
+//? Password Reset Validation
+exports.forgotPasswordValidation = (req, res, next) => {
+    const schema = joi.object({
+        email: joi.string()
+            .email()
+            .trim()
+            .lowercase()
+            .required(),
+    });
+    const { error } = schema.validate(req.body);
+    if (error) return res.status(400).json({ status: 400, message: error.details.map(d => d.message) });
+
+    next();
+};
+
+exports.resetPasswordValidation = (req, res, next) => {
+    const schema = joi.object({
+        password: joi.string()
+            .min(8)
+            .max(50)
+            .required(),
+    });
+    const { error } = schema.validate(req.body);
+    if (error) return res.status(400).json({ status: 400, message: error.details.map(d => d.message) });
+
+    next();
+};
+
 //? Subscription Validation
 exports.addSubscriptionValidation = (req, res, next) => {
     const schema = joi.object({

@@ -42,6 +42,8 @@ const userSchema = new mongoose.Schema({
         select: false,
     },
     refreshToken: { type: String, select: false },
+    resetPasswordToken: { type: String, select: false },
+    resetPasswordExpires: { type: Date, select: false },
     bookMark: {
         type: Array,
         default: [],
@@ -88,32 +90,3 @@ userSchema.pre("save", function (next) {
 });
 
 module.exports = mongoose.model('Users', userSchema);
-
-
-
-//! watchList populate
-// User.findById(userId)
-//     .populate('watchList.item')
-//     .exec(function (err, user) {
-//         if (err) return handleError(err);
-//         console.log(user);
-//     });
-
-
-
-//! Update subscription Controller
-// const startDate = new Date();
-// const endDate = new Date();
-// endDate.setDate(startDate.getDate() + 7);  // for a 7-day trial
-
-// User.findByIdAndUpdate(userId, {
-//     subscription: {
-//         status: 'active',
-//         startDate: startDate,
-//         endDate: endDate,
-//         plan: 'basic',  // replace with the actual plan
-//     },
-// }, function(err, user) {
-//     if (err) return handleError(err);
-//     console.log(user);
-// });

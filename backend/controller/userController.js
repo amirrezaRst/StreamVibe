@@ -1,9 +1,11 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 const userModel = require("../model/userModel");
 const { generateAccessToken, generateRefreshToken } = require("../utils/tokenUtils");
 const { setRefreshTokenCookie, setTokenCookie } = require("../utils/cookieUtils");
+const { sendPasswordResetEmail } = require("../utils/mailer");
 
 //! Get Request
 exports.allUser = async (req, res) => {
@@ -229,6 +231,58 @@ exports.logout = (req, res) => {
     }
 };
 
+
+//? Password Reset
+exports.forgotPassword = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const user = await userModel.findOne({ email });
+
+        if (user) {
+            const rawToken = crypto.randomBytes(32).toString('hex');
+
+            user.resetPasswordToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+            user.resetPasswordExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
+            await user.save();
+
+            const resetUrl = `${process.env.FRONT_ADDRESS.replace(/\/$/, '')}/forgot-password/reset/${rawToken}`;
+            await sendPasswordResetEmail(user.email, resetUrl);
+        }
+
+        //! same response whether or not the email exists, so this can't be used to enumerate accounts
+        res.status(200).json({ status: 200, message: "If that email is registered, a reset link has been sent." });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+exports.resetPassword = async (req, res) => {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    try {
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+        const user = await userModel.findOne({
+            resetPasswordToken: hashedToken,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ status: 400, message: "This reset link is invalid or has expired." });
+        }
+
+        user.password = password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        res.status(200).json({ status: 200, message: "Password has been reset successfully." });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
 
 
 //! must add edit user controller here

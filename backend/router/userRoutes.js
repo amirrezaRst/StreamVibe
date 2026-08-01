@@ -1,10 +1,10 @@
 const { Router } = require('express');
 const rateLimit = require('express-rate-limit');
-const { singleUser, registerUser, login, deleteUser, allUser, getWatchList, logout, refreshToken, freeTrial, addSubscription } = require('../controller/userController');
+const { singleUser, registerUser, login, deleteUser, allUser, getWatchList, logout, refreshToken, freeTrial, addSubscription, forgotPassword, resetPassword } = require('../controller/userController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
 const Authenticate = require('../middleware/Authenticate');
 const Authorize = require('../middleware/Authorize');
-const { registerValidation, loginValidation, addSubscriptionValidation } = require('../validation/userValidation');
+const { registerValidation, loginValidation, addSubscriptionValidation, forgotPasswordValidation, resetPasswordValidation } = require('../validation/userValidation');
 
 const router = Router();
 
@@ -31,6 +31,10 @@ router.post("/register", authLimiter, registerValidation, registerUser);
 router.post("/login", authLimiter, loginValidation, login);
 router.post('/logout', logout);
 router.get("/refreshToken", refreshToken);
+
+//? Password Reset Routes
+router.post("/forgotPassword", authLimiter, forgotPasswordValidation, forgotPassword);
+router.post("/resetPassword/:token", authLimiter, resetPasswordValidation, resetPassword);
 
 //? Subscription Route
 router.post("/addSubscription/:id", [Authenticate, ValidateObjectId, addSubscriptionValidation], addSubscription);
