@@ -1,16 +1,15 @@
+import { apiFetch } from "./apiClient";
+
 export const fetchReviews = async (id) => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/review/${id}`);
+    const response = await apiFetch(`/review/${id}`);
     const data = await response.json();
     return data.reviews;
 }
 
 
 export const addNewReview = async (data) => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/review/`, {
+    const response = await apiFetch('/review/', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
         body: JSON.stringify(data),
     });
 

@@ -1,8 +1,9 @@
 import EpisodeItem from "./EpisodeItem";
 import SeasonItem from "./SeasonItem";
+import { apiFetch } from "@/services/apiClient";
 
 const fetchSeasons = async (id) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/season/seasons/${id}`);
+    const res = await apiFetch(`/season/seasons/${id}`);
     const data = await res.json();
     return data.seasons;
 }

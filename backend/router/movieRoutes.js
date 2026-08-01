@@ -19,9 +19,9 @@ router.get("/moviesByGenre/:genre", getMoviesByGenre);
 
 router.post("/download", downloadMovie);
 
-router.route("/:id", ValidateObjectId)
-    .get(singleMovie)
-    .put([Authenticate, Authorize(["admin"])], updateMovie)
-    .delete([Authenticate, Authorize(["admin"])], deleteMovie);
+router.route("/:id")
+    .get(ValidateObjectId, singleMovie)
+    .put([Authenticate, Authorize(["admin"])], ValidateObjectId, updateMovie)
+    .delete([Authenticate, Authorize(["admin"])], ValidateObjectId, deleteMovie);
 
 module.exports = router;

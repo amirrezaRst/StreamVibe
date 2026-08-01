@@ -1,6 +1,7 @@
 const express = require('express');
-const { getAllReviews, createReview, getReview, updateReview, deleteReview, getMovieReview } = require('../controller/reviewController');
+const { getAllReviews, createReview, updateReview, deleteReview, getMovieReview } = require('../controller/reviewController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
+const Authenticate = require('../middleware/Authenticate');
 const { createReviewValidation } = require('../validation/reviewValidation');
 
 const router = express.Router();
@@ -8,13 +9,12 @@ const router = express.Router();
 router.get("/allReview", getAllReviews);
 
 router.route("/")
-    .post(createReviewValidation, createReview);
+    .post(Authenticate, createReviewValidation, createReview);
 
 router
     .route('/:id')
     .get(ValidateObjectId, getMovieReview)
-    .get(ValidateObjectId, getReview)
-    .put(ValidateObjectId, updateReview)
-    .delete(ValidateObjectId, deleteReview);
+    .put(Authenticate, ValidateObjectId, updateReview)
+    .delete(Authenticate, ValidateObjectId, deleteReview);
 
 module.exports = router;

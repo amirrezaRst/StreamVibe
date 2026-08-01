@@ -1,6 +1,7 @@
 const { isValidObjectId } = require('mongoose');
 const Season = require('../model/seasonModel');
 const Series = require('../model/seriesModel');
+const { deleteEpisodesOfSeason } = require('../utils/cascadeDelete');
 
 
 //! Get Request
@@ -17,8 +18,7 @@ exports.getSeason = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
@@ -38,8 +38,7 @@ exports.getSeasonsBySeries = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
@@ -73,8 +72,7 @@ exports.createSeason = async (req, res) => {
     } catch (err) {
         res.status(400).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
@@ -98,8 +96,7 @@ exports.updateSeason = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
@@ -111,6 +108,8 @@ exports.deleteSeason = async (req, res) => {
     try {
         const season = await Season.findByIdAndDelete(req.params.id);
         if (!season) return res.status(404).json({ message: "Season not found" });
+
+        await deleteEpisodesOfSeason(season);
 
         //! find series and delete season from seasons field in series
         const series = await Series.findById(season.series);
@@ -126,8 +125,7 @@ exports.deleteSeason = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };

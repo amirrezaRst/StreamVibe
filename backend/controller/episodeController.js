@@ -21,8 +21,7 @@ exports.getEpisodeById = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
@@ -105,8 +104,7 @@ exports.createEpisode = [episodeUploader, createEpisodeValidation, async (req, r
     } catch (err) {
         res.status(400).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 }];
@@ -128,8 +126,7 @@ exports.updateEpisode = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
@@ -138,6 +135,9 @@ exports.deleteEpisode = async (req, res) => {
     try {
         const episode = await Episode.findByIdAndDelete(req.params.id);
         if (!episode) return res.status(404).json({ status: 404, message: "Episode not found" });
+
+        await Season.updateOne({ episodes: episode._id }, { $pull: { episodes: episode._id } });
+
         res.status(200).json({
             status: 204,
             message: "Episode deleted successfully",
@@ -146,8 +146,7 @@ exports.deleteEpisode = async (req, res) => {
     } catch (err) {
         res.status(404).json({
             status: 404,
-            message: "fail",
-            message: err
+            message: err.message
         });
     }
 };
@@ -160,8 +159,13 @@ exports.downloadEpisode = async (req, res) => {
     }
 
     try {
-        const file = path.join(__dirname,"..", `public`,"videos", url);
-        // console.log(file)
+        const videosDir = path.join(__dirname, "..", "public", "videos");
+        const file = path.join(videosDir, path.basename(url));
+
+        if (path.dirname(file) !== videosDir) {
+            return res.status(400).json({ status: 400, message: "Invalid file path" });
+        }
+
         res.download(file)
     } catch (err) {
         res.status(500).json({

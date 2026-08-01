@@ -5,6 +5,7 @@ import SearchActorItem from "./SearchActorItem";
 import SearchMovieItem from "./SearchMovieItem";
 import SearchForm from "./SearchForm";
 import SearchMovieItemSkeleton from "./SearchMovieItemSkeleton";
+import { apiFetch } from "@/services/apiClient";
 
 const SearchContainer = ({ isOpen, setIsOpen }) => {
     const [show, setShow] = useState(isOpen);
@@ -17,17 +18,13 @@ const SearchContainer = ({ isOpen, setIsOpen }) => {
 
         setLoading(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/search/`, {
+            const res = await apiFetch('/search/', {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
                 body: JSON.stringify({
                     query: query.trim(),
                 }),
             });
             const data = await res.json();
-            console.log(data);
             setSearchResults(data.results);
             setLoading(false);
             return data;

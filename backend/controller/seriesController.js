@@ -3,6 +3,7 @@ const Series = require('../model/seriesModel');
 const Episodes = require('../model/episodeModel');
 const { seriesUploader } = require('../utils/videoUploader');
 const { createSeriesValidation } = require('../validation/seriesValidation');
+const { deleteSeasonsOfSeries, deleteMediaReferences } = require('../utils/cascadeDelete');
 
 
 exports.getAllSeries = async (req, res) => {
@@ -16,7 +17,7 @@ exports.getAllSeries = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: '500',
-            message: err
+            message: err.message
         });
     }
 };
@@ -78,7 +79,7 @@ exports.getSeries = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: '500',
-            message: err
+            message: err.message
         });
     }
 };
@@ -151,18 +152,11 @@ exports.topRatedSeries = async (req, res) => {
 
 exports.trendingSeries = async (req, res) => {
     try {
-        const currentDate = new Date();
-
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 12;
         const skip = (page - 1) * limit;
 
         const recentSeries = await Series.aggregate([
-            // {
-            //     $match: {
-            //         publish_date: { $gte: new Date(currentDate.setDate(currentDate.getDate() - 30)) }
-            //     }
-            // },
             {
                 $lookup: {
                     from: 'reviews',
@@ -209,9 +203,7 @@ exports.trendingSeries = async (req, res) => {
             }
         ]);
 
-        const totalSeries = await Series.countDocuments({
-            publish_date: { $gte: new Date(currentDate.setDate(currentDate.getDate() - 30)) }
-        });
+        const totalSeries = await Series.countDocuments();
         const totalPages = Math.ceil(totalSeries / limit);
 
         res.status(200).json({
@@ -478,7 +470,7 @@ exports.createSeries = [seriesUploader, createSeriesValidation, async (req, res)
     } catch (err) {
         res.status(500).json({
             status: '500',
-            message: err
+            message: err.message
         });
     }
 }];
@@ -499,7 +491,7 @@ exports.updateSeries = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: '500',
-            message: err
+            message: err.message
         });
     }
 };
@@ -509,7 +501,8 @@ exports.deleteSeries = async (req, res) => {
         const series = await Series.findByIdAndDelete(req.params.id);
         if (!series) return res.status(404).json({ status: 404, message: "Series not found" });
 
-        //! must delete all episodes and season in the series
+        await deleteSeasonsOfSeries(series._id);
+        await deleteMediaReferences(series._id);
 
         res.status(200).json({
             status: '200',
@@ -519,7 +512,7 @@ exports.deleteSeries = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: '500',
-            message: err
+            message: err.message
         });
     }
 };

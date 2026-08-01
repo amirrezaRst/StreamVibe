@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useRouter } from "next/navigation";
 
 import useUserStore from "@/stores/useUserStore";
+import { apiFetch } from "@/services/apiClient";
 
 
 const LoginPage = ({ page, setPage }) => {
@@ -17,13 +18,9 @@ const LoginPage = ({ page, setPage }) => {
         const { email, password, remember } = data;
 
         try {
-            const loginResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/login`, {
+            const loginResponse = await apiFetch('/user/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
                 body: JSON.stringify({ email, password, remember }),
-                credentials: 'include'
             });
 
             if (!loginResponse.ok) {
@@ -34,7 +31,7 @@ const LoginPage = ({ page, setPage }) => {
             router.push("/");
             toast.success('Login successful!');
         } catch (err) {
-            if (err.message === "Network Error") {
+            if (!err.status) { //! a real network/fetch failure, not the {status, message} we threw above
                 return toast.error("Something went wrong! Please try again later.");
             }
 
@@ -97,94 +94,6 @@ const LoginPage = ({ page, setPage }) => {
                             <input
                                 type="checkbox"
                                 id="remember"
-                                {...register('remember', { valueAsBoolean: true })}
-                            />
-                            <label htmlFor="remember" className="text-white">Remember me</label>
-                        </div>
-                        <Link href="/forgot-password" className="text-white">
-                            Forgot Password?
-                        </Link>
-                    </div>
-
-                </div>
-
-                <button
-                    className="bg-c-red-45 text-white text-super-base font-medium rounded-full px-14 py-3.5 mt-12"
-                    type="submit"
-                >
-                    Log In
-                </button>
-            </form>
-
-
-
-
-
-
-
-            {/* <form action="" className="mt-14">
-
-                <div className="space-y-6">
-                    <InputField label="Email" placeholder="Enter your email" name="email" value={email}
-                        onChange={e => setEmail(e.target.value)} customClass="bg-c-black-10" />
-                    <InputField label="Password" placeholder="Enter your password" name="password" value={password}
-                        onChange={e => setPassword(e.target.value)} customClass="bg-c-black-10" />
-
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <input type="checkbox" id="remember" checked={remember} onChange={e => setRemember(e.target.checked)} />
-                            <label htmlFor="remember" className="text-white">Remember me</label>
-                        </div>
-                        <Link href="/forgot-password" className="text-white">
-                            Forgot Password?
-                        </Link>
-                    </div>
-                </div>
-
-                <button
-                    className="bg-c-red-45 text-white text-super-base font-medium rounded-full px-14 py-3.5 mt-12"
-                    onClick={handleLogin}
-                >
-                    Log In
-                </button>
-
-                <p className="text-white mt-10">
-                    Don't have an account? <span className="text-c-red-45 cursor-pointer hover:underline" onClick={() => { setPage("signup") }}>Sign Up</span>
-                </p>
-
-
-            </form> */}
-            {/* <form onSubmit={handleSubmit(handleLogin)} className="mt-14">
-                <div className="space-y-6">
-                    <div className="space-y-1">
-                        <InputField
-                            label="Email"
-                            placeholder="Enter your email"
-                            name="email"
-                            {...register('email', { required: 'Email is required', pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' } })}
-                            customClass="bg-c-black-10"
-                            // onChange={(e) => setEmail(e.target.value)}
-                        />
-                        {errors.email && <p className="text-c-red-50">{errors.email.message}</p>}
-                    </div>
-
-                    <div className="space-y-1">
-                        <InputField
-                            label="Password"
-                            placeholder="Enter your password"
-                            name="password"
-                            {...register('password', { required: 'Password is required', minLength: { value: 6, message: 'Password must be at least 6 characters' } })}
-                            customClass="bg-c-black-10"
-                            // onChange={(e) => setPassword(e.target.value)}
-                        />
-                        {errors.password && <p className="text-c-red-50">{errors.password.message}</p>}
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="checkbox"
-                                id="remember"
                                 {...register('remember')}
                             />
                             <label htmlFor="remember" className="text-white">Remember me</label>
@@ -193,16 +102,16 @@ const LoginPage = ({ page, setPage }) => {
                             Forgot Password?
                         </Link>
                     </div>
+
                 </div>
 
                 <button
-                    type="submit"
                     className="bg-c-red-45 text-white text-super-base font-medium rounded-full px-14 py-3.5 mt-12"
+                    type="submit"
                 >
                     Log In
                 </button>
-            </form> */}
-        </section>
+            </form>        </section>
     );
 }
 

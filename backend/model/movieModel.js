@@ -66,7 +66,8 @@ const movieModel = mongoose.Schema({
             'animation',
             'war'
         ],
-        required: [true, 'Category is required']
+        required: [true, 'Category is required'],
+        index: true
     },
     country: {
         type: String,
@@ -152,11 +153,13 @@ const movieModel = mongoose.Schema({
     },
     publish_date: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+        index: true
     },
     views: {
         type: Number,
-        default: 0
+        default: 0,
+        index: true
     },
     actors: {
         type: [mongoose.Schema.Types.ObjectId],
@@ -167,24 +170,3 @@ const movieModel = mongoose.Schema({
 })
 
 module.exports = mongoose.model('Movies', movieModel);
-
-
-
-
-// const Movie = require('./models/movieModel');
-// const cron = require('node-cron');
-
-// cron.schedule('0 0 * * *', async () => {
-//     const now = new Date();
-//     now.setHours(0, 0, 0, 0);
-
-//     const movies = await Movie.find({
-//         release_status: 'coming soon',
-//         release_date: { $lte: now }
-//     });
-
-//     movies.forEach(async (movie) => {
-//         movie.release_status = 'now showing';
-//         await movie.save();
-//     });
-// });

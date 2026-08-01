@@ -1,13 +1,9 @@
-import useUserStore from "@/stores/useUserStore";
+import { apiFetch } from "./apiClient";
 
 export const handleActivateSubscription = async (id, freeTrial, time, plan) => {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/addSubscription/${id}`, {
+        const response = await apiFetch(`/user/addSubscription/${id}`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: 'include',
             body: JSON.stringify({ freeTrial, time, plan })
         });
 
@@ -18,9 +14,6 @@ export const handleActivateSubscription = async (id, freeTrial, time, plan) => {
 };
 
 
-export const checkSubscriptionStatus = () => {
-    if (user?.subscription?.status === "active") {
-        return true;
-    }
-    return false;
+export const checkSubscriptionStatus = (user) => {
+    return user?.subscription?.status === "active";
 };

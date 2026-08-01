@@ -1,11 +1,11 @@
 const path = require('path');
-const fs = require('fs');
 
 const { createActorValidation, editActorValidation } = require('../validation/actorValidation');
 const Actor = require('../model/actorModel');
 const Movie = require('../model/movieModel');
 const Series = require('../model/seriesModel');
 const uploadImage = require('../utils/upload');
+const { deleteFileIfExists } = require('../utils/fileUtils');
 
 //! config uploader
 const upload = uploadImage({
@@ -47,10 +47,8 @@ exports.getActor = async (req, res) => {
         const actor = await Actor.findById(req.params.id);
         if (!actor) return res.status(404).json({ status: 404, message: "Director not found" });
 
-        const actorIdStr = actor._id.toString();
-
         const movies = await Movie.aggregate([
-            { $match: { actors: actorIdStr } },
+            { $match: { actors: actor._id } },
             {
                 $lookup: {
                     from: 'reviews',
@@ -79,7 +77,7 @@ exports.getActor = async (req, res) => {
         ]);
 
         const series = await Series.aggregate([
-            { $match: { actors: actorIdStr } },
+            { $match: { actors: actor._id } },
             {
                 $lookup: {
                     from: 'reviews',
@@ -129,7 +127,7 @@ exports.getActor = async (req, res) => {
     } catch (err) {
         res.status(500).json({
             status: 500,
-            message: err
+            message: err.message
         });
     }
 };
@@ -140,13 +138,11 @@ exports.getActorMovies = async (req, res) => {
         const actor = await Actor.findById(req.params.id).select("fullName");
         if (!actor) return res.status(404).json({ status: 404, message: "Actor not found" });
 
-        const actorIdStr = actor._id.toString();
-
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
 
         const movies = await Movie.aggregate([
-            { $match: { actors: actorIdStr } },
+            { $match: { actors: actor._id } },
             {
                 $lookup: {
                     from: 'reviews',
@@ -174,7 +170,7 @@ exports.getActorMovies = async (req, res) => {
             }
         ]);
 
-        const totalMovies = await Movie.countDocuments({ actors: actorIdStr });
+        const totalMovies = await Movie.countDocuments({ actors: actor._id });
         const totalPages = Math.ceil(totalMovies / limit);
 
         res.status(200).json({
@@ -200,15 +196,13 @@ exports.getActorMovies = async (req, res) => {
 exports.getActorSeries = async (req, res) => {
     try {
         const actor = await Actor.findById(req.params.id).select("fullName");
-        if (!actor) return res.status(404).json({ status: 404, message: "Director not found" });
-
-        const actorIdStr = actor._id.toString();
+        if (!actor) return res.status(404).json({ status: 404, message: "Actor not found" });
 
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
 
         const series = await Series.aggregate([
-            { $match: { actors: actorIdStr } },
+            { $match: { actors: actor._id } },
             {
                 $lookup: {
                     from: 'reviews',
@@ -249,7 +243,7 @@ exports.getActorSeries = async (req, res) => {
             }
         ]);
 
-        const totalSeries = await Series.countDocuments({ actors: actorIdStr });
+        const totalSeries = await Series.countDocuments({ actors: actor._id });
         const totalPages = Math.ceil(totalSeries / limit);
 
         res.status(200).json({
@@ -296,7 +290,7 @@ exports.updateActor = [upload, editActorValidation, async (req, res) => {
         if (!actor) return res.status(404).json({ status: 404, message: "Actor not found" });
 
         if (req.body.profile && actor.profile) {
-            fs.unlinkSync(path.join(__dirname, '../public/actor/', actor.profile));
+            await deleteFileIfExists(path.join(__dirname, '../public/actor/', actor.profile));
         }
 
         const updatedActor = await Actor.findByIdAndUpdate(actorId, req.body, {
@@ -321,7 +315,7 @@ exports.deleteActor = async (req, res) => {
             return res.status(404).json({ status: 404, message: "Actor not found" });
         }
         if (actor.profile) {
-            fs.unlinkSync(path.join(__dirname, '../public/actor/', actor.profile));
+            await deleteFileIfExists(path.join(__dirname, '../public/actor/', actor.profile));
         }
 
         res.status(200).json({ status: 200, message: "Actor deleted" });

@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const reviewModel = mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Users',
+        required: [true, 'User is required'],
+    },
     fullName: {
         type: String,
         required: [true, 'Full name is required'],
@@ -12,6 +17,7 @@ const reviewModel = mongoose.Schema({
     media: {
         type: mongoose.Schema.Types.ObjectId,
         required: [true, 'Media is required'],
+        index: true
     },
     text: {
         type: String,

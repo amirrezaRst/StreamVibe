@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Environment variables (contains real secrets, never commit)
+config/config.env
+.env
+.env.*
+!config/config.env.example
+
 # Static folder
 public/profile/*
 public/thumbnail/*

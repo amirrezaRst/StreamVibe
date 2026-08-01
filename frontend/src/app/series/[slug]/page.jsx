@@ -7,10 +7,11 @@ import SeasonsSection from "@/components/singleSeries/SeasonsSection";
 import SinglePageLayout from "@/components/layout/singlePage/SinglePageLayout";
 import SinglePageSkeleton from "@/components/layout/singlePage/SinglePageSkeleton";
 import { notFound } from "next/navigation";
+import { apiFetch } from "@/services/apiClient";
 
 
 const fetchSingleSeries = async (slug) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/series/${slug}`);
+    const res = await apiFetch(`/series/${slug}`);
     const data = await res.json();
     if (data?.status === 404) return notFound();
     return data;
@@ -19,8 +20,7 @@ const fetchSingleSeries = async (slug) => {
 const SingleSeries = async ({ params }) => {
     const { slug } = params;
 
-    const seriesData = await fetchSingleSeries(slug).then(data => data.series);
-    const pictures = await fetchSingleSeries(slug).then(data => data.pictures);
+    const { series: seriesData, pictures } = await fetchSingleSeries(slug);
 
     if (!seriesData || !pictures) return <SinglePageSkeleton />;
 

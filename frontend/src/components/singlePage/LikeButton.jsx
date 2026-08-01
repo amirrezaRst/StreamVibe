@@ -24,17 +24,18 @@ const LikeButton = ({ userId, media }) => {
             }
             else if (!userId) {
                 toast.error("Please login to like this media");
+                return;
             }
 
             if (liked === false) {
-                likeApi(userId, media).then(() => {
+                likeApi(media).then(() => {
                     setLiked(true);
                 }).catch(() => {
                     toast.error("An error occurred while trying to like this media");
                 });
             }
             else if (liked === true) {
-                unlikeApi(userId, media).then(() => {
+                unlikeApi(media).then(() => {
                     setLiked(false);
                 }).catch(() => {
                     toast.error("An error occurred while trying to like this media");

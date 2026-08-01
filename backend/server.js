@@ -3,6 +3,7 @@ const dotEnv = require('dotenv');
 const path = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 
 const connectDb = require('./config/db');
 
@@ -20,6 +21,10 @@ const corsOptions = {
 };
 
 const app = express().use(express.json())
+    .use(helmet({
+        //! movie/series posters under /public are loaded cross-origin by the Next.js frontend
+        crossOriginResourcePolicy: { policy: "cross-origin" },
+    }))
     .use(cors(corsOptions))
     .use(express.urlencoded({ extended: true }))
     .use(cookieParser());
@@ -47,6 +52,15 @@ app.use("/api/support", require('./router/supportRoutes'));
 app.use("/api/like", require('./router/likeRoutes'));
 app.use("/api/search", require('./router/searchRoutes'));
 
+//! Global error handler — last resort for thrown/next(err) errors that
+//! bypassed a controller's own try/catch (e.g. middleware, multer, bad JSON body)
+app.use((err, req, res, next) => {
+    console.error(err.stack || err);
+    res.status(err.status || 500).json({
+        status: err.status || 500,
+        message: err.message || "Internal Server Error",
+    });
+});
 
 app.listen(process.env.PORT, err => {
     if (err) return console.log(err);

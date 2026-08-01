@@ -4,6 +4,7 @@ const Movie = require("../model/movieModel");
 const Review = require("../model/reviewModel");
 const { createMovieValidation } = require("../validation/movieValidation");
 const { movieUploader } = require('../utils/videoUploader');
+const { deleteMediaReferences } = require('../utils/cascadeDelete');
 
 
 //! Get Request
@@ -95,18 +96,11 @@ exports.topRatedMovies = async (req, res) => {
 
 exports.trendingMovies = async (req, res) => {
     try {
-        const currentDate = new Date();
-
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 12;
         const skip = (page - 1) * limit;
 
         const recentMovies = await Movie.aggregate([
-            // {
-            //     $match: {
-            //         publish_date: { $gte: new Date(currentDate.setDate(currentDate.getDate() - 60)) }
-            //     }
-            // },
             {
                 $lookup: {
                     from: 'reviews',
@@ -140,9 +134,7 @@ exports.trendingMovies = async (req, res) => {
             }
         ]);
 
-        const totalMovies = await Movie.countDocuments({
-            publish_date: { $gte: new Date(currentDate.setDate(currentDate.getDate() - 30)) }
-        });
+        const totalMovies = await Movie.countDocuments();
         const totalPages = Math.ceil(totalMovies / limit);
 
         res.status(200).json({
@@ -380,8 +372,13 @@ exports.downloadMovie = async (req, res) => {
     }
 
     try {
-        const file = path.join(__dirname, "..", `public`, "videos", url);
-        // console.log(file)
+        const videosDir = path.join(__dirname, "..", "public", "videos");
+        const file = path.join(videosDir, path.basename(url));
+
+        if (path.dirname(file) !== videosDir) {
+            return res.status(400).json({ status: 400, message: "Invalid file path" });
+        }
+
         res.download(file)
     } catch (err) {
         res.status(500).json({
@@ -398,16 +395,15 @@ exports.updateMovie = async (req, res) => {
     const movieId = req.params.id;
 
     try {
-        const movie = await movieModel.findById(movieId);
+        const movie = await Movie.findByIdAndUpdate(movieId, req.body, {
+            new: true,
+            runValidators: true
+        });
         if (!movie) {
-            return res.status(404).json({ message: "Movie not found" });
+            return res.status(404).json({ status: 404, message: "Movie not found" });
         }
 
-        if (createMovieValidation(req.body).error)
-            return res.status(400).json({ text: createMovieValidation(req.body).error.message });
-
-        await movieModel.findByIdAndUpdate(movieId, req.body, { new: true });
-        res.status(200).json({ status: 200, message: "Movie updated" });
+        res.status(200).json({ status: 200, message: "Movie updated", movie });
     } catch (error) {
         res.status(500).json({ status: 500, message: error.message });
     }
@@ -422,6 +418,9 @@ exports.deleteMovie = async (req, res) => {
         if (!movie) {
             return res.status(404).json({ message: "Movie not found" });
         }
+
+        await deleteMediaReferences(movie._id);
+
         res.status(200).json({ status: 200, message: "Movie deleted successfully" });
     } catch (error) {
         res.status(500).json({ status: 500, message: error.message });
