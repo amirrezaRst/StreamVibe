@@ -35,7 +35,7 @@ const ForgotPasswordPage = () => {
                     <div>
                         <h2 className="text-white text-2xl font-semibold mb-4">Check your email</h2>
                         <p className="text-c-grey-65">
-                            If an account exists for that email address, we've sent a link to reset your password.
+                            If an account exists for that email address, a link to reset your password has been sent.
                             The link expires in 30 minutes.
                         </p>
                         <Link href="/register?page=login" className="text-c-red-45 block mt-8 hover:underline">
@@ -46,7 +46,7 @@ const ForgotPasswordPage = () => {
                     <>
                         <h2 className="text-white text-2xl font-semibold">Forgot Password</h2>
                         <p className="text-c-grey-65 mt-2 text-super-sm">
-                            Enter the email address on your account and we'll send you a link to reset your password.
+                            Enter the email address on your account and a reset link will be sent to you.
                         </p>
 
                         <form onSubmit={handleSubmit(onSubmit)} className="mt-10">
