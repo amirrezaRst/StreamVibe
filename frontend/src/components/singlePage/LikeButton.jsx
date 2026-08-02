@@ -9,12 +9,17 @@ const LikeButton = ({ userId, media }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (userId && media) {
-            likeStatusApi(userId, media).then((data) => {
-                setLiked(data.liked);
-                setLoading(false);
-            });
+        //! signed out there is no status to fetch, and leaving `loading` set
+        //! would render an empty, permanently disabled button
+        if (!userId || !media) {
+            setLoading(false);
+            return;
         }
+
+        likeStatusApi(userId, media).then((data) => {
+            setLiked(data.liked);
+            setLoading(false);
+        });
     }, [userId, media]);
 
     const handleLike = () => {

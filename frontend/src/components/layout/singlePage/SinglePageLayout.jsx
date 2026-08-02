@@ -7,7 +7,15 @@ const SinglePageLayout = ({ children, data, type }) => {
 
     return (
         <main className="container py-6">
-            <TopHeader id={id} title={title} description={description} cover={cover} />
+            {/*//! `kind` is what the watchlist stores against the entry, so it has
+                to travel down with the id the button acts on */}
+            <TopHeader
+                id={id}
+                kind={type === "series" ? "Series" : "Movies"}
+                title={title}
+                description={description}
+                cover={cover}
+            />
 
             <section className="grid grid-cols-12 xl:gap-8 lg:gap-4 gap-6 xl:mt-24 md:mt-16 mt-10 mb-12 min-h-screen">
 
