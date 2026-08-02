@@ -3,6 +3,19 @@ const BookedSeat = require('../model/bookedSeatModel');
 const Showtime = require('../model/showtimeModel');
 const { HOLD_MINUTES, MAX_SEATS_PER_BOOKING } = require('../constants/booking');
 
+//! every response that hands a booking back to the client needs its showtime
+//! (and the showtime's own movie/cinema/hall) populated, or the ticket has
+//! nothing to render — used identically everywhere a booking is fetched
+const BOOKING_POPULATE = {
+    path: 'showtime',
+    select: 'startsAt endsAt language movie cinema hall',
+    populate: [
+        { path: 'movie', select: 'title thumbnail duration' },
+        { path: 'cinema', select: 'name city country address' },
+        { path: 'hall', select: 'name screenType' },
+    ],
+};
+
 
 //! Post Request
 exports.holdSeats = async (req, res) => {
@@ -94,7 +107,7 @@ exports.holdSeats = async (req, res) => {
 
 exports.confirmBooking = async (req, res) => {
     try {
-        const booking = await Booking.findById(req.params.id);
+        const booking = await Booking.findById(req.params.id).populate(BOOKING_POPULATE);
         if (!booking) return res.status(404).json({ status: 404, message: "Booking not found" });
 
         if (String(booking.user) !== req.user.id) {
@@ -137,7 +150,7 @@ exports.confirmBooking = async (req, res) => {
 
 exports.cancelBooking = async (req, res) => {
     try {
-        const booking = await Booking.findById(req.params.id);
+        const booking = await Booking.findById(req.params.id).populate(BOOKING_POPULATE);
         if (!booking) return res.status(404).json({ status: 404, message: "Booking not found" });
 
         const isOwner = String(booking.user) === req.user.id;
@@ -176,15 +189,7 @@ exports.getMyBookings = async (req, res) => {
         );
 
         const bookings = await Booking.find({ user: req.user.id })
-            .populate({
-                path: 'showtime',
-                select: 'startsAt endsAt language movie cinema hall',
-                populate: [
-                    { path: 'movie', select: 'title thumbnail duration' },
-                    { path: 'cinema', select: 'name city country address' },
-                    { path: 'hall', select: 'name screenType' },
-                ],
-            })
+            .populate(BOOKING_POPULATE)
             .sort({ createdAt: -1 });
 
         res.status(200).json({ status: 200, message: "Bookings fetched successfully", total: bookings.length, bookings });
@@ -195,16 +200,7 @@ exports.getMyBookings = async (req, res) => {
 
 exports.getBooking = async (req, res) => {
     try {
-        const booking = await Booking.findById(req.params.id)
-            .populate({
-                path: 'showtime',
-                select: 'startsAt endsAt language movie cinema hall',
-                populate: [
-                    { path: 'movie', select: 'title thumbnail duration' },
-                    { path: 'cinema', select: 'name city country address' },
-                    { path: 'hall', select: 'name screenType' },
-                ],
-            });
+        const booking = await Booking.findById(req.params.id).populate(BOOKING_POPULATE);
 
         if (!booking) return res.status(404).json({ status: 404, message: "Booking not found" });
 
