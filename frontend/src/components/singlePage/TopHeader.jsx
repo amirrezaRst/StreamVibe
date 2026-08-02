@@ -1,7 +1,7 @@
 import HeaderCallToAction from "../singlePage/HeaderCallToAction";
 
 
-const TopHeader = ({ id, title, description, cover }) => {
+const TopHeader = ({ id, kind, title, description, cover }) => {
     return (
         <div className="relative w-full xl:h-[80vh] md:h-[60vh] h-[50vh] overflow-hidden rounded-xl">
             <img
@@ -21,7 +21,7 @@ const TopHeader = ({ id, title, description, cover }) => {
                 >
                     {!description || description === "" ? "No description available yet!" : description}
                 </p>
-                <HeaderCallToAction mediaId={id} />
+                <HeaderCallToAction mediaId={id} kind={kind} />
             </div>
 
         </div>
