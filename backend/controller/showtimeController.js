@@ -63,6 +63,67 @@ exports.getShowtimesByMovie = async (req, res) => {
     }
 };
 
+exports.getNowPlaying = async (req, res) => {
+    const { city } = req.query;
+    const limit = Math.min(parseInt(req.query.limit) || 8, 24);
+
+    try {
+        const pipeline = [
+            { $match: { status: 'scheduled', startsAt: { $gte: new Date() } } },
+            { $sort: { startsAt: 1 } },
+            {
+                $lookup: {
+                    from: 'cinemas', localField: 'cinema', foreignField: '_id', as: 'cinemaDoc'
+                }
+            },
+            { $unwind: '$cinemaDoc' },
+        ];
+
+        if (city) {
+            pipeline.push({
+                $match: { 'cinemaDoc.city': new RegExp(`^${escapeRegex(city.trim())}$`, 'i') }
+            });
+        }
+
+        pipeline.push(
+            {
+                $group: {
+                    _id: '$movie',
+                    //! only the soonest few matter on a home page row
+                    showtimes: { $push: { _id: '$_id', startsAt: '$startsAt', cinema: '$cinemaDoc.name' } },
+                    cinemaIds: { $addToSet: '$cinema' },
+                    nextStart: { $first: '$startsAt' },
+                }
+            },
+            {
+                $lookup: { from: 'movies', localField: '_id', foreignField: '_id', as: 'movie' }
+            },
+            { $unwind: '$movie' },
+            { $sort: { nextStart: 1 } },
+            { $limit: limit },
+            {
+                $project: {
+                    _id: 0,
+                    movie: { _id: '$movie._id', title: '$movie.title', thumbnail: '$movie.thumbnail', duration: '$movie.duration' },
+                    cinemaCount: { $size: '$cinemaIds' },
+                    showtimes: { $slice: ['$showtimes', 6] },
+                }
+            }
+        );
+
+        const nowPlaying = await Showtime.aggregate(pipeline);
+
+        res.status(200).json({
+            status: 200,
+            message: "Now playing fetched successfully",
+            total: nowPlaying.length,
+            nowPlaying,
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
 exports.getShowtime = async (req, res) => {
     try {
         const showtime = await Showtime.findById(req.params.id)

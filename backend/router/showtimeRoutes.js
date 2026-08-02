@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { getShowtimesByMovie, getShowtime, createShowtime, updateShowtime, deleteShowtime } = require('../controller/showtimeController');
+const { getShowtimesByMovie, getShowtime, getNowPlaying, createShowtime, updateShowtime, deleteShowtime } = require('../controller/showtimeController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
 const Authenticate = require('../middleware/Authenticate');
 const Authorize = require('../middleware/Authorize');
@@ -9,7 +9,8 @@ const router = Router();
 const adminOnly = [Authenticate, Authorize(["admin"])];
 
 
-//! declared before /:id so "movie" isn't swallowed as a showtime id
+//! declared before /:id so these aren't swallowed as showtime ids
+router.get("/now-playing", getNowPlaying);
 router.get("/movie/:movieId", ValidateObjectId.param('movieId'), getShowtimesByMovie);
 
 router.route("/")
