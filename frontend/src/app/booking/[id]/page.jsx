@@ -71,9 +71,9 @@ const BookingDetailPage = ({ params }) => {
     const isPending = booking.status === "pending" && !booking.isExpired;
 
     return (
-        <main className="container py-8 flex flex-col items-center gap-6">
+        <main className="container py-12 flex flex-col items-center gap-7">
             <div className="text-center">
-                <h1 className="text-2xl font-extrabold text-white mb-1">
+                <h1 className="text-2xl font-extrabold text-white mb-1.5">
                     {booking.status === "confirmed" ? "Your ticket" : "Almost there"}
                 </h1>
                 <p className="text-c-grey-60 text-super-sm">
@@ -126,9 +126,11 @@ const BookingDetailPage = ({ params }) => {
                 </button>
             )}
 
-            <Link href="/movies" className="text-c-grey-60 text-super-sm hover:text-white transition-colors">
-                ← Back to movies
-            </Link>
+            <div className="w-full max-w-[400px] pt-1 border-t border-c-black-15 text-center">
+                <Link href="/movies" className="inline-block mt-6 text-c-grey-60 text-super-sm hover:text-white transition-colors">
+                    ← Back to movies
+                </Link>
+            </div>
         </main>
     );
 };
