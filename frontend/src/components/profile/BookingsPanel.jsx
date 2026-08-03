@@ -18,6 +18,13 @@ const formatTime = (iso) => new Date(iso).toLocaleTimeString("en-US", {
     hour: "numeric", minute: "2-digit", hour12: true,
 });
 
+//! money coming back is the thing the user cares about, and it outranks the
+//! "expired" the booking is technically left in
+const rowStatus = (booking) => {
+    if (booking.payment?.status === "refunded") return "refunded";
+    return booking.isExpired ? "expired" : booking.status;
+};
+
 const BookingRow = ({ booking }) => {
     const { showtime } = booking;
     const movie = showtime?.movie;
@@ -67,7 +74,7 @@ const BookingRow = ({ booking }) => {
 
             {/*//! a list mixes states, so each row has to say which one it is —
                 the single-ticket page doesn't, because its heading already does */}
-            <StatusPill status={booking.isExpired ? "expired" : booking.status} />
+            <StatusPill status={rowStatus(booking)} />
         </Link>
     );
 };

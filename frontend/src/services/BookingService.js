@@ -38,6 +38,28 @@ export const cancelBooking = async (bookingId) => {
     return response.json();
 }
 
+//? Payment
+export const createCheckout = async (bookingId) => {
+    const response = await apiFetch(`/booking/${bookingId}/checkout`, { method: 'POST' });
+
+    if (!response.ok) throw await asError(response, "Couldn't start the payment. Please try again.");
+
+    return response.json();
+}
+
+//! the browser only carries the session id back; whether it was actually paid
+//! is something only the server can establish with the gateway
+export const verifyCheckout = async (bookingId, sessionId) => {
+    const response = await apiFetch(`/booking/${bookingId}/verify`, {
+        method: 'POST',
+        body: JSON.stringify({ sessionId }),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't confirm your payment.");
+
+    return response.json();
+}
+
 export const fetchMyBookings = async () => {
     try {
         const response = await apiFetch('/booking/mine');
