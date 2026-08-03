@@ -1,0 +1,7 @@
+# Editor settings that are personal to a machine, not the project
+.vscode/
+.idea/
+
+# OS noise
+.DS_Store
+Thumbs.db
