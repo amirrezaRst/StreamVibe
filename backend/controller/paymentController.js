@@ -147,6 +147,35 @@ const settlePaidSession = async (booking, session) => {
 };
 
 
+/**
+ * A user who closed the tab on the way back from the gateway never triggers
+ * /verify, and until a webhook is wired up nothing else tells us they paid —
+ * their hold would quietly lapse on a seat they had already been charged for.
+ * So whenever they come back to look at a booking, ask the gateway what became
+ * of its session and settle it then.
+ *
+ * Cheap in practice: only a pending booking that has actually reached the
+ * gateway is ever asked about, and a booking is only pending for minutes.
+ */
+exports.reconcilePendingPayment = async (booking) => {
+    if (!isConfigured() || !booking) return booking;
+    if (booking.status !== 'pending' || !booking.payment.sessionId) return booking;
+
+    try {
+        const session = await stripe.checkout.sessions.retrieve(booking.payment.sessionId);
+        if (session.payment_status !== 'paid') return booking;
+
+        const result = await settlePaidSession(booking, session);
+        return result.booking || booking;
+    } catch (error) {
+        //! never fatal — this runs behind a plain read, and a gateway that is
+        //! briefly unreachable must not stop someone seeing their booking
+        console.error(`[payment] could not reconcile ${booking.bookingCode}:`, error.message);
+        return booking;
+    }
+};
+
+
 //! Post Request
 exports.createCheckoutSession = async (req, res) => {
     if (!isConfigured()) return notConfigured(res);

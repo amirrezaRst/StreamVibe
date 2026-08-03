@@ -4,6 +4,7 @@ const Showtime = require('../model/showtimeModel');
 const { HOLD_MINUTES, MAX_SEATS_PER_BOOKING } = require('../constants/booking');
 
 const BOOKING_POPULATE = require('../utils/bookingPopulate');
+const { reconcilePendingPayment } = require('./paymentController');
 
 
 //! Post Request
@@ -178,6 +179,19 @@ exports.cancelBooking = async (req, res) => {
 //! Get Request
 exports.getMyBookings = async (req, res) => {
     try {
+        //! anything still pending that reached the gateway has to be asked
+        //! about before the sweep below writes it off — a booking the user paid
+        //! for and then walked away from is settled here, not expired
+        const unsettled = await Booking.find({
+            user: req.user.id,
+            status: 'pending',
+            'payment.sessionId': { $ne: null },
+        });
+
+        for (const booking of unsettled) {
+            await reconcilePendingPayment(booking);
+        }
+
         //! settle any holds that lapsed while the user was away, so the list
         //! doesn't show something as pending that can no longer be paid for
         await Booking.updateMany(
@@ -197,7 +211,7 @@ exports.getMyBookings = async (req, res) => {
 
 exports.getBooking = async (req, res) => {
     try {
-        const booking = await Booking.findById(req.params.id).populate(BOOKING_POPULATE);
+        let booking = await Booking.findById(req.params.id).populate(BOOKING_POPULATE);
 
         if (!booking) return res.status(404).json({ status: 404, message: "Booking not found" });
 
@@ -205,6 +219,10 @@ exports.getBooking = async (req, res) => {
         if (!isOwner && req.user.role !== 'admin') {
             return res.status(403).json({ status: 403, message: "You can only view your own booking" });
         }
+
+        //! the most likely place a lost payment surfaces: the user comes back
+        //! to see what happened to their booking
+        if (isOwner) booking = await reconcilePendingPayment(booking);
 
         res.status(200).json({ status: 200, message: "Booking fetched successfully", booking });
     } catch (error) {
