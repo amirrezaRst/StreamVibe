@@ -1,10 +1,10 @@
 const { Router } = require('express');
 const rateLimit = require('express-rate-limit');
-const { singleUser, registerUser, login, deleteUser, allUser, getWatchList, logout, refreshToken, freeTrial, addSubscription, forgotPassword, resetPassword } = require('../controller/userController');
+const { singleUser, registerUser, login, deleteUser, allUser, getWatchList, addToWatchList, removeFromWatchList, watchListStatus, getOverview, updateProfile, changePassword, logout, refreshToken, freeTrial, addSubscription, forgotPassword, resetPassword } = require('../controller/userController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
 const Authenticate = require('../middleware/Authenticate');
 const Authorize = require('../middleware/Authorize');
-const { registerValidation, loginValidation, addSubscriptionValidation, forgotPasswordValidation, resetPasswordValidation } = require('../validation/userValidation');
+const { registerValidation, loginValidation, addSubscriptionValidation, forgotPasswordValidation, resetPasswordValidation, updateProfileValidation, changePasswordValidation, watchListValidation } = require('../validation/userValidation');
 
 const router = Router();
 
@@ -20,12 +20,23 @@ const authLimiter = rateLimit({
 
 router.get("/users", [Authenticate, Authorize(["admin"])], allUser);
 
-router.get("/getWatchList/:id", Authenticate, ValidateObjectId, getWatchList);
-
 router.get("/userData", singleUser);
 router.route("/user/:id")
     .delete(ValidateObjectId, [Authenticate, Authorize(["admin"])], deleteUser);
-//! must add edit user route here
+
+//? Profile Routes — always scoped to the caller, never to an id in the path
+router.get("/me/overview", Authenticate, getOverview);
+router.put("/me", [Authenticate, updateProfileValidation], updateProfile);
+router.patch("/me/password", [Authenticate, changePasswordValidation], changePassword);
+
+//? Watchlist Routes
+router.route("/watchList")
+    .get(Authenticate, getWatchList)
+    .post([Authenticate, watchListValidation], addToWatchList);
+
+router.route("/watchList/:itemId")
+    .get([Authenticate, ValidateObjectId.param('itemId')], watchListStatus)
+    .delete([Authenticate, ValidateObjectId.param('itemId')], removeFromWatchList);
 
 router.post("/register", authLimiter, registerValidation, registerUser);
 router.post("/login", authLimiter, loginValidation, login);

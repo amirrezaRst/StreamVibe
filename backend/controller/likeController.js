@@ -1,4 +1,5 @@
 const Like = require("../model/likeModel");
+const { resolveMedia } = require("../utils/mediaLookup");
 
 
 //! Post Request
@@ -43,6 +44,23 @@ exports.likeStatus = async (req, res) => {
     } catch (error) {
         console.log(error)
         res.status(500).json({ error, message: 'Failed to get like status' });
+    }
+};
+
+//! a like only stores the media id, with no hint of which collection it came
+//! from — resolveMedia is what turns that back into something renderable
+exports.getMyLikes = async (req, res) => {
+    try {
+        const likes = await Like.find({ userId: req.user.id })
+            .select("media")
+            .sort({ createdAt: -1 });
+
+        const media = await resolveMedia(likes.map(like => like.media));
+
+        res.status(200).json({ status: 200, total: media.length, media, message: "Liked media fetched" });
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ status: 500, message: 'Failed to get liked media' });
     }
 };
 

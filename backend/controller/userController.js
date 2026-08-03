@@ -1,11 +1,16 @@
+const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
 const userModel = require("../model/userModel");
+const likeModel = require("../model/likeModel");
+const bookingModel = require("../model/bookingModel");
+const supportModel = require("../model/supportModel");
 const { generateAccessToken, generateRefreshToken } = require("../utils/tokenUtils");
 const { setRefreshTokenCookie, setTokenCookie } = require("../utils/cookieUtils");
 const { sendPasswordResetEmail } = require("../utils/mailer");
+const { resolveMedia } = require("../utils/mediaLookup");
 
 //! Get Request
 exports.allUser = async (req, res) => {
@@ -61,34 +66,83 @@ exports.singleUser = async (req, res) => {
 };
 
 exports.getWatchList = async (req, res) => {
-    const userId = req.params.id;
-    const page = req.query.page ? parseInt(req.query.page) : 1;
-    const limit = 12;
-    const skip = (page - 1) * limit;
+    try {
+        const user = await userModel.findById(req.user.id).select('watchList');
+        if (!user) {
+            return res.status(404).json({ status: 404, message: "User not found" });
+        }
 
-    if (req.user.id !== userId && req.user.role !== 'admin') {
-        return res.status(403).json({ status: 403, message: "You can only view your own watchlist" });
+        //! newest first, which is what the profile grid shows
+        const ids = [...user.watchList].reverse().map(entry => entry.item);
+        const watchList = await resolveMedia(ids);
+
+        res.status(200).json({ status: 200, total: watchList.length, watchList, message: "Watchlist fetched" });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
     }
+};
+
+//! Profile overview — one request feeds both the sidebar badges and the
+//! account summary card, so opening the profile doesn't fan out into five
+exports.getOverview = async (req, res) => {
+    const userId = new mongoose.Types.ObjectId(req.user.id);
 
     try {
-        const user = await userModel.findById(userId)
-            .select('watchList')
-            .populate({
-                path: 'watchList.item',
-                options: {
-                    skip: skip,
-                    limit: limit
-                }
-            });
+        const [user, likes, bookings, upcoming, tickets, openTickets] = await Promise.all([
+            userModel.findById(userId).select('fullName email subscription watchList'),
+            likeModel.countDocuments({ userId }),
+            bookingModel.countDocuments({ user: userId, status: { $ne: 'expired' } }),
+            countUpcomingBookings(userId),
+            supportModel.countDocuments({ user: userId }),
+            supportModel.countDocuments({ user: userId, status: { $ne: 'resolved' } }),
+        ]);
 
         if (!user) {
             return res.status(404).json({ status: 404, message: "User not found" });
         }
 
-        res.status(200).json({ status: 200, watchList: user.watchList, message: "Watchlist fetched" });
+        res.status(200).json({
+            status: 200,
+            message: "Overview fetched successfully",
+            overview: {
+                //! the account has no createdAt column, but the ObjectId already
+                //! carries the second it was minted
+                memberSince: user._id.getTimestamp(),
+                subscription: user.subscription,
+                counts: {
+                    watchList: user.watchList.length,
+                    likes,
+                    bookings,
+                    upcomingBookings: upcoming,
+                    tickets,
+                    openTickets,
+                },
+            },
+        });
     } catch (error) {
         res.status(500).json({ status: 500, message: error.message });
     }
+};
+
+//! "upcoming" is a property of the screening, not the booking, so this has to
+//! reach across into showtimes to answer it
+const countUpcomingBookings = async (userId) => {
+    const [result] = await bookingModel.aggregate([
+        { $match: { user: userId, status: 'confirmed' } },
+        {
+            $lookup: {
+                from: 'showtimes',
+                localField: 'showtime',
+                foreignField: '_id',
+                as: 'showtime',
+            },
+        },
+        { $unwind: '$showtime' },
+        { $match: { 'showtime.startsAt': { $gt: new Date() } } },
+        { $count: 'total' },
+    ]);
+
+    return result ? result.total : 0;
 };
 
 
@@ -285,7 +339,131 @@ exports.resetPassword = async (req, res) => {
 };
 
 
-//! must add edit user controller here
+//? Profile
+exports.updateProfile = async (req, res) => {
+    const { fullName, email } = req.body;
+
+    try {
+        const user = await userModel.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ status: 404, message: "User not found" });
+        }
+
+        if (email && email !== user.email) {
+            const taken = await userModel.exists({ email, _id: { $ne: user._id } });
+            if (taken) {
+                return res.status(409).json({ status: 409, message: "That email is already in use" });
+            }
+            user.email = email;
+        }
+        if (fullName) user.fullName = fullName;
+
+        await user.save();
+
+        //! the access token carries the email in its payload, so a changed
+        //! address has to be re-signed or the session keeps quoting the old one
+        setTokenCookie(res, generateAccessToken({ id: user._id, email: user.email, role: user.role }));
+
+        const safeUser = user.toObject();
+        delete safeUser.password;
+        delete safeUser.refreshToken;
+
+        res.status(200).json({ status: 200, message: "Profile updated successfully", user: safeUser });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+exports.changePassword = async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+
+    try {
+        const user = await userModel.findById(req.user.id).select("email role password refreshToken");
+        if (!user) {
+            return res.status(404).json({ status: 404, message: "User not found" });
+        }
+
+        const isMatch = bcrypt.compareSync(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ status: 401, message: "Your current password is incorrect" });
+        }
+        if (currentPassword === newPassword) {
+            return res.status(400).json({ status: 400, message: "Your new password must be different from the current one" });
+        }
+
+        user.password = newPassword;
+
+        const tokenData = { id: user._id, email: user.email, role: user.role };
+
+        //! a password change should end sessions on other devices — rotating the
+        //! stored refresh token is what invalidates the ones they're holding.
+        //! Only rotate if this session actually has one, so changing a password
+        //! doesn't silently upgrade a "don't remember me" login.
+        if (req.cookies.refreshToken) {
+            const refreshToken = generateRefreshToken(tokenData);
+            user.refreshToken = refreshToken;
+            setRefreshTokenCookie(res, refreshToken);
+        } else {
+            user.refreshToken = undefined;
+        }
+
+        await user.save();
+        setTokenCookie(res, generateAccessToken(tokenData));
+
+        res.status(200).json({ status: 200, message: "Password changed successfully" });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+
+//? Watchlist
+exports.addToWatchList = async (req, res) => {
+    const { kind, item } = req.body;
+
+    try {
+        //! $ne on the sub-document makes this idempotent under a double click:
+        //! the second write matches nothing instead of duplicating the entry
+        const result = await userModel.updateOne(
+            { _id: req.user.id, 'watchList.item': { $ne: item } },
+            { $push: { watchList: { kind, item } } }
+        );
+
+        if (!result.matchedCount) {
+            return res.status(200).json({ status: 200, message: "Already in your watchlist", added: false });
+        }
+
+        res.status(201).json({ status: 201, message: "Added to your watchlist", added: true });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+exports.removeFromWatchList = async (req, res) => {
+    try {
+        const result = await userModel.updateOne(
+            { _id: req.user.id },
+            { $pull: { watchList: { item: req.params.itemId } } }
+        );
+
+        if (!result.modifiedCount) {
+            return res.status(404).json({ status: 404, message: "That title isn't in your watchlist" });
+        }
+
+        res.status(200).json({ status: 200, message: "Removed from your watchlist" });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+exports.watchListStatus = async (req, res) => {
+    try {
+        const saved = await userModel.exists({ _id: req.user.id, 'watchList.item': req.params.itemId });
+        res.status(200).json({ status: 200, saved: !!saved });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
 
 
 //! Delete Request

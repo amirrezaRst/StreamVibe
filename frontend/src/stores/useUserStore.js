@@ -4,7 +4,9 @@ import { apiFetch } from '@/services/apiClient';
 const useUserStore = create(
     (set) => ({
         user: null,
-        loading: false,
+        //! starts true because MainLayout calls fetchUser on mount: until that
+        //! lands, "no user" means "not known yet", not "signed out"
+        loading: true,
         error: null,
         fetchUser: async () => {
             set({ loading: true, error: null });

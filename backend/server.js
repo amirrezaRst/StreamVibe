@@ -20,7 +20,11 @@ const corsOptions = {
     credentials: true,
 };
 
-const app = express().use(express.json())
+const app = express().use(express.json({
+        //! Stripe signs the bytes it sent, not the object we parsed out of
+        //! them, so the webhook needs the untouched body to verify against
+        verify: (req, res, buf) => { req.rawBody = buf; },
+    }))
     .use(helmet({
         //! movie/series posters under /public are loaded cross-origin by the Next.js frontend
         crossOriginResourcePolicy: { policy: "cross-origin" },
@@ -51,6 +55,10 @@ app.use('/api/episode', require('./router/episodeRoutes'));
 app.use("/api/support", require('./router/supportRoutes'));
 app.use("/api/like", require('./router/likeRoutes'));
 app.use("/api/search", require('./router/searchRoutes'));
+app.use("/api/cinema", require('./router/cinemaRoutes'));
+app.use("/api/showtime", require('./router/showtimeRoutes'));
+app.use("/api/booking", require('./router/bookingRoutes'));
+app.use("/api/payment", require('./router/paymentRoutes'));
 
 //! Global error handler — last resort for thrown/next(err) errors that
 //! bypassed a controller's own try/catch (e.g. middleware, multer, bad JSON body)

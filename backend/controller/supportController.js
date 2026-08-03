@@ -47,10 +47,34 @@ exports.getSupportTicketById = async (req, res) => {
 
 
 
+//! Get the signed-in user's own tickets
+exports.getMySupportTickets = async (req, res) => {
+    try {
+        const supports = await Support.find({ user: req.user.id })
+            .select("subject message status createdAt")
+            .sort({ createdAt: -1 });
+
+        res.status(200).json({
+            status: 200,
+            message: "fetch data successfully",
+            results: supports.length,
+            supports
+        });
+    } catch (err) {
+        res.status(500).json({
+            status: 500,
+            message: err.message
+        });
+    }
+};
+
+
 //! Create a new support ticket
 exports.createSupportTicket = async (req, res) => {
     try {
-        const support = await Support.create(req.body);
+        //! taken from the session rather than the body, so a ticket can't be
+        //! filed under somebody else's account
+        const support = await Support.create({ ...req.body, user: req.user ? req.user.id : null });
 
         res.status(201).send({ message: 'Support ticket created successfully', support });
     } catch (err) {

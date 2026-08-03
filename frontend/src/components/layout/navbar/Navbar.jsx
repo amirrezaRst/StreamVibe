@@ -14,9 +14,12 @@ const Navbar = () => {
     const user = useUserStore((state) => state.user);
     const loading = useUserStore((state) => state.loading);
     const pathname = usePathname();
+    //! these routes render their own full-bleed auth shell (AuthAside +
+    //! form), so the site chrome would just sit on top of it
+    const isAuthRoute = pathname === "/register" || pathname.startsWith("/forgot-password");
 
     return (
-        <header className={`py-5 ${pathname === "/" && "absolute"} top-0 right-0 z-30 w-full ${pathname == "/register" && "hidden"}`}>
+        <header className={`py-5 ${pathname === "/" && "absolute"} top-0 right-0 z-30 w-full ${isAuthRoute && "hidden"}`}>
             <div className="container flex items-center justify-between">
                 <Link href="/">
                     <img src="/images/logo-white.png" alt="StreamVibe" className="3xl:w-full lg:w-[165px] w-[150px]" />
