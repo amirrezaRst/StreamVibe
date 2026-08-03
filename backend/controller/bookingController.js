@@ -3,18 +3,8 @@ const BookedSeat = require('../model/bookedSeatModel');
 const Showtime = require('../model/showtimeModel');
 const { HOLD_MINUTES, MAX_SEATS_PER_BOOKING } = require('../constants/booking');
 
-//! every response that hands a booking back to the client needs its showtime
-//! (and the showtime's own movie/cinema/hall) populated, or the ticket has
-//! nothing to render — used identically everywhere a booking is fetched
-const BOOKING_POPULATE = {
-    path: 'showtime',
-    select: 'startsAt endsAt language movie cinema hall',
-    populate: [
-        { path: 'movie', select: 'title thumbnail duration' },
-        { path: 'cinema', select: 'name city country address' },
-        { path: 'hall', select: 'name screenType' },
-    ],
-};
+const BOOKING_POPULATE = require('../utils/bookingPopulate');
+const { reconcilePendingPayment } = require('./paymentController');
 
 
 //! Post Request
@@ -123,6 +113,14 @@ exports.confirmBooking = async (req, res) => {
             return res.status(409).json({ status: 409, message: "Your hold expired — the seats were released" });
         }
 
+        //! this used to hand out a ticket for free: anyone who could reach the
+        //! endpoint got a confirmed booking. A booking now only becomes
+        //! confirmed off the back of a payment the gateway vouched for, which
+        //! is what /checkout and /verify exist to establish.
+        if (booking.payment.status !== 'paid') {
+            return res.status(402).json({ status: 402, message: "This booking hasn't been paid for yet" });
+        }
+
         //! guard against the hold having been swept between the check above and
         //! here: if any seat is gone, the booking can no longer be honoured
         const stillHeld = await BookedSeat.countDocuments({ booking: booking._id });
@@ -181,6 +179,19 @@ exports.cancelBooking = async (req, res) => {
 //! Get Request
 exports.getMyBookings = async (req, res) => {
     try {
+        //! anything still pending that reached the gateway has to be asked
+        //! about before the sweep below writes it off — a booking the user paid
+        //! for and then walked away from is settled here, not expired
+        const unsettled = await Booking.find({
+            user: req.user.id,
+            status: 'pending',
+            'payment.sessionId': { $ne: null },
+        });
+
+        for (const booking of unsettled) {
+            await reconcilePendingPayment(booking);
+        }
+
         //! settle any holds that lapsed while the user was away, so the list
         //! doesn't show something as pending that can no longer be paid for
         await Booking.updateMany(
@@ -200,7 +211,7 @@ exports.getMyBookings = async (req, res) => {
 
 exports.getBooking = async (req, res) => {
     try {
-        const booking = await Booking.findById(req.params.id).populate(BOOKING_POPULATE);
+        let booking = await Booking.findById(req.params.id).populate(BOOKING_POPULATE);
 
         if (!booking) return res.status(404).json({ status: 404, message: "Booking not found" });
 
@@ -208,6 +219,10 @@ exports.getBooking = async (req, res) => {
         if (!isOwner && req.user.role !== 'admin') {
             return res.status(403).json({ status: 403, message: "You can only view your own booking" });
         }
+
+        //! the most likely place a lost payment surfaces: the user comes back
+        //! to see what happened to their booking
+        if (isOwner) booking = await reconcilePendingPayment(booking);
 
         res.status(200).json({ status: 200, message: "Booking fetched successfully", booking });
     } catch (error) {

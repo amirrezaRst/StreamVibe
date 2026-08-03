@@ -7,6 +7,7 @@ const TONES = {
     resolved: "bg-[#3DA872]/[0.14] text-[#6FCB9C]",
     confirmed: "bg-[#3DA872]/[0.14] text-[#6FCB9C]",
     cancelled: "bg-[#E5477A]/[0.14] text-[#E5477A]",
+    refunded: "bg-[#4C8DD9]/[0.14] text-[#7CADEA]",
     expired: "bg-c-black-15 text-c-grey-60",
 };
 
