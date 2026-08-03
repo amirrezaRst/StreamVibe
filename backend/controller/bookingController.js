@@ -3,18 +3,7 @@ const BookedSeat = require('../model/bookedSeatModel');
 const Showtime = require('../model/showtimeModel');
 const { HOLD_MINUTES, MAX_SEATS_PER_BOOKING } = require('../constants/booking');
 
-//! every response that hands a booking back to the client needs its showtime
-//! (and the showtime's own movie/cinema/hall) populated, or the ticket has
-//! nothing to render — used identically everywhere a booking is fetched
-const BOOKING_POPULATE = {
-    path: 'showtime',
-    select: 'startsAt endsAt language movie cinema hall',
-    populate: [
-        { path: 'movie', select: 'title thumbnail duration' },
-        { path: 'cinema', select: 'name city country address' },
-        { path: 'hall', select: 'name screenType' },
-    ],
-};
+const BOOKING_POPULATE = require('../utils/bookingPopulate');
 
 
 //! Post Request
@@ -121,6 +110,14 @@ exports.confirmBooking = async (req, res) => {
         }
         if (booking.isExpired) {
             return res.status(409).json({ status: 409, message: "Your hold expired — the seats were released" });
+        }
+
+        //! this used to hand out a ticket for free: anyone who could reach the
+        //! endpoint got a confirmed booking. A booking now only becomes
+        //! confirmed off the back of a payment the gateway vouched for, which
+        //! is what /checkout and /verify exist to establish.
+        if (booking.payment.status !== 'paid') {
+            return res.status(402).json({ status: 402, message: "This booking hasn't been paid for yet" });
         }
 
         //! guard against the hold having been swept between the check above and

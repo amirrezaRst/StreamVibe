@@ -19,6 +19,29 @@ const bookedSeatDetailSchema = new mongoose.Schema({
     price: { type: Number, required: true, min: 0 },
 }, { _id: false });
 
+//! What the gateway did, kept on the booking rather than in its own collection:
+//! a booking has exactly one payment attempt that matters, and every question
+//! anyone asks ("was this paid?", "how much came back?") is a question about
+//! the booking.
+const paymentSchema = new mongoose.Schema({
+    provider: { type: String, default: 'stripe' },
+    status: {
+        type: String,
+        enum: ['unpaid', 'paid', 'refunded'],
+        default: 'unpaid',
+    },
+    //! the Checkout session is reused if the user presses Pay twice, which is
+    //! what stops a second press from opening a second chargeable page
+    sessionId: { type: String, default: null, index: true },
+    intentId: { type: String, default: null },
+    //! stored in major units to match totalPrice; the gateway's minor units
+    //! are converted at the boundary
+    amount: { type: Number, default: null, min: 0 },
+    paidAt: { type: Date, default: null },
+    refundedAt: { type: Date, default: null },
+    refundReason: { type: String, default: null },
+}, { _id: false });
+
 const bookingSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -49,6 +72,10 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         unique: true,
         default: generateBookingCode,
+    },
+    payment: {
+        type: paymentSchema,
+        default: () => ({}),
     },
     //! mirrors the hold on the seats; cleared once confirmed
     expiresAt: { type: Date, default: null },
