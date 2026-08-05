@@ -65,6 +65,22 @@ export const setUserRole = async (userId, role) => {
 export const fetchCatalogue = (kind, params) =>
     get(`/admin/${kind}${query(params)}`, `Couldn't load ${kind}.`);
 
+export const fetchPeople = (params) =>
+    get(`/admin/people${query(params)}`, "Couldn't load people.");
+
+//! the console writes through the endpoints that already exist for each model —
+//! there was never a gap on the writing side, only on the reading side
+const remove = (path, fallback) => async (id) => {
+    const response = await apiFetch(`/${path}/${id}`, { method: "DELETE" });
+    if (!response.ok) throw await asError(response, fallback);
+};
+
+export const deleteMovie = remove("movie", "Couldn't delete that movie.");
+export const deleteSeries = remove("series", "Couldn't delete that series.");
+export const deleteActor = remove("actor", "Couldn't delete that actor.");
+export const deleteDirector = remove("director", "Couldn't delete that director.");
+export const deleteUser = remove("user/user", "Couldn't delete that user.");
+
 export const fetchReviews = (params) =>
     get(`/admin/reviews${query(params)}`, "Couldn't load reviews.");
 

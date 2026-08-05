@@ -1,13 +1,7 @@
-import NotBuiltYet from "@/components/admin/NotBuiltYet";
+import CatalogueContent from "../CatalogueContent";
 
 export const metadata = { title: "Series" };
 
-const SeriesPage = () => (
-    <NotBuiltYet
-        title="Series"
-        crumbs={[{ label: "Catalog" }]}
-        describes="Series, their seasons and episodes"
-    />
-);
+const SeriesPage = () => <CatalogueContent kind="series" />;
 
 export default SeriesPage;

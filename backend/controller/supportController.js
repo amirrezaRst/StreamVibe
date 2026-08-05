@@ -87,6 +87,33 @@ exports.createSupportTicket = async (req, res) => {
 
 
 
+/**
+ * Move a ticket along without restating it. The full update requires the name
+ * and subject back, which would mean the console echoing fields it is not
+ * touching just to change one word.
+ */
+exports.setSupportStatus = async (req, res) => {
+    try {
+        const support = await Support.findByIdAndUpdate(
+            req.params.id,
+            { $set: { status: req.body.status } },
+            { new: true, runValidators: true }
+        );
+
+        if (!support) {
+            return res.status(404).json({ status: 404, message: 'Support ticket not found' });
+        }
+
+        res.status(200).json({
+            status: 200,
+            message: `Marked ${req.body.status}`,
+            support,
+        });
+    } catch (err) {
+        res.status(500).json({ status: 500, message: err.message });
+    }
+};
+
 //! Update a support ticket
 exports.updateSupportTicket = async (req, res) => {
     try {

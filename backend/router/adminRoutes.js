@@ -2,7 +2,7 @@ const { Router } = require('express');
 
 const {
     getOverview, getBookings, refundBooking, getUsers, setUserRole,
-    getMovies, getSeries, getReviews, moderateReview, moderateReviews, setReviewSpoiler, deleteReview,
+    getMovies, getSeries, getPeople, getReviews, moderateReview, moderateReviews, setReviewSpoiler, deleteReview,
 } = require('../controller/adminController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
 const Authenticate = require('../middleware/Authenticate');
@@ -26,6 +26,7 @@ router.patch("/users/:id/role", [ValidateObjectId, setUserRoleValidation], setUs
 
 router.get("/movies", getMovies);
 router.get("/series", getSeries);
+router.get("/people", getPeople);
 
 router.get("/reviews", getReviews);
 //! declared before "/:id/status" so "status" is never read as a review id

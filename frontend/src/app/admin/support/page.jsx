@@ -1,13 +1,7 @@
-import NotBuiltYet from "@/components/admin/NotBuiltYet";
+import SupportContent from "./SupportContent";
 
 export const metadata = { title: "Support" };
 
-const SupportPage = () => (
-    <NotBuiltYet
-        title="Support"
-        crumbs={[{ label: "Community" }]}
-        describes="The support inbox"
-    />
-);
+const SupportPage = () => <SupportContent />;
 
 export default SupportPage;

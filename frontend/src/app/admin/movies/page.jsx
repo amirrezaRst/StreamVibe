@@ -1,13 +1,7 @@
-import NotBuiltYet from "@/components/admin/NotBuiltYet";
+import CatalogueContent from "../CatalogueContent";
 
 export const metadata = { title: "Movies" };
 
-const MoviesPage = () => (
-    <NotBuiltYet
-        title="Movies"
-        crumbs={[{ label: "Catalog" }]}
-        describes="Every film in the catalog"
-    />
-);
+const MoviesPage = () => <CatalogueContent kind="movies" />;
 
 export default MoviesPage;

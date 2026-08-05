@@ -5,6 +5,8 @@ const BookedSeat = require('../model/bookedSeatModel');
 const Showtime = require('../model/showtimeModel');
 const Movie = require('../model/movieModel');
 const Series = require('../model/seriesModel');
+const Actor = require('../model/actorModel');
+const Director = require('../model/directorModel');
 const User = require('../model/userModel');
 const Support = require('../model/supportModel');
 const Review = require('../model/reviewModel');
@@ -465,6 +467,69 @@ const catalogueList = (Model, extraProjection = {}) => async (req, res) => {
 
 exports.getMovies = catalogueList(Movie, { duration: 1, director: 1 });
 exports.getSeries = catalogueList(Series, { seasons: { $size: { $ifNull: ['$seasons', []] } } });
+
+
+/**
+ * Actors and directors are the same job wearing two collections, so the console
+ * shows them as one section with a switch. `kind` picks which.
+ *
+ * The credit counts are the reason this exists rather than the plain list
+ * endpoints: knowing a person is attached to nothing is what tells you they are
+ * safe to delete.
+ */
+exports.getPeople = async (req, res) => {
+    const directors = req.query.kind === 'directors';
+
+    try {
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+
+        const match = {};
+        if (req.query.search) match.fullName = new RegExp(escapeRegex(req.query.search), 'i');
+        if (req.query.country) match.country = req.query.country;
+
+        const Model = directors ? Director : Actor;
+        //! a movie names its director on `director` and its cast on `actors`
+        const creditField = directors ? 'director' : 'actors';
+
+        const [people, total] = await Promise.all([
+            Model.aggregate([
+                { $match: match },
+                { $sort: { fullName: 1 } },
+                { $skip: (page - 1) * limit },
+                { $limit: limit },
+                {
+                    $lookup: {
+                        from: 'movies', localField: '_id', foreignField: creditField, as: 'movieCredits',
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'series', localField: '_id', foreignField: creditField, as: 'seriesCredits',
+                    },
+                },
+                {
+                    $project: {
+                        fullName: 1, country: 1, profile: 1, gender: 1, birthDate: 1,
+                        movies: { $size: '$movieCredits' },
+                        series: { $size: '$seriesCredits' },
+                    },
+                },
+            ]),
+            Model.countDocuments(match),
+        ]);
+
+        res.status(200).json({
+            status: 200,
+            message: "People fetched successfully",
+            kind: directors ? 'directors' : 'actors',
+            items: people,
+            pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
 
 
 //! the tab counts above the queue, so the badge and the tabs agree without a

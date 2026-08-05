@@ -1,13 +1,7 @@
-import NotBuiltYet from "@/components/admin/NotBuiltYet";
+import UsersContent from "./UsersContent";
 
 export const metadata = { title: "Users" };
 
-const UsersPage = () => (
-    <NotBuiltYet
-        title="Users"
-        crumbs={[{ label: "Community" }]}
-        describes="Accounts and their roles"
-    />
-);
+const UsersPage = () => <UsersContent />;
 
 export default UsersPage;

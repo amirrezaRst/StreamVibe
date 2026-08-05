@@ -1,13 +1,7 @@
-import NotBuiltYet from "@/components/admin/NotBuiltYet";
+import PeopleContent from "./PeopleContent";
 
 export const metadata = { title: "People" };
 
-const PeoplePage = () => (
-    <NotBuiltYet
-        title="People"
-        crumbs={[{ label: "Catalog" }]}
-        describes="Actors and directors"
-    />
-);
+const PeoplePage = () => <PeopleContent />;
 
 export default PeoplePage;
