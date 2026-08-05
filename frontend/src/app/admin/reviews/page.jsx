@@ -1,13 +1,7 @@
-import NotBuiltYet from "@/components/admin/NotBuiltYet";
+import ReviewsContent from "./ReviewsContent";
 
 export const metadata = { title: "Reviews" };
 
-const ReviewsPage = () => (
-    <NotBuiltYet
-        title="Reviews"
-        crumbs={[{ label: "Community" }]}
-        describes="Moderate what people wrote"
-    />
-);
+const ReviewsPage = () => <ReviewsContent />;
 
 export default ReviewsPage;

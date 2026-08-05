@@ -2,12 +2,13 @@ const { Router } = require('express');
 
 const {
     getOverview, getBookings, refundBooking, getUsers, setUserRole,
-    getMovies, getSeries, getReviews, deleteReview,
+    getMovies, getSeries, getReviews, moderateReview, moderateReviews, setReviewSpoiler, deleteReview,
 } = require('../controller/adminController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
 const Authenticate = require('../middleware/Authenticate');
 const Authorize = require('../middleware/Authorize');
 const { setUserRoleValidation, refundValidation } = require('../validation/adminValidation');
+const { moderateReviewValidation, moderateManyValidation, setSpoilerValidation } = require('../validation/reviewValidation');
 
 const router = Router();
 
@@ -27,6 +28,10 @@ router.get("/movies", getMovies);
 router.get("/series", getSeries);
 
 router.get("/reviews", getReviews);
+//! declared before "/:id/status" so "status" is never read as a review id
+router.patch("/reviews/status", moderateManyValidation, moderateReviews);
+router.patch("/reviews/:id/status", [ValidateObjectId, moderateReviewValidation], moderateReview);
+router.patch("/reviews/:id/spoiler", [ValidateObjectId, setSpoilerValidation], setReviewSpoiler);
 router.delete("/reviews/:id", ValidateObjectId, deleteReview);
 
 module.exports = router;

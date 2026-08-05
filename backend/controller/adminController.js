@@ -467,6 +467,112 @@ exports.getMovies = catalogueList(Movie, { duration: 1, director: 1 });
 exports.getSeries = catalogueList(Series, { seasons: { $size: { $ifNull: ['$seasons', []] } } });
 
 
+//! the tab counts above the queue, so the badge and the tabs agree without a
+//! second round trip
+const reviewCounts = async () => {
+    const rows = await Review.aggregate([
+        { $group: { _id: '$status', total: { $sum: 1 } } },
+    ]);
+    const byStatus = Object.fromEntries(rows.map(row => [row._id, row.total]));
+
+    return {
+        pending: byStatus.pending || 0,
+        approved: byStatus.approved || 0,
+        rejected: byStatus.rejected || 0,
+        reported: await Review.countDocuments({ 'spoiler.reports.0': { $exists: true } }),
+    };
+};
+
+/**
+ * Approve or turn down a review. Approving is what makes it visible at all —
+ * until then it exists only for its author.
+ */
+exports.moderateReview = async (req, res) => {
+    const { status, reason } = req.body;
+
+    try {
+        const review = await Review.findByIdAndUpdate(
+            req.params.id,
+            {
+                $set: {
+                    status,
+                    moderatedAt: new Date(),
+                    moderatedBy: req.user.id,
+                    rejectionReason: status === 'rejected' ? (reason || null) : null,
+                },
+            },
+            { new: true, runValidators: true }
+        );
+
+        if (!review) return res.status(404).json({ status: 404, message: "Review not found" });
+
+        res.status(200).json({
+            status: 200,
+            message: status === 'approved' ? "Review published" : `Review ${status}`,
+            review,
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+/**
+ * The same decision across a selection. Emptying a queue of obvious approvals
+ * one row at a time is the part of moderation that actually wears people down,
+ * and a queue nobody wants to open is a queue that does not get emptied.
+ */
+exports.moderateReviews = async (req, res) => {
+    const { ids, status, reason } = req.body;
+
+    try {
+        const result = await Review.updateMany(
+            { _id: { $in: ids } },
+            {
+                $set: {
+                    status,
+                    moderatedAt: new Date(),
+                    moderatedBy: req.user.id,
+                    rejectionReason: status === 'rejected' ? (reason || null) : null,
+                },
+            }
+        );
+
+        const verb = status === 'approved' ? 'published' : status;
+
+        res.status(200).json({
+            status: 200,
+            message: `${result.modifiedCount} review${result.modifiedCount === 1 ? '' : 's'} ${verb}`,
+            modified: result.modifiedCount,
+            counts: await reviewCounts(),
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+//! A moderator overruling the spoiler flag in either direction — readers
+//! sometimes report a review that gives nothing away, and authors sometimes
+//! forget to tick the box. Passing null hands the decision back to them.
+exports.setReviewSpoiler = async (req, res) => {
+    try {
+        const review = await Review.findByIdAndUpdate(
+            req.params.id,
+            { $set: { 'spoiler.byModerator': req.body.spoiler } },
+            { new: true }
+        );
+
+        if (!review) return res.status(404).json({ status: 404, message: "Review not found" });
+
+        res.status(200).json({
+            status: 200,
+            message: review.isSpoiler ? "Hidden behind a spoiler warning" : "Spoiler warning removed",
+            review,
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
 //! Review moderation. Deleting a review is otherwise limited to its author, so
 //! nothing abusive could be taken down.
 exports.deleteReview = async (req, res) => {
@@ -502,25 +608,39 @@ exports.getReviews = async (req, res) => {
         const page = Math.max(parseInt(req.query.page) || 1, 1);
         const limit = Math.min(parseInt(req.query.limit) || 20, 100);
 
-        const [reviews, total] = await Promise.all([
+        const filter = {};
+        if (req.query.status) filter.status = req.query.status;
+        if (req.query.search) {
+            const term = new RegExp(escapeRegex(req.query.search), 'i');
+            filter.$or = [{ text: term }, { fullName: term }];
+        }
+        //! "show me what readers complained about", which is not the same
+        //! question as "show me what is waiting to be approved"
+        if (req.query.reported === 'true') filter['spoiler.reports.0'] = { $exists: true };
+
+        const [reviews, total, counts] = await Promise.all([
             //! the reviewer's name and email live on the review itself, which is
             //! what moderation needs — the account link is only populated when
             //! there is one, since reviews written before it was added have none
-            Review.find()
+            //! pending first: the queue is the reason this screen exists, and a
+            //! new review waiting is more urgent than an old one already live
+            Review.find(filter)
                 .populate('user', 'fullName email role')
-                .sort({ _id: -1 })
+                .sort({ status: 1, _id: -1 })
                 .skip((page - 1) * limit)
-                .limit(limit)
-                .lean(),
-            Review.countDocuments(),
+                .limit(limit),
+            Review.countDocuments(filter),
+            reviewCounts(),
         ]);
 
-        const media = await resolveReviewMedia(reviews);
+        const plain = reviews.map(review => review.toObject());
+        const media = await resolveReviewMedia(plain);
 
         res.status(200).json({
             status: 200,
             message: "Reviews fetched successfully",
-            reviews: reviews.map(review => ({
+            counts,
+            reviews: plain.map(review => ({
                 ...review,
                 account: review.user || null,
                 media: media.get(String(review.media)) || { _id: review.media, title: 'Deleted title' },

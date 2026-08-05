@@ -68,6 +68,41 @@ export const fetchCatalogue = (kind, params) =>
 export const fetchReviews = (params) =>
     get(`/admin/reviews${query(params)}`, "Couldn't load reviews.");
 
+export const moderateReview = async (reviewId, status, reason) => {
+    const response = await apiFetch(`/admin/reviews/${reviewId}/status`, {
+        method: "PATCH",
+        body: JSON.stringify(status === "rejected" && reason ? { status, reason } : { status }),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't update that review.");
+
+    return response.json();
+};
+
+//! one request for a whole selection — the point of the checkboxes is that
+//! twenty obvious approvals should not be twenty round trips
+export const moderateReviews = async (ids, status, reason) => {
+    const response = await apiFetch("/admin/reviews/status", {
+        method: "PATCH",
+        body: JSON.stringify(status === "rejected" && reason ? { ids, status, reason } : { ids, status }),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't update those reviews.");
+
+    return response.json();
+};
+
+export const setReviewSpoiler = async (reviewId, spoiler) => {
+    const response = await apiFetch(`/admin/reviews/${reviewId}/spoiler`, {
+        method: "PATCH",
+        body: JSON.stringify({ spoiler }),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't change the spoiler warning.");
+
+    return response.json();
+};
+
 export const deleteReview = async (reviewId) => {
     const response = await apiFetch(`/admin/reviews/${reviewId}`, { method: "DELETE" });
     if (!response.ok) throw await asError(response, "Couldn't remove that review.");
