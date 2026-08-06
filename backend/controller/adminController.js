@@ -350,6 +350,67 @@ exports.refundBooking = async (req, res) => {
 
 
 /**
+ * One query across everything the console can navigate to. The palette needs
+ * an answer per keystroke, so this is deliberately shallow — a handful of the
+ * best matches from each collection rather than a page of any one of them.
+ *
+ * A single request rather than five: firing one per collection would mean the
+ * results arrive in five waves and the list reshuffles under the cursor while
+ * somebody is trying to press Enter on it.
+ */
+exports.search = async (req, res) => {
+    const term = String(req.query.q || '').trim();
+    if (term.length < 2) {
+        return res.status(200).json({ status: 200, message: "Too short", results: {} });
+    }
+
+    try {
+        const match = new RegExp(escapeRegex(term), 'i');
+        const PER_KIND = 4;
+
+        //! a booking code is unmistakable, and somebody typing one is reading it
+        //! off a ticket at a counter — it should not have to compete with a film
+        //! that happens to share a letter
+        const looksLikeCode = /^sv-?[a-z0-9]/i.test(term);
+
+        const [movies, series, people, users, bookings] = await Promise.all([
+            Movie.find({ title: match }).select('title thumbnail').limit(PER_KIND).lean(),
+            Series.find({ title: match }).select('title thumbnail').limit(PER_KIND).lean(),
+            Actor.find({ fullName: match }).select('fullName profile').limit(PER_KIND).lean(),
+            User.find({ $or: [{ fullName: match }, { email: match }] })
+                .select('fullName email role').limit(PER_KIND).lean(),
+            Booking.find({ bookingCode: new RegExp(`^${escapeRegex(term.replace(/^sv-?/i, 'SV-'))}`, 'i') })
+                .select('bookingCode status totalPrice')
+                .limit(looksLikeCode ? 8 : 2)
+                .lean(),
+        ]);
+
+        res.status(200).json({
+            status: 200,
+            message: "Search completed",
+            results: {
+                bookings: bookings.map(b => ({
+                    _id: b._id, label: b.bookingCode,
+                    detail: `${b.status} · $${(b.totalPrice || 0).toFixed(2)}`,
+                    href: `/admin/bookings?code=${b.bookingCode}`,
+                })),
+                movies: movies.map(m => ({ _id: m._id, label: m.title, image: m.thumbnail, href: '/admin/movies' })),
+                series: series.map(s => ({ _id: s._id, label: s.title, image: s.thumbnail, href: '/admin/series' })),
+                people: people.map(p => ({ _id: p._id, label: p.fullName, image: p.profile, href: '/admin/people' })),
+                users: users.map(u => ({
+                    _id: u._id, label: u.fullName, detail: u.email,
+                    badge: u.role === 'admin' ? 'Admin' : null,
+                    href: '/admin/users',
+                })),
+            },
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+
+/**
  * The money, as a ledger rather than as a list of bookings. Bookings answer
  * "who is coming"; this answers "what moved, when, and which way" — so a
  * refunded booking appears twice, once as the charge and once as the money

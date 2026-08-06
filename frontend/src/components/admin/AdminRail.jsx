@@ -4,13 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { SignOutIcon } from "@/assets/Svgs";
-import { ExternalIcon } from "./AdminIcons";
+import { ExternalIcon, SearchIcon } from "./AdminIcons";
 import { NAV_GROUPS, isActive } from "./navigation";
 
 const initials = (name = "") => name
     .trim().split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
 
-const AdminRail = ({ user, counts, onSignOut, signingOut, onNavigate }) => {
+const AdminRail = ({ user, counts, onSignOut, signingOut, onNavigate, onOpenPalette }) => {
     const pathname = usePathname();
 
     return (
@@ -24,6 +24,22 @@ const AdminRail = ({ user, counts, onSignOut, signingOut, onNavigate }) => {
                     Console
                 </span>
             </Link>
+
+            {/*//! a shortcut nobody can discover does not exist, so the rail
+                carries the same thing as a button with its keys printed on it */}
+            <button
+                type="button"
+                onClick={onOpenPalette}
+                className="flex items-center gap-2 w-full mt-2.5 mb-1 py-[7px] px-2.5 rounded-[7px]
+                    bg-c-black-06 border border-c-black-15 text-c-black-30 hover:text-c-grey-65
+                    hover:border-c-black-20 duration-150 text-[11.5px]"
+            >
+                <SearchIcon className="w-3.5 h-3.5 shrink-0" />
+                <span className="flex-1 text-start">Search</span>
+                <kbd className="text-[9.5px] font-extrabold bg-c-black-12 border border-c-black-20 rounded px-1.5">
+                    ⌘K
+                </kbd>
+            </button>
 
             <nav className="flex-1">
                 {NAV_GROUPS.map(group => (
