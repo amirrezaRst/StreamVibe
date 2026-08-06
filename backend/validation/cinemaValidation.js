@@ -107,3 +107,18 @@ exports.updateShowtimeValidation = (req, res, next) => runValidation(
     joi.object(showtimeFields).min(1),
     req, res, next
 );
+
+//! A run: the same slot repeated. Capped at 60 so a typo in the count cannot
+//! fill a hall's calendar for two months in one request.
+exports.createShowtimeRunValidation = (req, res, next) => runValidation(
+    joi.object({
+        ...showtimeFields,
+        movie: showtimeFields.movie.required(),
+        hall: showtimeFields.hall.required(),
+        startsAt: showtimeFields.startsAt.required(),
+        pricing: pricingSchema.required(),
+        repeat: joi.string().valid('daily', 'weekly').required(),
+        occurrences: joi.number().integer().min(2).max(60).required(),
+    }),
+    req, res, next
+);

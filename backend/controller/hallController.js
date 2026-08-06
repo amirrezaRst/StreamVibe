@@ -1,6 +1,7 @@
 const Cinema = require('../model/cinemaModel');
 const Hall = require('../model/hallModel');
 const Showtime = require('../model/showtimeModel');
+const BookedSeat = require('../model/bookedSeatModel');
 
 
 //! Get Request
@@ -47,16 +48,24 @@ exports.updateHall = async (req, res) => {
                 return res.status(400).json({ status: 400, message: `Duplicate seat "${duplicateSeat}" in the seat map` });
             }
 
-            //! reshaping seats under a live showtime would invalidate seats people already hold
-            const upcoming = await Showtime.countDocuments({
-                hall: hall._id,
-                startsAt: { $gte: new Date() },
-                status: 'scheduled'
-            });
-            if (upcoming > 0) {
+            /**
+             * This used to refuse any edit at all while the hall had a single
+             * upcoming showtime, which in practice meant the seat map could
+             * never be touched — every working hall has screenings ahead of it.
+             *
+             * What actually has to be protected is narrower: a seat somebody is
+             * already sitting in. Renaming a tier or adding a row hurts nobody;
+             * deleting the seat under a paid ticket does. So only that is
+             * refused, and it is named.
+             */
+            const missing = await findSoldSeatsRemovedBy(hall._id, req.body.seatMap);
+            if (missing.length) {
                 return res.status(409).json({
                     status: 409,
-                    message: `This hall has ${upcoming} upcoming showtime(s). Its seat map can't be changed until they're done or cancelled.`
+                    message: missing.length === 1
+                        ? `Seat ${missing[0]} is booked for an upcoming screening and can't be removed.`
+                        : `${missing.length} booked seats would be removed: ${missing.slice(0, 6).join(', ')}${missing.length > 6 ? '…' : ''}. They belong to upcoming screenings.`,
+                    seats: missing,
                 });
             }
         }
@@ -99,6 +108,39 @@ exports.deleteHall = async (req, res) => {
     }
 };
 
+
+/**
+ * Which seats that are spoken for would stop existing under a proposed layout.
+ *
+ * Claims rather than bookings: a seat somebody is holding right now, mid-payment,
+ * is just as unavailable as one already paid for — and the hold is exactly when
+ * losing the seat under them would be worst.
+ */
+async function findSoldSeatsRemovedBy(hallId, seatMap) {
+    const upcoming = await Showtime.find({
+        hall: hallId,
+        startsAt: { $gte: new Date() },
+        status: 'scheduled',
+    }).select('_id');
+
+    if (!upcoming.length) return [];
+
+    const claimed = await BookedSeat.distinct('seatLabel', {
+        showtime: { $in: upcoming.map(showtime => showtime._id) },
+    });
+    if (!claimed.length) return [];
+
+    //! only bookable seats count as still existing: turning one into a gap
+    //! removes it just as surely as deleting the row
+    const surviving = new Set();
+    for (const { row, seats = [] } of seatMap) {
+        for (const seat of seats) {
+            if (!seat.disabled) surviving.add(`${String(row).toUpperCase()}${seat.number}`);
+        }
+    }
+
+    return claimed.filter(label => !surviving.has(label)).sort();
+}
 
 //! seat labels are the booking key (row + number), so a duplicate would make two
 //! physical seats indistinguishable once tickets are issued

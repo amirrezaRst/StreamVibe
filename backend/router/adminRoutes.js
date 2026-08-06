@@ -7,6 +7,9 @@ const {
 const ValidateObjectId = require('../middleware/ValidateObjectId');
 const Authenticate = require('../middleware/Authenticate');
 const Authorize = require('../middleware/Authorize');
+const {
+    getCinemas, getCinema, getHall, getSchedule, getBooking, getSchedulableMovies,
+} = require('../controller/adminCinemaController');
 const { setUserRoleValidation, refundValidation } = require('../validation/adminValidation');
 const { moderateReviewValidation, moderateManyValidation, setSpoilerValidation } = require('../validation/reviewValidation');
 
@@ -19,7 +22,16 @@ router.use(Authenticate, Authorize(["admin"]));
 router.get("/overview", getOverview);
 
 router.get("/bookings", getBookings);
+router.get("/bookings/:id", ValidateObjectId, getBooking);
 router.post("/bookings/:id/refund", [ValidateObjectId, refundValidation], refundBooking);
+
+//? Cinema
+router.get("/cinemas", getCinemas);
+router.get("/cinemas/:id", ValidateObjectId, getCinema);
+router.get("/halls/:id", ValidateObjectId, getHall);
+router.get("/schedule", getSchedule);
+//! runtimes, which the screening form needs to work out an end time
+router.get("/schedulable-movies", getSchedulableMovies);
 
 router.get("/users", getUsers);
 router.patch("/users/:id/role", [ValidateObjectId, setUserRoleValidation], setUserRole);
