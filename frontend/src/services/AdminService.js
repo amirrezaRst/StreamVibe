@@ -68,6 +68,9 @@ export const fetchCatalogue = (kind, params) =>
 export const fetchPeople = (params) =>
     get(`/admin/people${query(params)}`, "Couldn't load people.");
 
+export const fetchPayments = (params) =>
+    get(`/admin/payments${query(params)}`, "Couldn't load payments.");
+
 
 //? Cinema
 export const fetchCinemas = (params) =>
@@ -87,6 +90,44 @@ export const fetchSchedulableMovies = () =>
 
 export const fetchBooking = (bookingId) =>
     get(`/admin/bookings/${bookingId}`, "Couldn't load that booking.");
+
+export const createCinema = async (payload) => {
+    const response = await apiFetch("/cinema", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't create that cinema.");
+
+    return response.json();
+};
+
+export const updateCinema = async (cinemaId, payload) => {
+    const response = await apiFetch(`/cinema/${cinemaId}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't save that cinema.");
+
+    return response.json();
+};
+
+export const createHall = async (payload) => {
+    const response = await apiFetch("/cinema/halls", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't create that hall.");
+
+    return response.json();
+};
+
+export const deleteHall = async (hallId) => {
+    const response = await apiFetch(`/cinema/halls/${hallId}`, { method: "DELETE" });
+    if (!response.ok) throw await asError(response, "Couldn't delete that hall.");
+};
 
 //! writes go through the endpoints that already existed for each model — there
 //! was never a gap on the writing side, only on the reading side

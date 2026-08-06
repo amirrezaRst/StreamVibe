@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { fetchCinemas } from "@/services/AdminService";
+import CinemaDrawer from "@/components/admin/CinemaDrawer";
 import PageHeader from "@/components/admin/PageHeader";
 import { Segmented } from "@/components/admin/ListToolbar";
 import { HouseIcon } from "@/components/admin/AdminIcons";
@@ -68,6 +69,7 @@ const CinemasContent = () => {
     const [city, setCity] = useState("all");
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
+    const [creating, setCreating] = useState(false);
 
     const params = useMemo(() => {
         const query = {};
@@ -106,7 +108,16 @@ const CinemasContent = () => {
                 subtitle={data
                     ? `${cinemas.length} venue${cinemas.length === 1 ? "" : "s"} · ${data.totals.halls} halls · ${data.totals.seats.toLocaleString("en-US")} seats · ${data.totals.cities} cities`
                     : "Loading venues"}
-            />
+            >
+                <button
+                    type="button"
+                    onClick={() => setCreating(true)}
+                    className="rounded-[7px] py-[7px] px-3 text-[12.5px] font-bold bg-c-red-45 border border-c-red-45
+                        text-white hover:bg-c-red-45/85 duration-150"
+                >
+                    + New cinema
+                </button>
+            </PageHeader>
 
             <div className="p-[18px]">
                 <div className="flex items-center gap-2.5 flex-wrap mb-3.5">
@@ -159,6 +170,13 @@ const CinemasContent = () => {
                     </div>
                 )}
             </div>
+
+            {creating && (
+                <CinemaDrawer
+                    onClose={() => setCreating(false)}
+                    onSaved={() => { setCreating(false); load(); }}
+                />
+            )}
         </>
     );
 }

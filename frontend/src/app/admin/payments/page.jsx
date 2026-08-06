@@ -1,13 +1,7 @@
-import NotBuiltYet from "@/components/admin/NotBuiltYet";
+import PaymentsContent from "./PaymentsContent";
 
 export const metadata = { title: "Payments" };
 
-const PaymentsPage = () => (
-    <NotBuiltYet
-        title="Payments"
-        crumbs={[{ label: "Box office" }]}
-        describes="Charges and refunds through the gateway"
-    />
-);
+const PaymentsPage = () => <PaymentsContent />;
 
 export default PaymentsPage;

@@ -74,6 +74,10 @@ const refundAndRelease = async (booking, intentId, amount, reason) => {
                 'payment.status': refunded ? 'refunded' : 'paid',
                 'payment.intentId': intentId,
                 'payment.amount': amount,
+                //! the money genuinely was taken before it went back — without
+                //! this the ledger shows a refund with no charge behind it, and
+                //! the two columns stop adding up
+                'payment.paidAt': booking.payment.paidAt || new Date(),
                 'payment.refundedAt': refunded ? new Date() : null,
                 'payment.refundReason': reason,
             },

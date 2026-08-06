@@ -350,6 +350,89 @@ exports.refundBooking = async (req, res) => {
 
 
 /**
+ * The money, as a ledger rather than as a list of bookings. Bookings answer
+ * "who is coming"; this answers "what moved, when, and which way" — so a
+ * refunded booking appears twice, once as the charge and once as the money
+ * going back, each at the moment it actually happened.
+ */
+exports.getPayments = async (req, res) => {
+    try {
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+
+        const bookings = await Booking.find({ 'payment.status': { $in: ['paid', 'refunded'] } })
+            .populate({ path: 'showtime', select: 'movie', populate: { path: 'movie', select: 'title' } })
+            .populate('user', 'fullName email')
+            .lean();
+
+        const entries = [];
+        bookings.forEach(booking => {
+            const shared = {
+                bookingId: booking._id,
+                bookingCode: booking.bookingCode,
+                customer: booking.user,
+                title: booking.showtime?.movie?.title || null,
+                currency: booking.currency,
+                intentId: booking.payment.intentId,
+            };
+
+            if (booking.payment.paidAt) {
+                entries.push({
+                    ...shared,
+                    _id: `${booking._id}-charge`,
+                    kind: 'charge',
+                    amount: booking.payment.amount,
+                    at: booking.payment.paidAt,
+                });
+            }
+
+            if (booking.payment.status === 'refunded' && booking.payment.refundedAt) {
+                entries.push({
+                    ...shared,
+                    _id: `${booking._id}-refund`,
+                    kind: 'refund',
+                    //! negative, because a ledger that shows refunds as positive
+                    //! numbers cannot be added up
+                    amount: -booking.payment.amount,
+                    at: booking.payment.refundedAt,
+                    reason: booking.payment.refundReason,
+                });
+            }
+        });
+
+        entries.sort((a, b) => new Date(b.at) - new Date(a.at));
+
+        const filtered = req.query.kind
+            ? entries.filter(entry => entry.kind === req.query.kind)
+            : entries;
+
+        const charged = entries.filter(e => e.kind === 'charge').reduce((sum, e) => sum + e.amount, 0);
+        const refunded = entries.filter(e => e.kind === 'refund').reduce((sum, e) => sum + e.amount, 0);
+
+        res.status(200).json({
+            status: 200,
+            message: "Payments fetched successfully",
+            items: filtered.slice((page - 1) * limit, page * limit),
+            totals: {
+                charged: Math.round(charged * 100) / 100,
+                refunded: Math.round(Math.abs(refunded) * 100) / 100,
+                //! what the business actually kept
+                net: Math.round((charged + refunded) * 100) / 100,
+                charges: entries.filter(e => e.kind === 'charge').length,
+                refunds: entries.filter(e => e.kind === 'refund').length,
+            },
+            pagination: {
+                page, limit,
+                total: filtered.length,
+                totalPages: Math.ceil(filtered.length / limit),
+            },
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+/**
  * The user list. The old /user/users returned every document in the
  * collection, unpaged and unfiltered, including fields nobody outside the
  * account owns any business seeing.

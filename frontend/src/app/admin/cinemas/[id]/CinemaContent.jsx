@@ -3,12 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
-import { fetchCinema } from "@/services/AdminService";
+import { toast } from "react-toastify";
+
+import { deleteHall, fetchCinema } from "@/services/AdminService";
+import CinemaDrawer from "@/components/admin/CinemaDrawer";
+import HallDrawer from "@/components/admin/HallDrawer";
 import PageHeader from "@/components/admin/PageHeader";
 import SeatMapThumb from "@/components/admin/SeatMapThumb";
 import { TIERS } from "@/components/admin/seatTiers";
 
-const HallRow = ({ hall, cinemaId }) => {
+const HallRow = ({ hall, cinemaId, onDelete }) => {
     const empty = !hall.seatMap?.length;
 
     return (
@@ -50,6 +54,16 @@ const HallRow = ({ hall, cinemaId }) => {
                 >
                     {empty ? "Build the map" : "Edit seats"}
                 </Link>
+
+                <button
+                    type="button"
+                    onClick={() => onDelete(hall)}
+                    aria-label={`Delete ${hall.name}`}
+                    className="rounded-[7px] py-1.5 px-2.5 text-[11.5px] font-bold border border-c-red-45/35
+                        text-c-red-80 hover:bg-c-red-45/[0.12] duration-150"
+                >
+                    Delete
+                </button>
             </div>
         </div>
     );
@@ -58,6 +72,8 @@ const HallRow = ({ hall, cinemaId }) => {
 const CinemaContent = ({ id }) => {
     const [data, setData] = useState(null);
     const [error, setError] = useState(null);
+    const [editing, setEditing] = useState(false);
+    const [addingHall, setAddingHall] = useState(false);
 
     const load = useCallback(async () => {
         try {
@@ -73,6 +89,24 @@ const CinemaContent = ({ id }) => {
     const cinema = data?.cinema;
     const halls = data?.halls || [];
 
+    const removeHall = async (hall) => {
+        //! a hall carries its seat map and every screening ever scheduled in it,
+        //! so the confirmation says what goes with it rather than just "delete?"
+        const warning = hall.totalSeats
+            ? `${hall.name} has ${hall.totalSeats} seats and any screenings scheduled in it.`
+            : `${hall.name} has no seat map.`;
+
+        if (!window.confirm(`${warning}\n\nDelete it? This cannot be undone.`)) return;
+
+        try {
+            await deleteHall(hall._id);
+            toast.success(`${hall.name} deleted`);
+            load();
+        } catch (err) {
+            toast.error(err.message);
+        }
+    };
+
     return (
         <>
             <PageHeader
@@ -81,7 +115,26 @@ const CinemaContent = ({ id }) => {
                 subtitle={cinema
                     ? `${cinema.city} · ${cinema.halls} hall${cinema.halls === 1 ? "" : "s"} · ${cinema.seats} seats · ${cinema.isActive ? "open" : "closed"}`
                     : "Loading the venue"}
-            />
+            >
+                <button
+                    type="button"
+                    onClick={() => setEditing(true)}
+                    disabled={!cinema}
+                    className="rounded-[7px] py-[7px] px-3 text-[12.5px] font-bold border border-c-black-20
+                        bg-c-black-10 text-c-grey-90 hover:border-c-black-25 duration-150 disabled:opacity-40"
+                >
+                    Edit venue
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setAddingHall(true)}
+                    disabled={!cinema}
+                    className="rounded-[7px] py-[7px] px-3 text-[12.5px] font-bold bg-c-red-45 border border-c-red-45
+                        text-white hover:bg-c-red-45/85 duration-150 disabled:opacity-40"
+                >
+                    + New hall
+                </button>
+            </PageHeader>
 
             <div className="p-[18px]">
                 {error && <p className="text-c-grey-60 text-super-sm">{error}</p>}
@@ -103,18 +156,44 @@ const CinemaContent = ({ id }) => {
                         {halls.length === 0 ? (
                             <div className="border border-dashed border-c-black-20 rounded-xl py-12 text-center">
                                 <p className="text-c-grey-90 text-sm font-semibold mb-1">No halls yet</p>
-                                <p className="text-c-grey-60 text-[12.5px]">
+                                <p className="text-c-grey-60 text-[12.5px] mb-4">
                                     A venue needs at least one hall before anything can be screened in it.
                                 </p>
+                                <button
+                                    type="button"
+                                    onClick={() => setAddingHall(true)}
+                                    className="bg-c-red-45 hover:bg-c-red-45/85 text-white rounded-[7px] py-2 px-4 text-xs font-bold duration-150"
+                                >
+                                    Add the first hall
+                                </button>
                             </div>
                         ) : (
                             <div className="flex flex-col gap-2">
-                                {halls.map(hall => <HallRow key={hall._id} hall={hall} cinemaId={id} />)}
+                                {halls.map(hall => (
+                                    <HallRow key={hall._id} hall={hall} cinemaId={id} onDelete={removeHall} />
+                                ))}
                             </div>
                         )}
                     </>
                 )}
             </div>
+
+            {editing && cinema && (
+                <CinemaDrawer
+                    cinema={cinema}
+                    onClose={() => setEditing(false)}
+                    onSaved={() => { setEditing(false); load(); }}
+                />
+            )}
+
+            {addingHall && (
+                <HallDrawer
+                    cinemaId={id}
+                    existingNames={halls.map(hall => hall.name)}
+                    onClose={() => setAddingHall(false)}
+                    onSaved={() => { setAddingHall(false); load(); }}
+                />
+            )}
         </>
     );
 }
