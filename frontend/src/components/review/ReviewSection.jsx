@@ -2,7 +2,7 @@
 
 import ReviewItem from "./ReviewItem";
 import ReviewItemSkeleton from "./ReviewItemSkeleton";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ReviewSectionTitle from "./ReviewSectionTitle";
 import DialogModal from "../modal/DialogModal";
 import AddReviewForm from "./AddReviewForm";
@@ -18,14 +18,17 @@ const ReviewSection = ({ id }) => {
     const scrollContainerRef = useRef(null);
     const user = useUserStore((state) => state.user);
 
-    useEffect(() => {
-        const getReviews = async () => {
-            const data = await fetchReviews(id);
-            setPreviews(data);
-            setLoading(false);
-        };
-        getReviews();
+    //! also re-run when the viewer changes: signing in is what makes their own
+    //! pending review visible, and lights up a report button they already used
+    const loadReviews = useCallback(async () => {
+        const data = await fetchReviews(id);
+        setPreviews(data || []);
+        setLoading(false);
     }, [id]);
+
+    useEffect(() => {
+        loadReviews();
+    }, [loadReviews, user?._id]);
 
 
     const handleNext = () => {
@@ -56,13 +59,8 @@ const ReviewSection = ({ id }) => {
                     </p>
                 ) :
                     (
-                        previews.map(({ fullName, rating, text }, index) => (
-                            <ReviewItem
-                                key={index}
-                                fullName={fullName}
-                                text={text}
-                                rating={rating}
-                            />
+                        previews.map(review => (
+                            <ReviewItem key={review._id} review={review} signedIn={!!user} />
                         ))
                     )}
 
@@ -85,7 +83,9 @@ const ReviewSection = ({ id }) => {
             </div>
 
             <DialogModal user={user} isOpen={isOpen} setIsOpen={setIsOpen} title={"Add Your Review"}>
-                <AddReviewForm mediaId={id} user={user} setIsOpen={setIsOpen} />
+                {/*//! reload after posting so the author's own pending review
+                    appears straight away rather than on the next visit */}
+                <AddReviewForm mediaId={id} user={user} setIsOpen={setIsOpen} onPosted={loadReviews} />
             </DialogModal>
 
         </div>

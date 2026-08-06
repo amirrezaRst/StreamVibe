@@ -1,9 +1,9 @@
 const { Router } = require('express');
-const { getShowtimesByMovie, getShowtime, getNowPlaying, createShowtime, updateShowtime, deleteShowtime } = require('../controller/showtimeController');
+const { getShowtimesByMovie, getShowtime, getNowPlaying, createShowtime, createShowtimeRun, updateShowtime, deleteShowtime } = require('../controller/showtimeController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
 const Authenticate = require('../middleware/Authenticate');
 const Authorize = require('../middleware/Authorize');
-const { createShowtimeValidation, updateShowtimeValidation } = require('../validation/cinemaValidation');
+const { createShowtimeValidation, createShowtimeRunValidation, updateShowtimeValidation } = require('../validation/cinemaValidation');
 
 const router = Router();
 const adminOnly = [Authenticate, Authorize(["admin"])];
@@ -15,6 +15,9 @@ router.get("/movie/:movieId", ValidateObjectId.param('movieId'), getShowtimesByM
 
 router.route("/")
     .post(adminOnly, createShowtimeValidation, createShowtime);
+
+//! before /:id, or "run" is read as a showtime id
+router.post("/run", adminOnly, createShowtimeRunValidation, createShowtimeRun);
 
 router.route("/:id")
     .get(ValidateObjectId, getShowtime)
