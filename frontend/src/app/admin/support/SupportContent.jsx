@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import { deleteTicket, fetchAllTickets, setTicketStatus } from "@/services/SupportService";
 import PageHeader from "@/components/admin/PageHeader";
 import { Segmented, TableButton } from "@/components/admin/ListToolbar";
-import { EnvelopeIcon } from "@/components/admin/AdminIcons";
+import { EnvelopeIcon } from "@/assets/Svgs";
 
 const TONES = {
     pending: "bg-[#D99A34]/[0.14] text-[#E8B663]",
