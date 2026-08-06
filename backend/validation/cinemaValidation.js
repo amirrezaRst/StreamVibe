@@ -62,7 +62,11 @@ exports.createHallValidation = (req, res, next) => runValidation(
         ...hallFields,
         cinema: hallFields.cinema.required(),
         name: hallFields.name.required(),
-        seatMap: hallFields.seatMap.min(1).required(),
+        //! A room can exist before it is laid out — a venue manager adds the
+        //! hall, then shapes it. The read layer and the console already treat
+        //! "no seat map yet, not bookable" as a real state; requiring a map
+        //! here was the one place that disagreed.
+        seatMap: hallFields.seatMap.default([]),
     }),
     req, res, next
 );
