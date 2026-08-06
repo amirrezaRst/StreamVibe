@@ -1,0 +1,718 @@
+const mongoose = require('mongoose');
+
+const Booking = require('../model/bookingModel');
+const BookedSeat = require('../model/bookedSeatModel');
+const Showtime = require('../model/showtimeModel');
+const Movie = require('../model/movieModel');
+const Series = require('../model/seriesModel');
+const Actor = require('../model/actorModel');
+const Director = require('../model/directorModel');
+const User = require('../model/userModel');
+const Support = require('../model/supportModel');
+const Review = require('../model/reviewModel');
+const BOOKING_POPULATE = require('../utils/bookingPopulate');
+const { stripe, isConfigured } = require('../utils/stripe');
+
+const DAY = 24 * 60 * 60 * 1000;
+
+//! money only counts once it has actually been taken
+const SETTLED = { status: 'confirmed', 'payment.status': 'paid' };
+
+const daysAgo = (n) => new Date(Date.now() - n * DAY);
+
+//! percentage change, with the awkward case spelled out: coming up from zero
+//! is not "infinity percent", it just has no meaningful comparison
+const changeSince = (current, previous) => {
+    if (!previous) return null;
+    return Math.round(((current - previous) / previous) * 1000) / 10;
+};
+
+
+/**
+ * Everything the console's first screen needs, in one request. Split into
+ * independent pieces so a slow one cannot hold up the rest, then gathered.
+ */
+exports.getOverview = async (req, res) => {
+    try {
+        const window = Math.min(parseInt(req.query.days) || 30, 365);
+        const from = daysAgo(window);
+        const previousFrom = daysAgo(window * 2);
+
+        const [revenue, previousRevenue, tickets, previousTickets, members, previousMembers,
+            series, topTitles, tonight, occupancy] = await Promise.all([
+                sumRevenue(from, new Date()),
+                sumRevenue(previousFrom, from),
+                countTickets(from, new Date()),
+                countTickets(previousFrom, from),
+                User.countDocuments({ _id: { $gte: objectIdFrom(from) } }),
+                User.countDocuments({ _id: { $gte: objectIdFrom(previousFrom), $lt: objectIdFrom(from) } }),
+                revenueSeries(from, window),
+                topTitlesByTickets(from),
+                tonightsScreenings(),
+                averageOccupancy(from),
+            ]);
+
+        res.status(200).json({
+            status: 200,
+            message: "Overview fetched successfully",
+            overview: {
+                window,
+                kpis: {
+                    revenue: { value: revenue, change: changeSince(revenue, previousRevenue) },
+                    tickets: { value: tickets, change: changeSince(tickets, previousTickets) },
+                    occupancy: { value: occupancy.current, change: changeSince(occupancy.current, occupancy.previous) },
+                    members: { value: members, change: changeSince(members, previousMembers) },
+                },
+                series,
+                topTitles,
+                tonight,
+            },
+        });
+    } catch (error) {
+        console.error('[admin] overview failed:', error.message);
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+//! Users have no createdAt column, but an ObjectId's leading bytes are the
+//! second it was minted — so a date can be turned into a comparable id
+const objectIdFrom = (date) => mongoose.Types.ObjectId.createFromTime(Math.floor(date.getTime() / 1000));
+
+const sumRevenue = async (from, to) => {
+    const [row] = await Booking.aggregate([
+        { $match: { ...SETTLED, 'payment.paidAt': { $gte: from, $lt: to } } },
+        { $group: { _id: null, total: { $sum: '$payment.amount' } } },
+    ]);
+    return row ? Math.round(row.total * 100) / 100 : 0;
+};
+
+const countTickets = async (from, to) => {
+    const [row] = await Booking.aggregate([
+        { $match: { ...SETTLED, 'payment.paidAt': { $gte: from, $lt: to } } },
+        { $group: { _id: null, seats: { $sum: { $size: '$seats' } } } },
+    ]);
+    return row ? row.seats : 0;
+};
+
+//! one point per day, including the days nothing sold — a gap in a time series
+//! reads as missing data rather than as a quiet Tuesday
+const revenueSeries = async (from, days) => {
+    const rows = await Booking.aggregate([
+        { $match: { ...SETTLED, 'payment.paidAt': { $gte: from } } },
+        {
+            $group: {
+                _id: { $dateToString: { format: '%Y-%m-%d', date: '$payment.paidAt' } },
+                revenue: { $sum: '$payment.amount' },
+                tickets: { $sum: { $size: '$seats' } },
+            },
+        },
+    ]);
+
+    const byDay = new Map(rows.map(row => [row._id, row]));
+    const points = [];
+
+    for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(Date.now() - i * DAY).toISOString().slice(0, 10);
+        const row = byDay.get(date);
+        points.push({
+            date,
+            revenue: row ? Math.round(row.revenue * 100) / 100 : 0,
+            tickets: row ? row.tickets : 0,
+        });
+    }
+
+    return points;
+};
+
+const topTitlesByTickets = async (from) => {
+    return Booking.aggregate([
+        { $match: { ...SETTLED, 'payment.paidAt': { $gte: from } } },
+        { $lookup: { from: 'showtimes', localField: 'showtime', foreignField: '_id', as: 'showtime' } },
+        { $unwind: '$showtime' },
+        {
+            $group: {
+                _id: '$showtime.movie',
+                tickets: { $sum: { $size: '$seats' } },
+                revenue: { $sum: '$payment.amount' },
+            },
+        },
+        { $sort: { tickets: -1 } },
+        { $limit: 5 },
+        { $lookup: { from: 'movies', localField: '_id', foreignField: '_id', as: 'movie' } },
+        { $unwind: '$movie' },
+        {
+            $project: {
+                _id: 1,
+                title: '$movie.title',
+                thumbnail: '$movie.thumbnail',
+                tickets: 1,
+                revenue: { $round: ['$revenue', 2] },
+            },
+        },
+    ]);
+};
+
+/**
+ * What is on screen between now and the end of the day, with live occupancy.
+ * Seats are counted from the claims collection rather than from bookings, so a
+ * seat someone is holding right now counts as taken — which is what an
+ * operator looking at the room would see.
+ */
+const tonightsScreenings = async () => {
+    const now = new Date();
+    const endOfDay = new Date(now);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const showtimes = await Showtime.find({
+        status: { $ne: 'cancelled' },
+        startsAt: { $gte: now, $lte: endOfDay },
+    })
+        .populate('movie', 'title thumbnail')
+        .populate('cinema', 'name city')
+        .populate('hall', 'name screenType seatMap')
+        .sort({ startsAt: 1 })
+        .limit(8);
+
+    if (!showtimes.length) return [];
+
+    const claims = await BookedSeat.aggregate([
+        { $match: { showtime: { $in: showtimes.map(s => s._id) } } },
+        { $group: { _id: '$showtime', taken: { $sum: 1 } } },
+    ]);
+    const takenBy = new Map(claims.map(row => [String(row._id), row.taken]));
+
+    return showtimes.map(showtime => {
+        const capacity = showtime.hall && showtime.hall.totalSeats ? showtime.hall.totalSeats : 0;
+        const taken = takenBy.get(String(showtime._id)) || 0;
+
+        return {
+            _id: showtime._id,
+            startsAt: showtime.startsAt,
+            movie: showtime.movie,
+            cinema: showtime.cinema,
+            hall: showtime.hall && { _id: showtime.hall._id, name: showtime.hall.name, screenType: showtime.hall.screenType },
+            capacity,
+            taken,
+            occupancy: capacity ? Math.round((taken / capacity) * 100) : 0,
+        };
+    });
+};
+
+//! averaged across screenings that have already happened, so an empty show
+//! three days from now does not drag the number down
+const averageOccupancy = async (from) => {
+    const measure = async (start, end) => {
+        const showtimes = await Showtime.find({
+            status: { $ne: 'cancelled' },
+            startsAt: { $gte: start, $lt: end },
+        }).populate('hall', 'seatMap').select('hall');
+
+        if (!showtimes.length) return 0;
+
+        const sold = await Booking.aggregate([
+            { $match: { ...SETTLED, showtime: { $in: showtimes.map(s => s._id) } } },
+            { $group: { _id: '$showtime', seats: { $sum: { $size: '$seats' } } } },
+        ]);
+        const soldBy = new Map(sold.map(row => [String(row._id), row.seats]));
+
+        let capacity = 0, taken = 0;
+        showtimes.forEach(showtime => {
+            const seats = showtime.hall && showtime.hall.totalSeats;
+            if (!seats) return;
+            capacity += seats;
+            taken += soldBy.get(String(showtime._id)) || 0;
+        });
+
+        return capacity ? Math.round((taken / capacity) * 100) : 0;
+    };
+
+    const span = Date.now() - from.getTime();
+    const [current, previous] = await Promise.all([
+        measure(from, new Date()),
+        measure(new Date(from.getTime() - span), from),
+    ]);
+
+    return { current, previous };
+};
+
+
+/**
+ * The box office. Nothing in the API listed bookings beyond your own, so an
+ * operator could not see the till at all.
+ */
+exports.getBookings = async (req, res) => {
+    try {
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+
+        const filter = {};
+        if (req.query.status) filter.status = req.query.status;
+        if (req.query.payment) filter['payment.status'] = req.query.payment;
+        if (req.query.code) filter.bookingCode = new RegExp(`^${escapeRegex(req.query.code)}`, 'i');
+        if (req.query.from || req.query.to) {
+            filter.createdAt = {};
+            if (req.query.from) filter.createdAt.$gte = new Date(req.query.from);
+            if (req.query.to) filter.createdAt.$lte = new Date(req.query.to);
+        }
+
+        const [bookings, total, totals] = await Promise.all([
+            Booking.find(filter)
+                .populate(BOOKING_POPULATE)
+                .populate('user', 'fullName email')
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit),
+            Booking.countDocuments(filter),
+            settledTotals(filter),
+        ]);
+
+        res.status(200).json({
+            status: 200,
+            message: "Bookings fetched successfully",
+            bookings,
+            totals,
+            pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+//! the strip above the table: what the current filter is actually worth
+const settledTotals = async (filter) => {
+    const [row] = await Booking.aggregate([
+        { $match: filter },
+        {
+            $group: {
+                _id: null,
+                settled: { $sum: { $cond: [{ $eq: ['$payment.status', 'paid'] }, '$payment.amount', 0] } },
+                refunded: { $sum: { $cond: [{ $eq: ['$payment.status', 'refunded'] }, '$payment.amount', 0] } },
+            },
+        },
+    ]);
+
+    return {
+        settled: row ? Math.round(row.settled * 100) / 100 : 0,
+        refunded: row ? Math.round(row.refunded * 100) / 100 : 0,
+    };
+};
+
+const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+
+/**
+ * Refunds go through the gateway, never by editing a status. Anything else
+ * would leave our database claiming something Stripe disagrees with.
+ */
+exports.refundBooking = async (req, res) => {
+    if (!isConfigured()) {
+        return res.status(503).json({ status: 503, message: "Payments aren't set up on this server yet." });
+    }
+
+    try {
+        const booking = await Booking.findById(req.params.id);
+        if (!booking) return res.status(404).json({ status: 404, message: "Booking not found" });
+
+        if (booking.payment.status === 'refunded') {
+            return res.status(200).json({ status: 200, message: "This booking was already refunded", booking });
+        }
+        if (booking.payment.status !== 'paid' || !booking.payment.intentId) {
+            return res.status(409).json({ status: 409, message: "There is no settled payment to refund" });
+        }
+
+        await stripe.refunds.create({ payment_intent: booking.payment.intentId });
+
+        //! releasing the seats is the other half of a refund — a refunded
+        //! booking that still holds its row would sell nothing to anyone
+        await BookedSeat.deleteMany({ booking: booking._id });
+
+        const updated = await Booking.findByIdAndUpdate(
+            booking._id,
+            {
+                $set: {
+                    status: 'cancelled',
+                    cancelledAt: new Date(),
+                    expiresAt: null,
+                    'payment.status': 'refunded',
+                    'payment.refundedAt': new Date(),
+                    'payment.refundReason': req.body.reason || 'refunded by an administrator',
+                },
+            },
+            { new: true }
+        ).populate(BOOKING_POPULATE);
+
+        res.status(200).json({ status: 200, message: "Refunded and seats released", booking: updated });
+    } catch (error) {
+        console.error('[admin] refund failed:', error.message);
+        res.status(500).json({ status: 500, message: "Couldn't refund that booking." });
+    }
+};
+
+
+/**
+ * The user list. The old /user/users returned every document in the
+ * collection, unpaged and unfiltered, including fields nobody outside the
+ * account owns any business seeing.
+ */
+exports.getUsers = async (req, res) => {
+    try {
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+
+        const filter = {};
+        if (req.query.role) filter.role = req.query.role;
+        if (req.query.search) {
+            const term = new RegExp(escapeRegex(req.query.search), 'i');
+            filter.$or = [{ fullName: term }, { email: term }];
+        }
+
+        const [users, total] = await Promise.all([
+            User.find(filter)
+                .select('fullName email role subscription')
+                .sort({ _id: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit),
+            User.countDocuments(filter),
+        ]);
+
+        //! joined-on is free: it is already encoded in the id
+        const withDates = users.map(user => ({
+            ...user.toObject(),
+            joinedAt: user._id.getTimestamp(),
+        }));
+
+        res.status(200).json({
+            status: 200,
+            message: "Users fetched successfully",
+            users: withDates,
+            pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+exports.setUserRole = async (req, res) => {
+    const { role } = req.body;
+
+    try {
+        //! an admin removing their own last privilege would lock everyone out
+        if (req.params.id === req.user.id && role !== 'admin') {
+            return res.status(409).json({ status: 409, message: "You can't remove your own admin access" });
+        }
+
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            { $set: { role } },
+            { new: true, runValidators: true }
+        ).select('fullName email role');
+
+        if (!user) return res.status(404).json({ status: 404, message: "User not found" });
+
+        res.status(200).json({ status: 200, message: `${user.fullName} is now ${role === 'admin' ? 'an administrator' : 'a member'}`, user });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+
+//! Catalogue lists for the admin tables: paged, searchable, sortable, and with
+//! the review average folded in so the table can sort by rating.
+const catalogueList = (Model, extraProjection = {}) => async (req, res) => {
+    try {
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+
+        const match = {};
+        if (req.query.category) match.category = req.query.category;
+        if (req.query.search) match.title = new RegExp(escapeRegex(req.query.search), 'i');
+
+        const sortField = ['title', 'views', 'rate', 'createdAt'].includes(req.query.sort)
+            ? req.query.sort
+            : 'createdAt';
+        const direction = req.query.order === 'asc' ? 1 : -1;
+        //! documents predate timestamps, so "newest" falls back to the id,
+        //! which carries the same information
+        const sort = sortField === 'createdAt' ? { _id: direction } : { [sortField]: direction };
+
+        const [items, total] = await Promise.all([
+            Model.aggregate([
+                { $match: match },
+                { $lookup: { from: 'reviews', localField: '_id', foreignField: 'media', as: 'reviews' } },
+                {
+                    $project: {
+                        title: 1, thumbnail: 1, views: 1, category: 1, country: 1, language: 1,
+                        rate: { $avg: '$reviews.rating' },
+                        reviewCount: { $size: '$reviews' },
+                        ...extraProjection,
+                    },
+                },
+                { $sort: sort },
+                { $skip: (page - 1) * limit },
+                { $limit: limit },
+            ]),
+            Model.countDocuments(match),
+        ]);
+
+        res.status(200).json({
+            status: 200,
+            message: "Fetched successfully",
+            items,
+            pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+exports.getMovies = catalogueList(Movie, { duration: 1, director: 1 });
+exports.getSeries = catalogueList(Series, { seasons: { $size: { $ifNull: ['$seasons', []] } } });
+
+
+/**
+ * Actors and directors are the same job wearing two collections, so the console
+ * shows them as one section with a switch. `kind` picks which.
+ *
+ * The credit counts are the reason this exists rather than the plain list
+ * endpoints: knowing a person is attached to nothing is what tells you they are
+ * safe to delete.
+ */
+exports.getPeople = async (req, res) => {
+    const directors = req.query.kind === 'directors';
+
+    try {
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+
+        const match = {};
+        if (req.query.search) match.fullName = new RegExp(escapeRegex(req.query.search), 'i');
+        if (req.query.country) match.country = req.query.country;
+
+        const Model = directors ? Director : Actor;
+        //! a movie names its director on `director` and its cast on `actors`
+        const creditField = directors ? 'director' : 'actors';
+
+        const [people, total] = await Promise.all([
+            Model.aggregate([
+                { $match: match },
+                { $sort: { fullName: 1 } },
+                { $skip: (page - 1) * limit },
+                { $limit: limit },
+                {
+                    $lookup: {
+                        from: 'movies', localField: '_id', foreignField: creditField, as: 'movieCredits',
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'series', localField: '_id', foreignField: creditField, as: 'seriesCredits',
+                    },
+                },
+                {
+                    $project: {
+                        fullName: 1, country: 1, profile: 1, gender: 1, birthDate: 1,
+                        movies: { $size: '$movieCredits' },
+                        series: { $size: '$seriesCredits' },
+                    },
+                },
+            ]),
+            Model.countDocuments(match),
+        ]);
+
+        res.status(200).json({
+            status: 200,
+            message: "People fetched successfully",
+            kind: directors ? 'directors' : 'actors',
+            items: people,
+            pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+
+//! the tab counts above the queue, so the badge and the tabs agree without a
+//! second round trip
+const reviewCounts = async () => {
+    const rows = await Review.aggregate([
+        { $group: { _id: '$status', total: { $sum: 1 } } },
+    ]);
+    const byStatus = Object.fromEntries(rows.map(row => [row._id, row.total]));
+
+    return {
+        pending: byStatus.pending || 0,
+        approved: byStatus.approved || 0,
+        rejected: byStatus.rejected || 0,
+        reported: await Review.countDocuments({ 'spoiler.reports.0': { $exists: true } }),
+    };
+};
+
+/**
+ * Approve or turn down a review. Approving is what makes it visible at all —
+ * until then it exists only for its author.
+ */
+exports.moderateReview = async (req, res) => {
+    const { status, reason } = req.body;
+
+    try {
+        const review = await Review.findByIdAndUpdate(
+            req.params.id,
+            {
+                $set: {
+                    status,
+                    moderatedAt: new Date(),
+                    moderatedBy: req.user.id,
+                    rejectionReason: status === 'rejected' ? (reason || null) : null,
+                },
+            },
+            { new: true, runValidators: true }
+        );
+
+        if (!review) return res.status(404).json({ status: 404, message: "Review not found" });
+
+        res.status(200).json({
+            status: 200,
+            message: status === 'approved' ? "Review published" : `Review ${status}`,
+            review,
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+/**
+ * The same decision across a selection. Emptying a queue of obvious approvals
+ * one row at a time is the part of moderation that actually wears people down,
+ * and a queue nobody wants to open is a queue that does not get emptied.
+ */
+exports.moderateReviews = async (req, res) => {
+    const { ids, status, reason } = req.body;
+
+    try {
+        const result = await Review.updateMany(
+            { _id: { $in: ids } },
+            {
+                $set: {
+                    status,
+                    moderatedAt: new Date(),
+                    moderatedBy: req.user.id,
+                    rejectionReason: status === 'rejected' ? (reason || null) : null,
+                },
+            }
+        );
+
+        const verb = status === 'approved' ? 'published' : status;
+
+        res.status(200).json({
+            status: 200,
+            message: `${result.modifiedCount} review${result.modifiedCount === 1 ? '' : 's'} ${verb}`,
+            modified: result.modifiedCount,
+            counts: await reviewCounts(),
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+//! A moderator overruling the spoiler flag in either direction — readers
+//! sometimes report a review that gives nothing away, and authors sometimes
+//! forget to tick the box. Passing null hands the decision back to them.
+exports.setReviewSpoiler = async (req, res) => {
+    try {
+        const review = await Review.findByIdAndUpdate(
+            req.params.id,
+            { $set: { 'spoiler.byModerator': req.body.spoiler } },
+            { new: true }
+        );
+
+        if (!review) return res.status(404).json({ status: 404, message: "Review not found" });
+
+        res.status(200).json({
+            status: 200,
+            message: review.isSpoiler ? "Hidden behind a spoiler warning" : "Spoiler warning removed",
+            review,
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+//! Review moderation. Deleting a review is otherwise limited to its author, so
+//! nothing abusive could be taken down.
+exports.deleteReview = async (req, res) => {
+    try {
+        const review = await Review.findByIdAndDelete(req.params.id);
+        if (!review) return res.status(404).json({ status: 404, message: "Review not found" });
+
+        res.status(200).json({ status: 200, message: "Review removed" });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+//! a review stores a bare media id with no hint of which collection it came
+//! from, so moderation has to look in both to say what was reviewed
+const resolveReviewMedia = async (reviews) => {
+    const ids = [...new Set(reviews.map(review => String(review.media)))]
+        .map(id => new mongoose.Types.ObjectId(id));
+
+    const [movies, series] = await Promise.all([
+        Movie.find({ _id: { $in: ids } }).select('title thumbnail').lean(),
+        Series.find({ _id: { $in: ids } }).select('title thumbnail').lean(),
+    ]);
+
+    const byId = new Map();
+    movies.forEach(doc => byId.set(String(doc._id), { ...doc, kind: 'Movies' }));
+    series.forEach(doc => byId.set(String(doc._id), { ...doc, kind: 'Series' }));
+    return byId;
+};
+
+exports.getReviews = async (req, res) => {
+    try {
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(parseInt(req.query.limit) || 20, 100);
+
+        const filter = {};
+        if (req.query.status) filter.status = req.query.status;
+        if (req.query.search) {
+            const term = new RegExp(escapeRegex(req.query.search), 'i');
+            filter.$or = [{ text: term }, { fullName: term }];
+        }
+        //! "show me what readers complained about", which is not the same
+        //! question as "show me what is waiting to be approved"
+        if (req.query.reported === 'true') filter['spoiler.reports.0'] = { $exists: true };
+
+        const [reviews, total, counts] = await Promise.all([
+            //! the reviewer's name and email live on the review itself, which is
+            //! what moderation needs — the account link is only populated when
+            //! there is one, since reviews written before it was added have none
+            //! pending first: the queue is the reason this screen exists, and a
+            //! new review waiting is more urgent than an old one already live
+            Review.find(filter)
+                .populate('user', 'fullName email role')
+                .sort({ status: 1, _id: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit),
+            Review.countDocuments(filter),
+            reviewCounts(),
+        ]);
+
+        const plain = reviews.map(review => review.toObject());
+        const media = await resolveReviewMedia(plain);
+
+        res.status(200).json({
+            status: 200,
+            message: "Reviews fetched successfully",
+            counts,
+            reviews: plain.map(review => ({
+                ...review,
+                account: review.user || null,
+                media: media.get(String(review.media)) || { _id: review.media, title: 'Deleted title' },
+            })),
+            pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};

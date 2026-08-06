@@ -602,6 +602,33 @@ export const EyeOutlineIcon = (props) => {
     )
 }
 
+export const SpoilerIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M17.9 17.9A10 10 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.1-5.9m3.8-1.9A9 9 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.2 3.2m-6.7-1.1a3 3 0 1 1-4.2-4.2" />
+            <path d="M1 1l22 22" />
+        </svg>
+    )
+}
+
+export const FlagIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M4 15V3h13l-2 4 2 4H4" />
+            <path d="M4 21v-6" />
+        </svg>
+    )
+}
+
+export const HourglassIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v6l4 2" />
+        </svg>
+    )
+}
+
 export const CheckIcon = (props) => {
     return (
         <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>

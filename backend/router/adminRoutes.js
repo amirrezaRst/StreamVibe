@@ -1,0 +1,50 @@
+const { Router } = require('express');
+
+const {
+    getOverview, getBookings, refundBooking, getUsers, setUserRole,
+    getMovies, getSeries, getPeople, getReviews, moderateReview, moderateReviews, setReviewSpoiler, deleteReview,
+} = require('../controller/adminController');
+const ValidateObjectId = require('../middleware/ValidateObjectId');
+const Authenticate = require('../middleware/Authenticate');
+const Authorize = require('../middleware/Authorize');
+const {
+    getCinemas, getCinema, getHall, getSchedule, getBooking, getSchedulableMovies,
+} = require('../controller/adminCinemaController');
+const { setUserRoleValidation, refundValidation } = require('../validation/adminValidation');
+const { moderateReviewValidation, moderateManyValidation, setSpoilerValidation } = require('../validation/reviewValidation');
+
+const router = Router();
+
+//! one gate for the whole console rather than a repeated pair on every line —
+//! a route added here cannot accidentally be left open
+router.use(Authenticate, Authorize(["admin"]));
+
+router.get("/overview", getOverview);
+
+router.get("/bookings", getBookings);
+router.get("/bookings/:id", ValidateObjectId, getBooking);
+router.post("/bookings/:id/refund", [ValidateObjectId, refundValidation], refundBooking);
+
+//? Cinema
+router.get("/cinemas", getCinemas);
+router.get("/cinemas/:id", ValidateObjectId, getCinema);
+router.get("/halls/:id", ValidateObjectId, getHall);
+router.get("/schedule", getSchedule);
+//! runtimes, which the screening form needs to work out an end time
+router.get("/schedulable-movies", getSchedulableMovies);
+
+router.get("/users", getUsers);
+router.patch("/users/:id/role", [ValidateObjectId, setUserRoleValidation], setUserRole);
+
+router.get("/movies", getMovies);
+router.get("/series", getSeries);
+router.get("/people", getPeople);
+
+router.get("/reviews", getReviews);
+//! declared before "/:id/status" so "status" is never read as a review id
+router.patch("/reviews/status", moderateManyValidation, moderateReviews);
+router.patch("/reviews/:id/status", [ValidateObjectId, moderateReviewValidation], moderateReview);
+router.patch("/reviews/:id/spoiler", [ValidateObjectId, setSpoilerValidation], setReviewSpoiler);
+router.delete("/reviews/:id", ValidateObjectId, deleteReview);
+
+module.exports = router;

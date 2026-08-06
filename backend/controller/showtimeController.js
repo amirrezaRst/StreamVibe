@@ -195,6 +195,85 @@ exports.createShowtime = async (req, res) => {
 };
 
 
+/**
+ * A run, not a screening. A film opens for a week or a month and gets the same
+ * slot every day; scheduling that one form at a time is how the job becomes
+ * unbearable.
+ *
+ * Every occurrence is checked before any of them are written, and the whole
+ * thing is refused if one collides — half a run in the database is worse than
+ * none, because it takes a human to work out which half.
+ */
+exports.createShowtimeRun = async (req, res) => {
+    const { repeat, occurrences, ...base } = req.body;
+
+    try {
+        const [movie, hall] = await Promise.all([
+            Movie.findById(base.movie).select('duration'),
+            Hall.findById(base.hall),
+        ]);
+
+        if (!movie) return res.status(404).json({ status: 404, message: "Movie not found" });
+        if (!hall) return res.status(404).json({ status: 404, message: "Hall not found" });
+
+        const missingTier = findUnpricedTier(hall, base.pricing);
+        if (missingTier) {
+            return res.status(400).json({
+                status: 400,
+                message: `This hall has "${missingTier}" seats but no price was set for that tier.`
+            });
+        }
+
+        const first = new Date(base.startsAt);
+        const stepDays = repeat === 'weekly' ? 7 : 1;
+
+        const planned = Array.from({ length: occurrences }, (_, i) => {
+            const startsAt = new Date(first);
+            startsAt.setDate(startsAt.getDate() + i * stepDays);
+            return { startsAt, endsAt: new Date(startsAt.getTime() + movie.duration * 60000) };
+        });
+
+        //! checked against what is already scheduled *and* against each other,
+        //! since a run in a short-turnaround slot can collide with itself
+        for (const [index, slot] of planned.entries()) {
+            const clash = await findHallClash(hall._id, slot.startsAt, slot.endsAt);
+            if (clash) {
+                return res.status(409).json({
+                    status: 409,
+                    message: `Screening ${index + 1} of ${occurrences}, on ${slot.startsAt.toDateString()}, collides with one already scheduled in this hall. Nothing was created.`,
+                    conflictIndex: index,
+                });
+            }
+
+            const selfClash = planned.slice(0, index).find(earlier =>
+                slot.startsAt < earlier.endsAt && earlier.startsAt < slot.endsAt);
+            if (selfClash) {
+                return res.status(409).json({
+                    status: 409,
+                    message: "These screenings would overlap each other. Nothing was created.",
+                    conflictIndex: index,
+                });
+            }
+        }
+
+        const showtimes = await Showtime.insertMany(planned.map(slot => ({
+            ...base,
+            cinema: hall.cinema,
+            startsAt: slot.startsAt,
+            endsAt: slot.endsAt,
+        })));
+
+        res.status(201).json({
+            status: 201,
+            message: `${showtimes.length} screening${showtimes.length === 1 ? '' : 's'} scheduled`,
+            showtimes,
+        });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+
 //! Put Request
 exports.updateShowtime = async (req, res) => {
     try {
