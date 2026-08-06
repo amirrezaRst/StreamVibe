@@ -71,6 +71,9 @@ export const fetchPeople = (params) =>
 export const fetchPayments = (params) =>
     get(`/admin/payments${query(params)}`, "Couldn't load payments.");
 
+export const searchConsole = (q) =>
+    get(`/admin/search${query({ q })}`, "Couldn't search.");
+
 
 //? Cinema
 export const fetchCinemas = (params) =>
