@@ -1,13 +1,7 @@
-import NotBuiltYet from "@/components/admin/NotBuiltYet";
+import CinemasContent from "./CinemasContent";
 
 export const metadata = { title: "Cinemas" };
 
-const CinemasPage = () => (
-    <NotBuiltYet
-        title="Cinemas"
-        crumbs={[{ label: "Cinema" }]}
-        describes="Venues, halls and their seat maps"
-    />
-);
+const CinemasPage = () => <CinemasContent />;
 
 export default CinemasPage;

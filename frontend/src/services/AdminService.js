@@ -68,6 +68,66 @@ export const fetchCatalogue = (kind, params) =>
 export const fetchPeople = (params) =>
     get(`/admin/people${query(params)}`, "Couldn't load people.");
 
+
+//? Cinema
+export const fetchCinemas = (params) =>
+    get(`/admin/cinemas${query(params)}`, "Couldn't load cinemas.");
+
+export const fetchCinema = (cinemaId) =>
+    get(`/admin/cinemas/${cinemaId}`, "Couldn't load that cinema.");
+
+export const fetchHall = (hallId) =>
+    get(`/admin/halls/${hallId}`, "Couldn't load that hall.");
+
+export const fetchSchedule = (params) =>
+    get(`/admin/schedule${query(params)}`, "Couldn't load the schedule.");
+
+export const fetchSchedulableMovies = () =>
+    get("/admin/schedulable-movies", "Couldn't load the film list.");
+
+export const fetchBooking = (bookingId) =>
+    get(`/admin/bookings/${bookingId}`, "Couldn't load that booking.");
+
+//! writes go through the endpoints that already existed for each model — there
+//! was never a gap on the writing side, only on the reading side
+export const saveSeatMap = async (hallId, seatMap) => {
+    const response = await apiFetch(`/cinema/halls/${hallId}`, {
+        method: "PUT",
+        body: JSON.stringify({ seatMap }),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't save the seat map.");
+
+    return response.json();
+};
+
+export const createShowtime = async (payload) => {
+    const response = await apiFetch("/showtime", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't schedule that screening.");
+
+    return response.json();
+};
+
+export const createShowtimeRun = async (payload) => {
+    const response = await apiFetch("/showtime/run", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't schedule that run.");
+
+    return response.json();
+};
+
+export const deleteShowtime = async (showtimeId) => {
+    const response = await apiFetch(`/showtime/${showtimeId}`, { method: "DELETE" });
+    if (!response.ok) throw await asError(response, "Couldn't remove that screening.");
+};
+
 //! the console writes through the endpoints that already exist for each model —
 //! there was never a gap on the writing side, only on the reading side
 const remove = (path, fallback) => async (id) => {
