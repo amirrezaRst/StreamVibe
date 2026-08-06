@@ -1,13 +1,7 @@
-import NotBuiltYet from "@/components/admin/NotBuiltYet";
+import BookingsContent from "./BookingsContent";
 
 export const metadata = { title: "Bookings" };
 
-const BookingsPage = () => (
-    <NotBuiltYet
-        title="Bookings"
-        crumbs={[{ label: "Box office" }]}
-        describes="Every reservation, held or settled"
-    />
-);
+const BookingsPage = () => <BookingsContent />;
 
 export default BookingsPage;

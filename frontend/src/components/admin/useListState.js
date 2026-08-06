@@ -109,6 +109,8 @@ const useListState = (loader, { extraParams, initialSort } = {}) => {
         rows,
         pagination: data?.pagination,
         counts: data?.counts,
+        //! what the current filter is actually worth, for the lists that carry it
+        totals: data?.totals,
         loading: !data && !error,
         error,
         busy,

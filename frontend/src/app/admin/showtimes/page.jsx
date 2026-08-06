@@ -1,13 +1,7 @@
-import NotBuiltYet from "@/components/admin/NotBuiltYet";
+import ShowtimesContent from "./ShowtimesContent";
 
 export const metadata = { title: "Showtimes" };
 
-const ShowtimesPage = () => (
-    <NotBuiltYet
-        title="Showtimes"
-        crumbs={[{ label: "Cinema" }]}
-        describes="The screening schedule"
-    />
-);
+const ShowtimesPage = () => <ShowtimesContent />;
 
 export default ShowtimesPage;
