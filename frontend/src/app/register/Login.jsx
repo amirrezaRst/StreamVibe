@@ -66,10 +66,10 @@ const LoginPage = ({ page, setPage }) => {
                 <div className="space-y-6">
 
                     <div>
-                        <label htmlFor={"email"} className="text-white lg:text-super-sm md:text-sm mb-1">Email</label>
+                        <label htmlFor="login-email" className="text-white lg:text-super-sm md:text-sm mb-1">Email</label>
                         <input
                             type="email"
-                            id="email"
+                            id="login-email"
                             className={`support-input-field bg-c-black-10`}
                             placeholder="Enter your email"
                             {...register('email', { required: 'Email is required', pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' } })}
@@ -78,10 +78,10 @@ const LoginPage = ({ page, setPage }) => {
                     </div>
 
                     <div>
-                        <label htmlFor={"password"} className="text-white lg:text-super-sm md:text-sm mb-1">password</label>
+                        <label htmlFor="login-password" className="text-white lg:text-super-sm md:text-sm mb-1">password</label>
                         <input
                             type="password"
-                            id="password"
+                            id="login-password"
                             className={`support-input-field bg-c-black-10`}
                             placeholder="Enter your password"
                             {...register('password', { required: 'Password is required', minLength: { value: 8, message: 'Password must be at least 8 characters' } })}
@@ -93,10 +93,10 @@ const LoginPage = ({ page, setPage }) => {
                         <div className="flex items-center gap-2">
                             <input
                                 type="checkbox"
-                                id="remember"
+                                id="login-remember"
                                 {...register('remember')}
                             />
-                            <label htmlFor="remember" className="text-white">Remember me</label>
+                            <label htmlFor="login-remember" className="text-white">Remember me</label>
                         </div>
                         <Link href="/forgot-password" className="text-white">
                             Forgot Password?

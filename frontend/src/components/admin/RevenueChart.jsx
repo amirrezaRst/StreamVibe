@@ -43,7 +43,7 @@ const RevenueChart = ({ series, days, onDaysChange }) => {
                             onClick={() => onDaysChange(span)}
                             aria-pressed={days === span}
                             className={`text-[10.5px] font-bold py-[3px] px-2 rounded-[5px] duration-150
-                                ${days === span ? "bg-c-black-12 text-c-grey-90" : "text-c-black-30 hover:text-c-grey-65"}`}
+                                ${days === span ? "bg-c-black-12 text-c-grey-90" : "text-c-grey-55 hover:text-c-grey-65"}`}
                         >
                             {span}d
                         </button>

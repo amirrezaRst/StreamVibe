@@ -68,7 +68,7 @@ const BookingsContent = () => {
             render: (booking) => (
                 <span className="capitalize">
                     {booking.showtime?.movie?.title || "—"}
-                    <span className="text-c-black-30 normal-case">
+                    <span className="text-c-grey-55 normal-case">
                         {booking.showtime?.startsAt
                             ? ` · ${new Date(booking.showtime.startsAt).toLocaleString("en-US", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}`
                             : ""}
@@ -121,7 +121,7 @@ const BookingsContent = () => {
                     <SearchField value={list.search} onChange={list.setSearch} placeholder="Booking code" />
 
                     {list.rows.length > 0 && (
-                        <span className="ms-auto text-[11.5px] text-c-black-30">
+                        <span className="ms-auto text-[11.5px] text-c-grey-55">
                             <b className="text-[#6FCB9C]">{money(list.totals?.settled)}</b> settled ·{" "}
                             <b className="text-[#7CADEA]">{money(list.totals?.refunded)}</b> refunded
                         </span>

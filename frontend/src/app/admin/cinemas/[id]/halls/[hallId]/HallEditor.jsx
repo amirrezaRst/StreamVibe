@@ -34,7 +34,7 @@ const Divider = () => <span className="w-px h-[18px] bg-c-black-20 mx-1" />;
 
 const Row = ({ label, value, big }) => (
     <div className="flex justify-between items-center py-[5px] border-b border-c-black-15 last:border-b-0 text-[11.5px]">
-        <span className="text-c-black-30 flex items-center">{label}</span>
+        <span className="text-c-grey-55 flex items-center">{label}</span>
         <span className={`text-c-grey-90 font-bold tabular-nums ${big ? "text-sm" : ""}`}>{value}</span>
     </div>
 );
@@ -292,7 +292,7 @@ const Editor = ({
                                 Generate grid…
                             </button>
 
-                            <span className="ms-auto flex items-center gap-1.5 text-[11px] text-c-black-30 tabular-nums">
+                            <span className="ms-auto flex items-center gap-1.5 text-[11px] text-c-grey-55 tabular-nums">
                                 <ToolButton title="Zoom out" onClick={() => setZoom(z => Math.max(0.6, z - 0.2))}>−</ToolButton>
                                 {Math.round(zoom * 100)}%
                                 <ToolButton title="Zoom in" onClick={() => setZoom(z => Math.min(2, z + 0.2))}>+</ToolButton>
@@ -334,7 +334,7 @@ const Editor = ({
 
                     <div className="flex flex-col gap-2.5">
                         <div className="bg-c-black-10 border border-c-black-15 rounded-[10px] p-3">
-                            <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-black-30 mb-2.5">
+                            <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-grey-55 mb-2.5">
                                 Paint tier
                             </h3>
                             {PAINTS.map(option => (
@@ -365,7 +365,7 @@ const Editor = ({
 
                         {selected.size > 0 && (
                             <div className="bg-c-black-10 border border-c-black-15 rounded-[10px] p-3">
-                                <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-black-30 mb-2">
+                                <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-grey-55 mb-2">
                                     Selection
                                 </h3>
                                 <p className="text-[11.5px] text-c-grey-60 leading-relaxed mb-2.5">
@@ -383,7 +383,7 @@ const Editor = ({
                         )}
 
                         <div className="bg-c-black-10 border border-c-black-15 rounded-[10px] p-3">
-                            <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-black-30 mb-2">
+                            <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-grey-55 mb-2">
                                 This hall
                             </h3>
                             <Row label="Rows" value={stats.rows} />
@@ -421,7 +421,7 @@ const Editor = ({
                         )}
 
                         <details className="bg-c-black-10 border border-c-black-15 rounded-[10px] p-3">
-                            <summary className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-black-30 cursor-pointer">
+                            <summary className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-grey-55 cursor-pointer">
                                 Keyboard
                             </summary>
                             <div className="flex flex-col gap-1.5 mt-2.5 text-[11px] text-c-grey-60">
@@ -505,7 +505,7 @@ const GenerateGrid = ({ onClose, onGenerate, hasSeats }) => {
                     </label>
                 ))}
 
-                <p className="text-[11.5px] text-c-black-30 mb-4">
+                <p className="text-[11.5px] text-c-grey-55 mb-4">
                     {total} seats{aisles > 0 && `, ${aisles} of them turned into aisle gaps`}.
                 </p>
 

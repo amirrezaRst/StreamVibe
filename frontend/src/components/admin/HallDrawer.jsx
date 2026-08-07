@@ -14,12 +14,12 @@ const Field = ({ label, hint, error, children }) => (
         {children}
         {error
             ? <span className="block text-[11px] text-c-red-80 mt-1">{error}</span>
-            : hint && <span className="block text-[11px] text-c-black-30 mt-1 leading-snug">{hint}</span>}
+            : hint && <span className="block text-[11px] text-c-grey-55 mt-1 leading-snug">{hint}</span>}
     </label>
 );
 
 const control = `w-full bg-c-black-06 border border-c-black-20 rounded-[7px] py-2 px-2.5
-    text-[12.5px] text-c-grey-90 outline-none focus:border-c-black-25 placeholder:text-c-black-30`;
+    text-[12.5px] text-c-grey-90 outline-none focus:border-c-black-25 placeholder:text-c-grey-55`;
 
 /**
  * A new hall, with its first layout laid out in the same breath. A hall with no
@@ -136,7 +136,7 @@ const HallDrawer = ({ cinemaId, existingNames = [], onClose, onSaved }) => {
                         </span>
                         <span>
                             <span className="block text-[12.5px] font-semibold text-c-grey-90">Lay out a starting grid</span>
-                            <span className="block text-[11px] text-c-black-30 leading-snug mt-0.5">
+                            <span className="block text-[11px] text-c-grey-55 leading-snug mt-0.5">
                                 A hall with no seats cannot be screened in. You can reshape it in the editor afterwards.
                             </span>
                         </span>
@@ -161,7 +161,7 @@ const HallDrawer = ({ cinemaId, existingNames = [], onClose, onSaved }) => {
                                     onChange={(e) => setAisleEvery(Math.min(Math.max(Number(e.target.value) || 0, 0), 20))} />
                             </Field>
 
-                            <p className="text-[11.5px] text-c-black-30">
+                            <p className="text-[11.5px] text-c-grey-55">
                                 <b className="text-c-grey-65">{totalSeats - aisles}</b> bookable seats
                                 {aisles > 0 && `, ${aisles} gaps cut as aisles`}. Every seat starts as standard.
                             </p>

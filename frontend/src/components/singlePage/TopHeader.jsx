@@ -1,13 +1,22 @@
+import Image from "next/image";
+
 import HeaderCallToAction from "../singlePage/HeaderCallToAction";
 
 
 const TopHeader = ({ id, kind, title, description, cover }) => {
     return (
         <div className="relative w-full xl:h-[80vh] md:h-[60vh] h-[50vh] overflow-hidden rounded-xl">
-            <img
+            {/*//! this cover is the largest thing on the page and almost always
+                the LCP element, so it is fetched eagerly and served at the
+                viewport's width rather than at whatever the upload happened to
+                be. It was a raw <img> before: full resolution, every time. */}
+            <Image
                 src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${cover}`}
-                alt={`${title} series`}
-                className="w-full h-full object-cover"
+                alt={title}
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover"
                 style={{ objectPosition: "center 60%" }}
             />
 

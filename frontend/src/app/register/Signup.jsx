@@ -68,10 +68,10 @@ const SignupPage = ({ page, setPage }) => {
 
                 <div className="space-y-6">
                     <div>
-                        <label htmlFor={"fullName"} className="text-white lg:text-super-sm md:text-sm mb-1">Full name</label>
+                        <label htmlFor="signup-fullName" className="text-white lg:text-super-sm md:text-sm mb-1">Full name</label>
                         <input
                             type="text"
-                            id="fullName"
+                            id="signup-fullName"
                             className={`support-input-field bg-c-black-10`}
                             placeholder="Enter your full name"
                             {...register('fullName', { required: 'Full name is required', minLength: { value: 3, message: 'Full name must be at least 3 characters' } })}
@@ -79,10 +79,10 @@ const SignupPage = ({ page, setPage }) => {
                         {errors.fullName && <span className="text-c-red-50 block">{errors.fullName.message}</span>}
                     </div>
                     <div>
-                        <label htmlFor={"email"} className="text-white lg:text-super-sm md:text-sm mb-1">Email</label>
+                        <label htmlFor="signup-email" className="text-white lg:text-super-sm md:text-sm mb-1">Email</label>
                         <input
                             type="email"
-                            id="email"
+                            id="signup-email"
                             className={`support-input-field bg-c-black-10`}
                             placeholder="Enter your email"
                             {...register('email', { required: 'Email is required', pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' } })}
@@ -90,10 +90,10 @@ const SignupPage = ({ page, setPage }) => {
                         {errors.email && <span className="text-c-red-50 block">{errors.email.message}</span>}
                     </div>
                     <div>
-                        <label htmlFor={"password"} className="text-white lg:text-super-sm md:text-sm mb-1">Password</label>
+                        <label htmlFor="signup-password" className="text-white lg:text-super-sm md:text-sm mb-1">Password</label>
                         <input
                             type="password"
-                            id="password"
+                            id="signup-password"
                             className={`support-input-field bg-c-black-10`}
                             placeholder="Enter your password"
                             {...register('password', { required: 'Password is required', minLength: { value: 8, message: 'Password must be at least 8 characters' } })}
@@ -105,10 +105,10 @@ const SignupPage = ({ page, setPage }) => {
                         <div className="flex items-center gap-2">
                             <input
                                 type="checkbox"
-                                id="remember"
+                                id="signup-remember"
                                 {...register('remember')}
                             />
-                            <label htmlFor="remember" className="text-white">Remember me</label>
+                            <label htmlFor="signup-remember" className="text-white">Remember me</label>
                         </div>
                         <Link href="/forgot-password" className="text-white">
                             Forgot Password?

@@ -4,7 +4,7 @@
 //! zero is not "infinity percent", it is simply the first window
 const Delta = ({ change }) => {
     if (change === null || change === undefined) {
-        return <span className="text-[11px] text-c-black-30">no earlier period</span>;
+        return <span className="text-[11px] text-c-grey-55">no earlier period</span>;
     }
 
     const up = change >= 0;
@@ -55,7 +55,7 @@ const Tile = ({ label, value, change, lead, children }) => (
         ${lead
             ? "bg-gradient-to-br from-c-red-45/[0.06] to-c-black-10 border-c-red-45/[0.22]"
             : "bg-c-black-10 border-c-black-15"}`}>
-        <p className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-black-30 mb-1.5">{label}</p>
+        <p className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-grey-55 mb-1.5">{label}</p>
         <p className={`font-extrabold tracking-[-0.02em] tabular-nums leading-tight ${lead ? "text-[31px]" : "text-[23px]"}`}>
             {value}
         </p>
@@ -64,7 +64,7 @@ const Tile = ({ label, value, change, lead, children }) => (
             {/*//! "no earlier period" already explains itself; following it with
                 "vs the window before" would contradict it */}
             {lead && change !== null && change !== undefined && (
-                <span className="text-[11px] text-c-black-30">vs the window before</span>
+                <span className="text-[11px] text-c-grey-55">vs the window before</span>
             )}
         </div>
         {children}

@@ -42,6 +42,11 @@ module.exports = {
         "c-black-20": "#333333",
         "c-black-25": "#404040",
         "c-black-30": "#4D4D4D",
+        //! the dimmest grey that still clears 4.5:1 as text on every ground the
+        //! app uses, from c-black-06 up to c-black-15. c-black-30 was carrying
+        //! muted labels at 2.26:1 — it stays, but for borders and fills, not
+        //! for anything anyone has to read.
+        "c-grey-55": "#8C8C8C",
         "c-grey-60": "#999999",
         "c-grey-65": "#A6A6A6",
         "c-grey-70": "#B3B3B3",

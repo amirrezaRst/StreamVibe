@@ -15,7 +15,7 @@ const Field = ({ label, hint, children }) => (
     <label className="block mb-3">
         <span className="block text-[11.5px] font-bold text-c-grey-65 mb-1.5">{label}</span>
         {children}
-        {hint && <span className="block text-[11px] text-c-black-30 mt-1 leading-snug">{hint}</span>}
+        {hint && <span className="block text-[11px] text-c-grey-55 mt-1 leading-snug">{hint}</span>}
     </label>
 );
 
@@ -217,7 +217,7 @@ const ScreeningDrawer = ({ halls, movies, showtimes, preset, editing, onClose, o
                                 <span className="flex items-center gap-2 text-xs text-c-grey-65">
                                     <i className="w-3 h-[11px] rounded-sm shrink-0" style={{ background: tier.fill }} />
                                     {tier.label}
-                                    <span className="text-[11px] text-c-black-30">· {hall.tiers[tier.id]} seats</span>
+                                    <span className="text-[11px] text-c-grey-55">· {hall.tiers[tier.id]} seats</span>
                                 </span>
                                 <input
                                     type="number" min="0" step="0.5"

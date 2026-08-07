@@ -104,7 +104,7 @@ const ReviewItem = ({ review, signedIn }) => {
                             disabled={busy}
                             aria-pressed={flagged}
                             className={`text-[11.5px] font-semibold inline-flex items-center gap-1.5 duration-150
-                                disabled:opacity-50 ${flagged ? "text-[#E8B663]" : "text-c-black-30 hover:text-[#E8B663]"}`}
+                                disabled:opacity-50 ${flagged ? "text-[#E8B663]" : "text-c-grey-60 hover:text-[#E8B663]"}`}
                         >
                             <FlagIcon className="w-3 h-3" />
                             {flagged ? "You flagged this" : "Contains spoilers?"}
@@ -115,14 +115,14 @@ const ReviewItem = ({ review, signedIn }) => {
                         <button
                             type="button"
                             onClick={() => setRevealed(false)}
-                            className="text-[11.5px] font-semibold text-c-black-30 hover:text-c-grey-65 inline-flex items-center gap-1.5 duration-150"
+                            className="text-[11.5px] font-semibold text-c-grey-60 hover:text-c-grey-65 inline-flex items-center gap-1.5 duration-150"
                         >
                             <SpoilerIcon className="w-3 h-3" />
                             Hide again
                         </button>
                     )}
 
-                    {date && <span className="ms-auto text-[11px] text-c-black-30">{formatDate(date)}</span>}
+                    {date && <span className="ms-auto text-[11px] text-c-grey-60">{formatDate(date)}</span>}
                 </div>
             )}
         </div>

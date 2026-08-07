@@ -21,12 +21,18 @@ const QuestionItem = ({ handleClick, openId, id, question, answer }) => {
                         {answer}
                     </p>
                 </div>
+                {/*//! aria-expanded is what tells a screen reader the answer
+                    below is open — the plus/minus icon says it to everybody
+                    else and to nobody using one */}
                 <button
+                    type="button"
                     onClick={() => handleClick(id)}
+                    aria-expanded={openId === id}
+                    aria-label={openId === id ? `Hide the answer to: ${question}` : `Show the answer to: ${question}`}
                     className="focus:outline-none"
                 >
-                    {openId === id ? <MinusSvg className="3xl:w-[35px] 3xl:h-[35px]" /> :
-                        <PlusSvg className="3xl:w-[35px] 3xl:h-[35px]" />
+                    {openId === id ? <MinusSvg className="3xl:w-[35px] 3xl:h-[35px]" aria-hidden="true" /> :
+                        <PlusSvg className="3xl:w-[35px] 3xl:h-[35px]" aria-hidden="true" />
                     }
                 </button>
             </div>

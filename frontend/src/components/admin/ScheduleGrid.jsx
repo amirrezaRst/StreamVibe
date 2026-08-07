@@ -112,7 +112,7 @@ const ScheduleGrid = ({ halls, showtimes, onPick, onOpen }) => {
                         <div key={hall._id} className="contents">
                             <div className="bg-c-black-12 border-b border-e border-c-black-15 py-2 px-2.5">
                                 <p className="text-[11px] font-bold text-c-grey-90">{hall.name}</p>
-                                <p className="text-[9.5px] text-c-black-30">
+                                <p className="text-[9.5px] text-c-grey-55">
                                     {hall.screenType} · {hall.totalSeats}
                                 </p>
                             </div>

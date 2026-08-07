@@ -177,7 +177,7 @@ const DataTable = ({
                             />
                             {pageWindow(pagination.page, pagination.totalPages).map((entry, index) => (
                                 entry === "gap"
-                                    ? <span key={`gap-${index}`} className="px-1 text-c-black-30">…</span>
+                                    ? <span key={`gap-${index}`} className="px-1 text-c-grey-55">…</span>
                                     : <PageButton
                                         key={entry}
                                         label={entry}

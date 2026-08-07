@@ -31,7 +31,7 @@ const AdminRail = ({ user, counts, onSignOut, signingOut, onNavigate, onOpenPale
                 type="button"
                 onClick={onOpenPalette}
                 className="flex items-center gap-2 w-full mt-2.5 mb-1 py-[7px] px-2.5 rounded-[7px]
-                    bg-c-black-06 border border-c-black-15 text-c-black-30 hover:text-c-grey-65
+                    bg-c-black-06 border border-c-black-15 text-c-grey-55 hover:text-c-grey-65
                     hover:border-c-black-20 duration-150 text-[11.5px]"
             >
                 <SearchIcon className="w-3.5 h-3.5 shrink-0" />
@@ -44,7 +44,7 @@ const AdminRail = ({ user, counts, onSignOut, signingOut, onNavigate, onOpenPale
             <nav className="flex-1">
                 {NAV_GROUPS.map(group => (
                     <div key={group.label} className="mt-3">
-                        <p className="text-[9.5px] font-extrabold uppercase tracking-[0.09em] text-c-black-30 px-2.5 pb-1.5">
+                        <p className="text-[9.5px] font-extrabold uppercase tracking-[0.09em] text-c-grey-55 px-2.5 pb-1.5">
                             {group.label}
                         </p>
                         <ul className="flex flex-col gap-0.5 list-none m-0 p-0">
@@ -98,7 +98,7 @@ const AdminRail = ({ user, counts, onSignOut, signingOut, onNavigate, onOpenPale
                     </span>
                     <span className="min-w-0 flex-1">
                         <span className="block text-xs font-bold truncate">{user?.fullName}</span>
-                        <span className="block text-[10px] text-c-black-30">Administrator</span>
+                        <span className="block text-[10px] text-c-grey-55">Administrator</span>
                     </span>
                     <button
                         type="button"

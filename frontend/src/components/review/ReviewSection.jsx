@@ -67,18 +67,22 @@ const ReviewSection = ({ id }) => {
             </div>
             <div className="flex md:hidden gap-2.5 justify-center mt-3">
                 <button
+                    type="button"
+                    aria-label="Previous reviews"
                     className="bg-c-black-08 border border-c-black-15 rounded-full flex items-center justify-center
                     md:w-11 md:h-11 w-[2.9rem] h-[2.9rem]"
                     onClick={handlePrev}
                 >
-                    <LeftArrowSvg className="stroke-c-grey-60 w-[17px] h-[17px]" />
+                    <LeftArrowSvg className="stroke-c-grey-60 w-[17px] h-[17px]" aria-hidden="true" />
                 </button>
                 <button
+                    type="button"
+                    aria-label="More reviews"
                     className="bg-c-black-08 border border-c-black-15 rounded-full flex items-center justify-center
                     md:w-11 md:h-11 w-[2.9rem] h-[2.9rem]"
                     onClick={handleNext}
                 >
-                    <LeftArrowSvg className="stroke-c-grey-60 w-[17px] h-[17px] rotate-180" />
+                    <LeftArrowSvg className="stroke-c-grey-60 w-[17px] h-[17px] rotate-180" aria-hidden="true" />
                 </button>
             </div>
 

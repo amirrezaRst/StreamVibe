@@ -76,7 +76,7 @@ const NewReleasedSeriesPage = () => {
                             {loading ? 'Loading' : 'Load More'}
                             <div className={loading ? "block" : "hidden"} role="status">
                                 <SpinnerSvg />
-                                <span class="sr-only">Loading...</span>
+                                <span className="sr-only">Loading...</span>
                             </div>
                         </button>
                     </div>
