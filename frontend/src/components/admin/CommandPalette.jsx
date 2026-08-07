@@ -52,7 +52,7 @@ const Row = ({ entry, active, onPick, onHover }) => (
                 {entry.label}
             </span>
             {entry.detail && (
-                <span className="block text-[10.5px] text-c-black-30 truncate normal-case">{entry.detail}</span>
+                <span className="block text-[10.5px] text-c-grey-55 truncate normal-case">{entry.detail}</span>
             )}
         </span>
 
@@ -62,12 +62,12 @@ const Row = ({ entry, active, onPick, onHover }) => (
             </span>
         )}
         {entry.shortcut && !active && (
-            <kbd className="text-[9.5px] font-extrabold bg-c-black-12 border border-c-black-20 rounded px-1.5 text-c-black-30 shrink-0">
+            <kbd className="text-[9.5px] font-extrabold bg-c-black-12 border border-c-black-20 rounded px-1.5 text-c-grey-55 shrink-0">
                 g {entry.shortcut}
             </kbd>
         )}
         {active && (
-            <span className="text-[9.5px] font-extrabold text-c-black-30 shrink-0">↵</span>
+            <span className="text-[9.5px] font-extrabold text-c-grey-55 shrink-0">↵</span>
         )}
     </button>
 );
@@ -211,18 +211,18 @@ const CommandPalette = ({ open, onClose }) => {
                 onClick={(event) => event.stopPropagation()}
             >
                 <div className="flex items-center gap-2.5 py-3 px-3.5 border-b border-c-black-15">
-                    <SearchIcon className="w-4 h-4 text-c-black-30 shrink-0" />
+                    <SearchIcon className="w-4 h-4 text-c-grey-55 shrink-0" />
                     <input
                         ref={inputRef}
                         value={term}
                         onChange={(event) => setTerm(event.target.value)}
                         placeholder="Jump to a section, a title, a person, or a booking code"
-                        className="bg-transparent flex-1 text-[13px] text-c-grey-90 placeholder:text-c-black-30 outline-none"
+                        className="bg-transparent flex-1 text-[13px] text-c-grey-90 placeholder:text-c-grey-55 outline-none"
                     />
                     {searching && (
                         <span className="w-3.5 h-3.5 rounded-full border-2 border-c-black-20 border-t-c-red-45 animate-spin shrink-0" />
                     )}
-                    <kbd className="text-[9.5px] font-extrabold bg-c-black-12 border border-c-black-20 rounded px-1.5 text-c-black-30 shrink-0">
+                    <kbd className="text-[9.5px] font-extrabold bg-c-black-12 border border-c-black-20 rounded px-1.5 text-c-grey-55 shrink-0">
                         Esc
                     </kbd>
                 </div>
@@ -241,7 +241,7 @@ const CommandPalette = ({ open, onClose }) => {
 
                             return (
                                 <div key={kind} className="mb-1 last:mb-0">
-                                    <p className="text-[9.5px] font-extrabold uppercase tracking-[0.08em] text-c-black-30 px-2.5 pt-2 pb-1">
+                                    <p className="text-[9.5px] font-extrabold uppercase tracking-[0.08em] text-c-grey-55 px-2.5 pt-2 pb-1">
                                         {KIND_LABELS[kind]}
                                     </p>
                                     {group.map(entry => {
@@ -266,7 +266,7 @@ const CommandPalette = ({ open, onClose }) => {
                 </div>
 
                 <div className="flex items-center gap-3.5 py-2 px-3.5 border-t border-c-black-15 bg-c-black-12
-                    text-[10.5px] text-c-black-30">
+                    text-[10.5px] text-c-grey-55">
                     <span><b className="text-c-grey-65">↑↓</b> move</span>
                     <span><b className="text-c-grey-65">↵</b> open</span>
                     <span><b className="text-c-grey-65">Esc</b> close</span>

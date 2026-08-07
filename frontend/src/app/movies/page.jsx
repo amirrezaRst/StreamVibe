@@ -3,6 +3,13 @@ import NewReleasedSection from "../explore/movies/NewReleasedSection";
 import PopularMoviesSection from "../explore/movies/PopularMoviesSection";
 import TopMovieSection from "../explore/movies/TopMovieSection";
 import TrendingMoviesSection from "../explore/movies/TrendingSection";
+import { buildMetadata } from "@/utils/metadata";
+
+export const metadata = buildMetadata({
+    title: "Movies",
+    description: "Browse every film on StreamVibe — trending now, newly released, most popular, and the top rated in each genre.",
+    path: "/movies",
+});
 
 const SeriesPage = () => {
     return (

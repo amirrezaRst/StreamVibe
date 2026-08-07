@@ -54,11 +54,14 @@ const LikeButton = ({ userId, media }) => {
 
     return (
         <button
+            type="button"
+            aria-pressed={liked}
+            aria-label={liked ? "Unlike" : "Like"}
             className="xl:h-12 h-11 xl:w-12 w-11 bg-c-black-06 border border-c-black-15 rounded-md flex items-center justify-center"
             onClick={handleLike}
             disabled={loading}
         >
-            {loading ? null : (liked ? <LikeIcon color="#E50000" /> : <LikeOutlineIcon />)}
+            {loading ? null : (liked ? <LikeIcon color="#E50000" aria-hidden="true" /> : <LikeOutlineIcon aria-hidden="true" />)}
         </button>
     );
 }

@@ -3,12 +3,30 @@ import Biography from "./Biography";
 import SeriesSection from "./SeriesSection";
 import { fetchDirector } from "@/services/DirectorService";
 import DirectorPageSkeleton from "./DirectorPageSkeleton";
+import { cache } from "react";
+import { buildMetadata, posterUrl } from "@/utils/metadata";
 
+
+const loadDirector = cache((slug) => fetchDirector(slug));
+
+export const generateMetadata = async ({ params }) => {
+    const data = await loadDirector(params.slug);
+    const director = data?.director;
+    if (!director) return buildMetadata({ title: "Director not found", index: false });
+
+    return buildMetadata({
+        title: director.fullName,
+        description: director.bio
+            || `Every film and TV series directed by ${director.fullName} on StreamVibe, with trailers, ratings and reviews.`,
+        path: `/directors/${params.slug}`,
+        image: posterUrl(director.profile),
+    });
+};
 
 const SingleDirectorPage = async ({ params }) => {
     const { slug } = params;
 
-    const data = await fetchDirector(slug);
+    const data = await loadDirector(slug);
 
     if (!data) return <DirectorPageSkeleton />;
 

@@ -4,12 +4,32 @@ import Biography from "./Biography";
 import SeriesSection from "./SeriesSection";
 import ActorPageSkeleton from "./ActorPageSkeleton";
 import { notFound } from "next/navigation";
+import { cache } from "react";
+import { buildMetadata, posterUrl } from "@/utils/metadata";
 
+
+const loadActor = cache((slug) => fetchActor(slug));
+
+export const generateMetadata = async ({ params }) => {
+    const data = await loadActor(params.slug);
+    const actor = data?.actor;
+    if (!actor) return buildMetadata({ title: "Actor not found", index: false });
+
+    return buildMetadata({
+        title: actor.fullName,
+        //! a biography's opening sentence is a better snippet than anything
+        //! generated, but a lot of these records have none
+        description: actor.bio
+            || `Every film and TV series starring ${actor.fullName} on StreamVibe, with trailers, ratings and reviews.`,
+        path: `/actors/${params.slug}`,
+        image: posterUrl(actor.profile),
+    });
+};
 
 const SingleActorPage = async ({ params }) => {
     const { slug } = params;
 
-    const data = await fetchActor(slug);
+    const data = await loadActor(slug);
 
     if (data.status === 404) {
         return notFound();

@@ -13,7 +13,7 @@ import { HouseIcon } from "@/components/admin/AdminIcons";
 const Fact = ({ value, label }) => (
     <span>
         <b className="block text-c-grey-90 text-[13px] font-extrabold tabular-nums">{value}</b>
-        <span className="text-[10px] text-c-black-30 uppercase tracking-[0.05em]">{label}</span>
+        <span className="text-[10px] text-c-grey-55 uppercase tracking-[0.05em]">{label}</span>
     </span>
 );
 
@@ -40,7 +40,7 @@ const CinemaCard = ({ cinema }) => (
 
         <div className="py-3 px-3.5">
             <h3 className="text-sm font-extrabold mb-0.5 capitalize">{cinema.name}</h3>
-            <p className="text-[11.5px] text-c-black-30 mb-2.5 capitalize">
+            <p className="text-[11.5px] text-c-grey-55 mb-2.5 capitalize">
                 {cinema.city}{cinema.country ? ` · ${cinema.country}` : ""}
             </p>
 
@@ -132,6 +132,7 @@ const CinemasContent = () => {
                     />
                     {cities.length > 1 && (
                         <select
+                            aria-label="Filter by city"
                             value={city}
                             onChange={(event) => setCity(event.target.value)}
                             className="bg-c-black-06 border border-c-black-20 rounded-[7px] py-1.5 px-2.5 text-xs

@@ -10,10 +10,11 @@ const SearchForm = ({ query, setQuery, handleClose, handleSearch }) => {
                 className="bg-c-black-12 border border-c-black-20 rounded-xl relative overflow-hidden w-full"
             >
                 <button
+                    aria-label="Search"
                     className="h-full bg-c-black-15 absolute z-10 left-0 aspect-square flex justify-center items-center focus:outline-none"
                     type="submit"
                 >
-                    <SearchSvg className="3xl:w-[2.4rem] 3xl:h-[2.4rem]" />
+                    <SearchSvg className="3xl:w-[2.4rem] 3xl:h-[2.4rem]" aria-hidden="true" />
                 </button>
                 <input
                     type="text"

@@ -45,7 +45,7 @@ const TonightStrip = ({ screenings, updatedAt }) => (
                 Live
             </span>
             {updatedAt && (
-                <span className="ms-auto text-[11.5px] text-c-black-30 tabular-nums">
+                <span className="ms-auto text-[11.5px] text-c-grey-55 tabular-nums">
                     Updated {updatedAt}
                 </span>
             )}
@@ -64,7 +64,7 @@ const TonightStrip = ({ screenings, updatedAt }) => (
                         <article key={screening._id} className="bg-c-black-06 border border-c-black-15 rounded-[9px] py-2.5 px-[11px]">
                             <div className="flex items-baseline gap-1.5 mb-0.5">
                                 <span className="text-[13px] font-extrabold tabular-nums">{time}</span>
-                                <span className="text-[10.5px] text-c-black-30 truncate">
+                                <span className="text-[10.5px] text-c-grey-55 truncate">
                                     {meridiem} · {screening.hall?.name} · {screening.hall?.screenType}
                                 </span>
                             </div>
@@ -73,13 +73,13 @@ const TonightStrip = ({ screenings, updatedAt }) => (
                             </p>
                             {/*//! without the venue, two halls called "Screen 2" in
                                 different cinemas are indistinguishable */}
-                            <p className="text-[10.5px] text-c-black-30 truncate mb-2">
+                            <p className="text-[10.5px] text-c-grey-55 truncate mb-2">
                                 {screening.cinema?.name}
                             </p>
 
                             <SeatMeter occupancy={screening.occupancy} />
 
-                            <div className="flex justify-between text-[10.5px] text-c-black-30 tabular-nums">
+                            <div className="flex justify-between text-[10.5px] text-c-grey-55 tabular-nums">
                                 <span><b className="text-c-grey-90 font-bold">{screening.taken}</b>/{screening.capacity} seats</span>
                                 <span>{screening.occupancy}%</span>
                             </div>

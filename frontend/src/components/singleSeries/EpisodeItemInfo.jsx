@@ -13,13 +13,16 @@ const EpisodeItemInfo = ({ title, seriesId, seasonNumber, episodeNumber, descrip
                     >
                         <WatchSvg className="lg:w-[20px] lg:h-[20px] w-[16px] h-[16px]" /> {runtime} min
                     </span>
-                    <Link href={`/series/${seriesId}/${seasonNumber}/${episodeNumber}`}>
-                        <button
-                            className="rounded-full flex items-center justify-center bg-c-black-08 
-                                border border-c-black-15 p-2"
-                        >
-                            <DownloadIcon className="w-5 h-5" />
-                        </button>
+                    {/*//! same fix as the thumbnail beside it — one control, a
+                        link, carrying its own name rather than a nameless
+                        button nested inside a nameless link */}
+                    <Link
+                        href={`/series/${seriesId}/${seasonNumber}/${episodeNumber}`}
+                        aria-label={`Open episode ${episodeNumber}: ${title}`}
+                        className="rounded-full flex items-center justify-center bg-c-black-08
+                            border border-c-black-15 p-2"
+                    >
+                        <DownloadIcon className="w-5 h-5" aria-hidden="true" />
                     </Link>
                 </div>
             </div>

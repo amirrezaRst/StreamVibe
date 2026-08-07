@@ -138,7 +138,7 @@ const BookingDetail = ({ id }) => {
                             Release seats
                         </button>
 
-                        <p className="mt-3 text-center text-[11px] text-c-black-30">
+                        <p className="mt-3 text-center text-[11px] text-c-grey-55">
                             Secured by <span className="text-[#8F88FF] font-bold">Stripe</span>
                         </p>
                     </div>

@@ -1,5 +1,12 @@
 import SubscriptionBox from "@/components/subscription/SubscriptionBox";
 import SubscriptionPlan from "@/components/subscription/SubscriptionPlan";
+import { buildMetadata } from "@/utils/metadata";
+
+export const metadata = buildMetadata({
+    title: "Plans & Pricing",
+    description: "Compare the Basic, Standard and Premium StreamVibe plans and pick the one that fits how you watch.",
+    path: "/subscriptions",
+});
 
 const SubscriptionsPage = () => {
     return (

@@ -212,7 +212,7 @@ const ReviewsContent = () => {
                                     ${tab === id ? "bg-c-red-45/[0.12] text-c-red-80" : "text-c-grey-60 hover:text-c-grey-90"}`}
                             >
                                 {label}
-                                {counts && <span className="opacity-70 ms-1">{counts[id]}</span>}
+                                {counts && <span className="ms-1 tabular-nums">{counts[id]}</span>}
                             </button>
                         ))}
                     </div>
@@ -223,10 +223,10 @@ const ReviewsContent = () => {
                         onChange={(event) => setSearch(event.target.value)}
                         placeholder="Search text or reviewer"
                         className="bg-c-black-06 border border-c-black-20 rounded-[7px] py-1.5 px-3 text-xs
-                            text-c-grey-90 placeholder:text-c-black-30 focus:border-c-black-25 outline-none w-[210px]"
+                            text-c-grey-90 placeholder:text-c-grey-55 focus:border-c-black-25 outline-none w-[210px]"
                     />
 
-                    <span className="ms-auto text-[11px] text-c-black-30 hidden md:block">
+                    <span className="ms-auto text-[11px] text-c-grey-55 hidden md:block">
                         <b className="text-c-grey-65">J</b>/<b className="text-c-grey-65">K</b> move ·
                         <b className="text-c-grey-65 ms-1.5">X</b> select ·
                         <b className="text-c-grey-65 ms-1.5">A</b> approve ·

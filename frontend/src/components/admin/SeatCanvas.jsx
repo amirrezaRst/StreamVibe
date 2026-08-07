@@ -90,7 +90,7 @@ const SeatCanvas = ({
         <div className="p-4 overflow-x-auto select-none">
             <div className="h-[5px] mx-auto mb-1 rounded-full w-[56%]
                 bg-gradient-to-r from-transparent via-c-black-25 to-transparent" />
-            <p className="text-center text-[9.5px] font-extrabold tracking-[0.24em] uppercase text-c-black-30 mb-4">
+            <p className="text-center text-[9.5px] font-extrabold tracking-[0.24em] uppercase text-c-grey-55 mb-4">
                 Screen
             </p>
 
@@ -106,7 +106,7 @@ const SeatCanvas = ({
                 <div className="flex items-center gap-[5px] mb-0.5" style={{ gap: gapSize }}>
                     <span className="w-4 shrink-0" />
                     {Array.from({ length: widest }, (_, i) => (
-                        <span key={i} className="text-center text-[8.5px] text-c-black-30 font-bold shrink-0"
+                        <span key={i} className="text-center text-[8.5px] text-c-grey-55 font-bold shrink-0"
                             style={{ width: size }}>
                             {i + 1}
                         </span>
@@ -115,7 +115,7 @@ const SeatCanvas = ({
 
                 {seatMap.map((row, rowIndex) => (
                     <div key={row.row} className="flex items-center group" style={{ gap: gapSize }}>
-                        <span className="w-4 shrink-0 text-center text-[9.5px] text-c-black-30 font-extrabold">
+                        <span className="w-4 shrink-0 text-center text-[9.5px] text-c-grey-55 font-extrabold">
                             {row.row}
                         </span>
 

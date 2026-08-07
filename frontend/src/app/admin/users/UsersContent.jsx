@@ -30,7 +30,7 @@ const RoleToggle = ({ role, isYou, busy, onChange }) => (
                 onClick={() => onChange(option)}
                 aria-pressed={role === option}
                 className={`text-[10.5px] font-extrabold py-0.5 px-2.5 rounded-[5px] duration-150
-                    ${role === option ? "bg-c-red-45/[0.12] text-c-red-80" : "text-c-black-30"}
+                    ${role === option ? "bg-c-red-45/[0.12] text-c-red-80" : "text-c-grey-55"}
                     ${isYou ? "cursor-default" : role !== option ? "hover:text-c-grey-90" : ""}`}
             >
                 {option === "user" ? "Member" : "Admin"}
@@ -75,9 +75,9 @@ const UsersContent = () => {
                     <div className="min-w-0">
                         <p className="text-c-grey-90 font-bold truncate capitalize">
                             {user.fullName}
-                            {user._id === me?._id && <span className="text-[10px] text-c-black-30 ms-1.5 normal-case">that is you</span>}
+                            {user._id === me?._id && <span className="text-[10px] text-c-grey-55 ms-1.5 normal-case">that is you</span>}
                         </p>
-                        <p className="text-[10.5px] text-c-black-30 truncate">{user.email}</p>
+                        <p className="text-[10.5px] text-c-grey-55 truncate">{user.email}</p>
                     </div>
                 </div>
             ),

@@ -19,7 +19,10 @@ const MultipleCard = ({ title, images, baseurl, topRated }) => {
                             <Image
                                 key={index}
                                 src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${src}`}
-                                alt={src}
+                                //! decorative: these four thumbnails illustrate
+                                //! the genre named in the heading beside them,
+                                //! and the alt was the upload filename
+                                alt=""
                                 width={288}
                                 height={432}
                                 className="w-full rounded-xl aspect-square object-cover object-top"
@@ -37,7 +40,11 @@ const MultipleCard = ({ title, images, baseurl, topRated }) => {
                 >
                     <div className="flex-1 flex items-center justify-between mt-4">
                         <h4 className="font-medium text-white capitalize">{title}</h4>
-                        <button><RightArrowSvg /></button>
+                        {/*//! was a <button> inside the card's <Link> — invalid
+                            nesting, and a tab stop that did nothing when it was
+                            reached. The whole card is the control; this arrow
+                            only points at it */}
+                        <span aria-hidden="true"><RightArrowSvg /></span>
                     </div>
                 </div>
 

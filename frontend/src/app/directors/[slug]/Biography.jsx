@@ -25,8 +25,14 @@ const Biography = ({ bio }) => {
                     className={`absolute bottom-0 left-0 w-full h-12 z-10 bg-gradient-to-t from-c-black-10
                      via-c-black-10/80 via-60% to-c-black-10/0 ${!bio || bio === "" ? "hidden" : "flex"} justify-center items-end `}
                 >
-                    <button className={`${showMore && "rotate-180"} p-1.5 mt-1 duration-700`} onClick={() => setShowMore(!showMore)}>
-                        <LeftArrowSvg className="w-5 h-5 stroke-white -rotate-90" />
+                    <button
+                        type="button"
+                        aria-expanded={showMore}
+                        aria-label={showMore ? "Show less of this biography" : "Read the full biography"}
+                        className={`${showMore && "rotate-180"} p-1.5 mt-1 duration-700`}
+                        onClick={() => setShowMore(!showMore)}
+                    >
+                        <LeftArrowSvg className="w-5 h-5 stroke-white -rotate-90" aria-hidden="true" />
                     </button>
                 </div>
             </div>

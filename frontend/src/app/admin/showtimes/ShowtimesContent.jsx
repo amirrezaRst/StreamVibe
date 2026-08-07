@@ -85,6 +85,7 @@ const ShowtimesContent = () => {
                         bg-c-black-10 text-c-grey-65 hover:text-c-grey-90 duration-150">›</button>
 
                 <select
+                    aria-label="Cinema"
                     value={cinemaId}
                     onChange={(event) => setCinemaId(event.target.value)}
                     className="bg-c-black-10 border border-c-black-20 rounded-[7px] py-[7px] px-2.5 text-[12.5px]
@@ -143,7 +144,7 @@ const ShowtimesContent = () => {
                                     style={{ background: "rgba(229,0,0,0.3)" }} />
                                 Collision
                             </span>
-                            <span className="ms-auto text-c-black-30">
+                            <span className="ms-auto text-c-grey-55">
                                 Click an empty slot to schedule something there.
                             </span>
                         </div>

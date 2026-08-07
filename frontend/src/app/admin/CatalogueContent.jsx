@@ -101,7 +101,7 @@ const CatalogueContent = ({ kind }) => {
                         placeholder={`Search ${series ? "series" : "movies"}`}
                     />
                     {list.sort && (
-                        <span className="text-[11px] text-c-black-30">
+                        <span className="text-[11px] text-c-grey-55">
                             Sorted by <b className="text-c-grey-65 capitalize">{list.sort.field === "createdAt" ? "newest" : list.sort.field}</b>
                         </span>
                     )}

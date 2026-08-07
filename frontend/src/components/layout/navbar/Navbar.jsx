@@ -31,18 +31,23 @@ const Navbar = () => {
                     <SearchBox />
                     {loading ? <div className="3xl:w-[5rem] w-[4.1rem] h-1" ></div> : !loading && user ?
                         <>
-                            <Link href="/profile" className="relative">
-                                <UserOIcon className="3xl:w-[2.4rem] 3xl:h-[2.4rem]" />
+                            <Link href="/profile" className="relative" aria-label="Your profile">
+                                <UserOIcon className="3xl:w-[2.4rem] 3xl:h-[2.4rem]" aria-hidden="true" />
                                 {user?.subscription?.status == "active" &&
-                                    <MultiStar className="absolute -bottom-2.5 -left-2.5 w-[22px] h-[22px]" />
+                                    <MultiStar className="absolute -bottom-2.5 -left-2.5 w-[22px] h-[22px]" aria-hidden="true" />
                                 }
                             </Link>
                             <NotificationButton />
                         </> :
-                        <Link href="/register?page=login">
-                            <button className="focus:outline-none focus:border-none mx-2.5 md:inline hidden">
-                                <UserPlusOIcon className="3xl:w-[2.4rem] 3xl:h-[2.4rem]" />
-                            </button>
+                        //! was a <button> inside this <Link> — nested interactive
+                        //! elements, and neither carried a name, so the only way
+                        //! in for a signed-out visitor announced itself as "link"
+                        <Link
+                            href="/register?page=login"
+                            aria-label="Sign in"
+                            className="focus:outline-none focus:border-none mx-2.5 md:inline-flex hidden items-center"
+                        >
+                            <UserPlusOIcon className="3xl:w-[2.4rem] 3xl:h-[2.4rem]" aria-hidden="true" />
                         </Link>
                     }
 
