@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 
 import ReviewSection from "@/components/review/ReviewSection";
 import CastSection from "@/components/singlePage/CastSection";
@@ -10,11 +10,33 @@ import ReleasedMovie from "@/components/singlePage/ReleasedMovie";
 import DownloadSection from "../../../../../components/singlePage/DownloadSection";
 import EpisodePageSkeleton from "./EpisodePageSkeleton";
 import { fetchSingleEpisode } from "@/services/SeriesService";
+import { buildMetadata, posterUrl } from "@/utils/metadata";
 
+
+const loadEpisode = cache((seriesId, season, episode) =>
+    fetchSingleEpisode(seriesId, season, episode));
+
+export const generateMetadata = async ({ params }) => {
+    const { slug, season, episode } = params;
+    const data = await loadEpisode(slug, season, episode);
+    if (!data) return buildMetadata({ title: "Episode not found", index: false });
+
+    //! "Show — S2E5 Title" rather than the episode name alone, which on its own
+    //! ("Pilot", "Part One") tells a search result nothing about what it is
+    const label = `${data.series?.title} — S${season}E${episode}${data.title ? `: ${data.title}` : ""}`;
+
+    return buildMetadata({
+        title: label,
+        description: data.description
+            || `Watch ${data.series?.title} season ${season}, episode ${episode} in high quality on StreamVibe.`,
+        path: `/series/${slug}/${season}/${episode}`,
+        image: posterUrl(data.pictures?.[0] || data.series?.cover),
+    });
+};
 
 const SingleEpisodePage = async ({ params }) => {
     const { slug: seriesId, season, episode } = params;
-    const seriesData = await fetchSingleEpisode(seriesId, season, episode);
+    const seriesData = await loadEpisode(seriesId, season, episode);
 
     if (!seriesData) return <EpisodePageSkeleton />;
 

@@ -9,6 +9,7 @@
       "@/assets/*": ["./src/assets/*"],
       "@/stores/*": ["./src/stores/*"],
       "@/services/*": ["./src/services/*"],
+      "@/utils/*": ["./src/utils/*"]
     }
   }
 }
