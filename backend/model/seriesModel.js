@@ -16,6 +16,11 @@ const seriesModel = mongoose.Schema({
         type: String,
         required: [true, 'Title is required'],
     },
+    musician: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Musicians',
+        required: false,
+    },
     director: {
         type: mongoose.Schema.Types.ObjectId,
         required: [true, 'Director is required'],

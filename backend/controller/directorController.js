@@ -1,4 +1,5 @@
 const path = require('path');
+const { creditsFor, collaboratorsFrom } = require('../utils/personCredits');
 
 const Director = require('../model/directorModel');
 const Movie = require('../model/movieModel');
@@ -40,229 +41,50 @@ exports.getAllDirectors = async (req, res) => {
 
 exports.getDirector = async (req, res) => {
     try {
-        const director = await Director.findById(req.params.id);
-        if (!director) return res.status(404).json({ status: 404, message: "Director not found" });
+        //! resolved by the slug middleware, so this is already the record
+        const director = req.record;
 
-        const movies = await Movie.aggregate([
-            { $match: { director: director._id } },
-            {
-                $lookup: {
-                    from: 'reviews',
-                    localField: '_id',
-                    foreignField: 'media',
-                    as: 'reviews'
-                }
-            },
-            {
-                $addFields: {
-                    rate: { $avg: '$reviews.rating' }
-                }
-            },
-            { $sort: { release_date: -1 } },
-            { $limit: 12 },
-            {
-                $project: {
-                    title: 1,
-                    slug: 1,
-                    thumbnail: 1,
-                    views: 1,
-                    duration: 1,
-                    rate: 1
-                }
-            }
-        ]);
-
-        const series = await Series.aggregate([
-            { $match: { director: director._id } },
-            {
-                $lookup: {
-                    from: 'reviews',
-                    localField: '_id',
-                    foreignField: 'media',
-                    as: 'reviews'
-                }
-            },
-            {
-                $addFields: {
-                    rate: { $avg: '$reviews.rating' }
-                }
-            },
-            {
-                $lookup: {
-                    from: 'seasons',
-                    localField: '_id',
-                    foreignField: 'series',
-                    as: 'seasons'
-                }
-            },
-            {
-                $addFields: {
-                    totalEpisodes: { $sum: { $map: { input: '$seasons', as: 'season', in: { $size: '$$season.episodes' } } } }
-                }
-            },
-            { $sort: { release_date: -1 } },
-            { $limit: 12 },
-            {
-                $project: {
-                    title: 1,
-                    slug: 1,
-                    thumbnail: 1,
-                    views: 1,
-                    totalEpisodes: 1,
-                    rate: 1,
-                }
-            }
-        ]);
+        const credits = await creditsFor({ director: director._id });
+        const collaborators = await collaboratorsFrom(credits, { role: 'director', excludeId: director._id });
 
         res.status(200).json({
             status: 200,
             message: "fetch data successfully",
             director,
-            movies,
-            series
+            ...credits,
+            collaborators,
         });
     } catch (err) {
-        res.status(500).json({
-            status: 500,
-            message: err.message
-        });
+        res.status(500).json({ status: 500, message: err.message });
     }
 };
 
-
-
-exports.getDirectorMovies = async (req, res) => {
+//! the paginated "see all" page behind each carousel
+const paginatedCredits = (CreditModel, key) => async (req, res) => {
     try {
-        const director = await Director.findById(req.params.id).select("fullName");
-        if (!director) return res.status(404).json({ status: 404, message: "Director not found" });
-
+        const director = req.record;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
 
-        const movies = await Movie.aggregate([
-            { $match: { director: director._id } },
-            {
-                $lookup: {
-                    from: 'reviews',
-                    localField: '_id',
-                    foreignField: 'media',
-                    as: 'reviews'
-                }
-            },
-            {
-                $addFields: {
-                    rate: { $avg: '$reviews.rating' }
-                }
-            },
-            { $sort: { release_date: -1 } },
-            { $skip: (page - 1) * limit },
-            { $limit: parseInt(limit) },
-            {
-                $project: {
-                    title: 1,
-                    slug: 1,
-                    thumbnail: 1,
-                    views: 1,
-                    duration: 1,
-                    rate: 1
-                }
-            }
-        ]);
-
-        const totalMovies = await Movie.countDocuments({ director: director._id });
-        const totalPages = Math.ceil(totalMovies / limit);
+        const credits = await creditsFor({ director: director._id }, { limit, skip: (page - 1) * limit });
+        const total = await CreditModel.countDocuments({ director: director._id });
+        const totalPages = Math.ceil(total / limit);
 
         res.status(200).json({
             status: 200,
             message: "Fetch data successfully",
-            director,
-            movies,
-            pagination: {
-                currentPage: page,
-                totalPages,
-                hasNextPage: page < totalPages
-            }
+            director: { fullName: director.fullName, slug: director.slug },
+            [key]: credits[key],
+            pagination: { currentPage: page, totalPages, hasNextPage: page < totalPages },
         });
     } catch (err) {
-        res.status(500).json({
-            status: 500,
-            message: err.message
-        });
+        res.status(500).json({ status: 500, message: err.message });
     }
 };
 
-exports.getDirectorSeries = async (req, res) => {
-    try {
-        const director = await Director.findById(req.params.id).select("fullName");
-        if (!director) return res.status(404).json({ status: 404, message: "Director not found" });
+exports.getDirectorMovies = paginatedCredits(Movie, 'movies');
+exports.getDirectorSeries = paginatedCredits(Series, 'series');
 
-        var { page = 1, limit = 12 } = req.query;
-        page = parseInt(page);
-
-        const series = await Series.aggregate([
-            { $match: { director: director._id } },
-            {
-                $lookup: {
-                    from: 'reviews',
-                    localField: '_id',
-                    foreignField: 'media',
-                    as: 'reviews'
-                }
-            },
-            {
-                $addFields: {
-                    rate: { $avg: '$reviews.rating' }
-                }
-            },
-            {
-                $lookup: {
-                    from: 'seasons',
-                    localField: '_id',
-                    foreignField: 'series',
-                    as: 'seasons'
-                }
-            },
-            {
-                $addFields: {
-                    totalEpisodes: { $sum: { $map: { input: '$seasons', as: 'season', in: { $size: '$$season.episodes' } } } }
-                }
-            },
-            { $sort: { release_date: -1 } },
-            { $skip: (page - 1) * limit },
-            { $limit: parseInt(limit) },
-            {
-                $project: {
-                    title: 1,
-                    slug: 1,
-                    thumbnail: 1,
-                    views: 1,
-                    totalEpisodes: 1,
-                    rate: 1
-                }
-            }
-        ]);
-
-        const totalSeries = await Series.countDocuments({ director: director._id });
-        const totalPages = Math.ceil(totalSeries / limit);
-
-        res.status(200).json({
-            status: 200,
-            message: "Fetch data successfully",
-            director,
-            series,
-            pagination: {
-                currentPage: page,
-                totalPages,
-                hasNextPage: page < totalPages
-            }
-        });
-    } catch (err) {
-        res.status(500).json({
-            status: 500,
-            message: err.message
-        });
-    }
-};
 
 exports.createDirector = [upload, createDirectorValidation, async (req, res) => {
     try {

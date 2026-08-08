@@ -21,7 +21,8 @@ exports.singleMovie = async (req, res) => {
     const movieId = req.params.id;
 
     try {
-        const movie = await Movie.findById(movieId).populate("actors director");
+        const movie = await Movie.findById(movieId).populate("actors director")
+            .populate({ path: "musician", select: "fullName slug profile birthPlace country" });
         if (!movie) {
             return res.status(404).json({ message: "Movie not found" });
         }

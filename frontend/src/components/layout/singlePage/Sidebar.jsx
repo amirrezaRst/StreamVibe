@@ -17,7 +17,9 @@ const Sidebar = ({ releaseDate, language, rating, genres, director, musician, ty
             <Rating ratings={rating} />
             <Genres genres={genres} type={type} />
             <Director director={director} />
-            <Musician musician={{ name: 'Kyle Dixon', country: 'USA', image: '/images/musician.jpg' }} />
+            {/*//! renders nothing when the title has no composer on record,
+                rather than the hardcoded name that used to appear on all of them */}
+            <Musician musician={musician} />
 
         </article>
     );

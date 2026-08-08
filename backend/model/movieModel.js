@@ -22,6 +22,11 @@ const movieModel = mongoose.Schema({
         default: "",
         require: false
     },
+    musician: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Musicians',
+        required: false,
+    },
     director: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Directors',
