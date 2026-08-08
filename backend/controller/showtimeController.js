@@ -104,7 +104,7 @@ exports.getNowPlaying = async (req, res) => {
             {
                 $project: {
                     _id: 0,
-                    movie: { _id: '$movie._id', title: '$movie.title', thumbnail: '$movie.thumbnail', duration: '$movie.duration' },
+                    movie: { _id: '$movie._id', slug: '$movie.slug', title: '$movie.title', thumbnail: '$movie.thumbnail', duration: '$movie.duration' },
                     cinemaCount: { $size: '$cinemaIds' },
                     showtimes: { $slice: ['$showtimes', 6] },
                 }

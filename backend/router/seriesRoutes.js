@@ -2,6 +2,10 @@ const express = require('express');
 const { getAllSeries, createSeries, getSeries, updateSeries, deleteSeries, topRatedSeries, trendingSeries, seriesCategories, newReleasedSeries, popularSeries, getSeriesByGenre }
     = require('../controller/seriesController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
+const resolveBySlug = require('../middleware/ResolveBySlug');
+
+//! public reads take a slug or an _id; writes below stay _id-only
+const resolveSeries = resolveBySlug(require('../model/seriesModel'));
 const Authenticate = require('../middleware/Authenticate');
 const Authorize = require('../middleware/Authorize');
 
@@ -23,7 +27,7 @@ router.get("/seriesByGenre/:genre", getSeriesByGenre);
 
 router
     .route('/:id')
-    .get(ValidateObjectId, getSeries)
+    .get(resolveSeries, getSeries)
     .put([Authenticate, Authorize(["admin"])], ValidateObjectId, updateSeries)
     .delete([Authenticate, Authorize(["admin"])], ValidateObjectId, deleteSeries);
 

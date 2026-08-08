@@ -18,7 +18,7 @@ export const generateMetadata = async ({ params }) => {
         title: director.fullName,
         description: director.bio
             || `Every film and TV series directed by ${director.fullName} on StreamVibe, with trailers, ratings and reviews.`,
-        path: `/directors/${params.slug}`,
+        path: `/directors/${director.slug || params.slug}`,
         image: posterUrl(director.profile),
     });
 };
@@ -104,9 +104,9 @@ const SingleDirectorPage = async ({ params }) => {
                     </div>
                 </div>
 
-                <MovieSection slug={slug} fullName={"Christopher Nolan"} moviesData={movies} />
+                <MovieSection slug={slug} fullName={fullName} moviesData={movies} />
 
-                <SeriesSection slug={slug} fullName={"Christopher Nolan"} seriesData={series} />
+                <SeriesSection slug={slug} fullName={fullName} seriesData={series} />
 
             </main>
         </>

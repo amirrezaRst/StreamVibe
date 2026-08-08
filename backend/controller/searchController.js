@@ -41,6 +41,7 @@ const searchController = async (req, res) => {
                         data: {
                             _id: '$_id',
                             title: '$movieDetails.title',
+                            slug: '$movieDetails.slug',
                             description: '$movieDetails.description',
                             thumbnail: '$movieDetails.thumbnail',
                             genres: '$movieDetails.genres',
@@ -75,6 +76,7 @@ const searchController = async (req, res) => {
                         data: {
                             _id: '$_id',
                             title: '$seriesDetails.title',
+                            slug: '$seriesDetails.slug',
                             description: '$seriesDetails.description',
                             thumbnail: '$seriesDetails.thumbnail',
                             genres: '$seriesDetails.genres',
@@ -85,10 +87,10 @@ const searchController = async (req, res) => {
                 { $limit: limit }
             ]),
             Actor.find({ fullName: { $regex: query, $options: 'i' } })
-                .select("fullName profile birthDate country birthPlace bio")
+                .select("fullName slug profile birthDate country birthPlace bio")
                 .limit(limit),
             Director.find({ fullName: { $regex: query, $options: 'i' } })
-                .select("fullName profile birthDate country birthPlace bio")
+                .select("fullName slug profile birthDate country birthPlace bio")
                 .limit(limit)
         ]);
 

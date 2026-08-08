@@ -195,6 +195,7 @@ exports.trendingSeries = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     views: 1,
                     totalEpisodes: 1,
                     averageRating: 1,
@@ -275,6 +276,7 @@ exports.newReleasedSeries = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     views: 1,
                     totalEpisodes: 1,
                     averageRating: 1,
@@ -350,6 +352,7 @@ exports.popularSeries = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     views: 1,
                     totalEpisodes: 1,
                     averageRating: 1,
@@ -430,6 +433,7 @@ exports.getSeriesByGenre = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     totalEpisodes: 1,
                     duration: 1,
                     rate: 1,

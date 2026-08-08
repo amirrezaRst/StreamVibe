@@ -17,8 +17,8 @@ const SeriesGenreSection = ({series,genres}) => {
                 <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 grid-cols-1 gap-8 mt-10">
 
                     <Suspense fallback={<MovieCardSkeleton special />}>
-                        {series.map(({ _id, title, duration, thumbnail, views, rate }) => (
-                            <MovieCard special key={_id} id={_id} title={title} image={thumbnail} duration={duration} view={views} rate={rate} />
+                        {series.map(({ _id, slug, title, duration, thumbnail, views, rate }) => (
+                            <MovieCard special key={_id} id={slug || _id} title={title} image={thumbnail} duration={duration} view={views} rate={rate} />
                         ))}
                     </Suspense>
 

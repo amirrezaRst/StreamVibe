@@ -1,6 +1,10 @@
 const { Router } = require('express');
 const { allMovies, singleMovie, createMovie, updateMovie, deleteMovie, movieCategories, topRatedMovies, trendingMovies, newReleased, popularMovies, downloadMovie, getMoviesByGenre } = require('../controller/movieController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
+const resolveBySlug = require('../middleware/ResolveBySlug');
+
+//! public reads take a slug or an _id; writes below stay _id-only
+const resolveMovie = resolveBySlug(require('../model/movieModel'));
 const Authorize = require('../middleware/Authorize');
 const Authenticate = require('../middleware/Authenticate');
 
@@ -20,7 +24,7 @@ router.get("/moviesByGenre/:genre", getMoviesByGenre);
 router.post("/download", downloadMovie);
 
 router.route("/:id")
-    .get(ValidateObjectId, singleMovie)
+    .get(resolveMovie, singleMovie)
     .put([Authenticate, Authorize(["admin"])], ValidateObjectId, updateMovie)
     .delete([Authenticate, Authorize(["admin"])], ValidateObjectId, deleteMovie);
 

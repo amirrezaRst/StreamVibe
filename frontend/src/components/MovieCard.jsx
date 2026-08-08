@@ -3,6 +3,8 @@ import Link from "next/link";
 import StarRating from "./common/StarRating";
 import Image from "next/image";
 
+//! `id` may be a slug or an _id — the detail routes resolve either, so callers
+//! pass whichever they have and readable URLs win wherever the slug is loaded
 const MovieCard = ({ id, special, series, image, title, view, duration, episodes, rate }) => {
     return (
         <div

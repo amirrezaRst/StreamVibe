@@ -59,14 +59,20 @@ const sitemap = async () => {
     //! Titles are the reason anyone lands here from a search, so they carry the
     //! highest priority of anything generated; a person's filmography page is
     //! worth indexing but is rarely the query itself.
+    //!
+    //! Slugs only. Both forms resolve, but a sitemap is a statement about which
+    //! address is canonical — listing the _id form would invite a crawler to
+    //! index the same page twice under two URLs.
+    const address = (record) => record.slug || record._id;
+
     return [
         ...STATIC_ROUTES,
-        ...movies.map(movie => entry(`/movies/${movie._id}`, 0.8)),
-        ...series.map(show => entry(`/series/${show._id}`, 0.8)),
+        ...movies.map(movie => entry(`/movies/${address(movie)}`, 0.8)),
+        ...series.map(show => entry(`/series/${address(show)}`, 0.8)),
         ...movieGenres.map(genre => entry(`/movies/genres/${encodeURIComponent(genre)}`, 0.6)),
         ...seriesGenres.map(genre => entry(`/series/genres/${encodeURIComponent(genre)}`, 0.6)),
-        ...actors.map(actor => entry(`/actors/${actor._id}`, 0.5, "monthly")),
-        ...directors.map(director => entry(`/directors/${director._id}`, 0.5, "monthly")),
+        ...actors.map(actor => entry(`/actors/${address(actor)}`, 0.5, "monthly")),
+        ...directors.map(director => entry(`/directors/${address(director)}`, 0.5, "monthly")),
     ];
 };
 

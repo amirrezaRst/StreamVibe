@@ -19,8 +19,12 @@ const CastSection = ({ actors }) => {
                 ref={scrollContainerRef}
             >
                 {actors.length > 0 ?
-                    actors.map(({ actorId, fullName, profile }) => (
-                        <ActorItem key={actorId} id={actorId} fullName={fullName} profile={profile} />
+                    //! `actorId` is a short public code, not the identifier the
+                    //! actor route resolves — reading it here is what made every
+                    //! cast link throw a server exception. The slug is the
+                    //! address; the _id keys the list.
+                    actors.map(({ _id, slug, fullName, profile }) => (
+                        <ActorItem key={_id} id={slug || _id} fullName={fullName} profile={profile} />
                     )) :
                     <p className="text-white 2xl:text-base xl:text-super-sm md:text-sm text-super-xs">No actors found</p>
                 }

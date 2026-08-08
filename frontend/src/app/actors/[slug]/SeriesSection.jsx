@@ -36,7 +36,7 @@ const SeriesSection = ({ slug, fullName, seriesData }) => {
                         <span className="capitalize">{fullName}</span>{"'"}s series
                     </h5>
                     <span className="text-c-grey-90 ml-16 3xl:text-base xl:text-super-sm md:text-sm text-super-xs">
-                        <Link href={`/directors/${slug}/series`}>
+                        <Link href={`/actors/${slug}/series`}>
                             See more <LeftArrowSvg className="inline stroke-c-grey-90 rotate-180 ml-1.5 md:w-[18px] w-4" />
                         </Link>
                     </span>
@@ -50,9 +50,9 @@ const SeriesSection = ({ slug, fullName, seriesData }) => {
             >
                 {loading ?
                     Array.from({ length: 5 }).map((_, index) => <MovieCardSkeleton key={index} />)
-                    : series?.length == 0 ? <span className="3xl:text-super-base xl:text-super-sm max-md:text-sm text-c-grey-60">No series available for this director at the moment.</span>
-                        : series.map(({ _id, title, totalEpisodes, thumbnail, views, rate }, index) => (
-                            <MovieCard key={_id} series id={_id} title={title} image={thumbnail} episodes={totalEpisodes} view={views} rate={rate} />
+                    : series?.length == 0 ? <span className="3xl:text-super-base xl:text-super-sm max-md:text-sm text-c-grey-60">No series for this actor in the catalogue yet.</span>
+                        : series.map(({ _id, slug, title, totalEpisodes, thumbnail, views, rate }, index) => (
+                            <MovieCard key={_id} series id={slug || _id} title={title} image={thumbnail} episodes={totalEpisodes} view={views} rate={rate} />
                         ))}
             </div>
         </div >

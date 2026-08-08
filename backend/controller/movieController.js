@@ -126,6 +126,7 @@ exports.trendingMovies = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     views: 1,
                     duration: 1,
                     averageRating: 1,
@@ -193,6 +194,7 @@ exports.newReleased = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     views: 1,
                     duration: 1,
                     averageRating: 1,
@@ -255,6 +257,7 @@ exports.popularMovies = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     views: 1,
                     duration: 1,
                     averageRating: 1,
@@ -321,6 +324,7 @@ exports.getMoviesByGenre = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     views: 1,
                     duration: 1,
                     rate: 1,

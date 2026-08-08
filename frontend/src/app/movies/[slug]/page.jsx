@@ -31,7 +31,7 @@ export const generateMetadata = async ({ params }) => {
     return buildMetadata({
         title: movie.title,
         description: describeTitle({ ...movie, year: movie.release_date }),
-        path: `/movies/${params.slug}`,
+        path: `/movies/${movie.slug || params.slug}`,
         image: posterUrl(movie.cover || movie.thumbnail),
     });
 };
