@@ -60,8 +60,8 @@ const TrendingSeriesSection = () => {
                 {loading
                     ? Array.from({ length: 5 }).map((_, index) => <MovieCardSkeleton key={index} />) :
                     series?.length === 0 ? <span className="3xl:text-super-base xl:text-super-sm max-md:text-sm text-c-grey-60">Sorry, no series available yet. Please visit us again later.</span>
-                        : series.map(({ _id, title, totalEpisodes, thumbnail, views, averageRating }, index) => (
-                            <MovieCard key={_id} id={_id} series title={title} image={thumbnail} episodes={totalEpisodes} view={views} rate={averageRating} />
+                        : series.map(({ _id, slug, title, totalEpisodes, thumbnail, views, averageRating }, index) => (
+                            <MovieCard key={_id} id={slug || _id} series title={title} image={thumbnail} episodes={totalEpisodes} view={views} rate={averageRating} />
                         ))}
             </div>
         </div>

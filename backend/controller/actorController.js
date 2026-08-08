@@ -67,6 +67,7 @@ exports.getActor = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     thumbnail: 1,
                     views: 1,
                     duration: 1,
@@ -109,6 +110,7 @@ exports.getActor = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     thumbnail: 1,
                     views: 1,
                     totalEpisodes: 1,
@@ -162,6 +164,7 @@ exports.getActorMovies = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     thumbnail: 1,
                     views: 1,
                     duration: 1,
@@ -235,6 +238,7 @@ exports.getActorSeries = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     thumbnail: 1,
                     views: 1,
                     totalEpisodes: 1,

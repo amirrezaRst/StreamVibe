@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 const Director = ({ custom, director }) => {
-    const { _id: id, fullName, birthPlace, profile } = director;
+    const { _id, slug, fullName, birthPlace, profile } = director;
+    const id = slug || _id;
     return (
         <div>
             <p className={`text-c-grey-60 ${custom && "md:text-super-base"}`}>Director</p>

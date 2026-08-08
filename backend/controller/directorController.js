@@ -63,6 +63,7 @@ exports.getDirector = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     thumbnail: 1,
                     views: 1,
                     duration: 1,
@@ -104,6 +105,7 @@ exports.getDirector = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     thumbnail: 1,
                     views: 1,
                     totalEpisodes: 1,
@@ -158,6 +160,7 @@ exports.getDirectorMovies = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     thumbnail: 1,
                     views: 1,
                     duration: 1,
@@ -230,6 +233,7 @@ exports.getDirectorSeries = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     thumbnail: 1,
                     views: 1,
                     totalEpisodes: 1,

@@ -67,14 +67,14 @@ const describe = (media, { type, path, extra = {} }) => ({
 export const movieSchema = (movie) =>
     describe(movie, {
         type: "Movie",
-        path: `/movies/${movie._id}`,
+        path: `/movies/${movie.slug || movie._id}`,
         extra: { duration: isoDuration(movie.duration) },
     });
 
 export const seriesSchema = (series) =>
     describe(series, {
         type: "TVSeries",
-        path: `/series/${series._id}`,
+        path: `/series/${series.slug || series._id}`,
         extra: {
             numberOfSeasons: series.seasons?.length || undefined,
         },

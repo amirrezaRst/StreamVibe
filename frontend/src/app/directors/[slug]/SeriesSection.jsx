@@ -50,9 +50,9 @@ const SeriesSection = ({ slug, fullName, seriesData }) => {
             >
                 {loading ?
                     Array.from({ length: 5 }).map((_, index) => <MovieCardSkeleton key={index} />)
-                    : series?.length == 0 ? <span className="3xl:text-super-base xl:text-super-sm max-md:text-sm text-c-grey-60">No series available for this director at the moment.</span>
-                        : series.map(({ _id, title, totalEpisodes, thumbnail, views, rate }, index) => (
-                            <MovieCard key={_id} series id={_id} title={title} image={thumbnail} episodes={totalEpisodes} view={views} rate={rate} />
+                    : series?.length == 0 ? <span className="3xl:text-super-base xl:text-super-sm max-md:text-sm text-c-grey-60">No series for this director in the catalogue yet.</span>
+                        : series.map(({ _id, slug, title, totalEpisodes, thumbnail, views, rate }, index) => (
+                            <MovieCard key={_id} series id={slug || _id} title={title} image={thumbnail} episodes={totalEpisodes} view={views} rate={rate} />
                         ))}
             </div>
         </div >

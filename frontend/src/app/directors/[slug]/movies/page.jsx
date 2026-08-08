@@ -53,8 +53,8 @@ const DirectorMoviesPage = ({ params: { slug: directorId } }) => {
 
             <div className="grid grid-cols-5 gap-8 mt-10">
 
-                {!loading && movies.map(({ _id, title, duration, thumbnail, views, rate }) => (
-                    <MovieCard key={_id} id={_id} title={title} image={thumbnail} duration={duration} view={views} rate={rate} />
+                {!loading && movies.map(({ _id, slug, title, duration, thumbnail, views, rate }) => (
+                    <MovieCard key={_id} id={slug || _id} title={title} image={thumbnail} duration={duration} view={views} rate={rate} />
                 ))}
                 {loading && Array.from({ length: 12 }).map((_, index) => (
                     <MovieCardSkeleton key={index} />

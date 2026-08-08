@@ -21,7 +21,7 @@ export const generateMetadata = async ({ params }) => {
         //! generated, but a lot of these records have none
         description: actor.bio
             || `Every film and TV series starring ${actor.fullName} on StreamVibe, with trailers, ratings and reviews.`,
-        path: `/actors/${params.slug}`,
+        path: `/actors/${actor.slug || params.slug}`,
         image: posterUrl(actor.profile),
     });
 };
@@ -51,7 +51,7 @@ const SingleActorPage = async ({ params }) => {
                         <div className="rounded-3xl overflow-hidden relative bg-c-black-15 border-2 border-c-black-15 w-[85%] mx-auto">
                             <img
                                 src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${profile}`}
-                                alt={`${fullName} director`}
+                                alt={fullName}
                                 className="aspect-square object-cover rounded-3xl "
                             />
                         </div>

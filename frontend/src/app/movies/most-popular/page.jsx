@@ -56,8 +56,8 @@ const MostPopularMoviesPage = () => {
 
                 <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 grid-cols-1 gap-8 mt-10">
 
-                    {!loading && movies.map(({ _id, title, duration, thumbnail, views, averageRating }) => (
-                        <MovieCard special key={_id} id={_id} title={title} image={thumbnail} duration={duration} view={views} rate={averageRating} />
+                    {!loading && movies.map(({ _id, slug, title, duration, thumbnail, views, averageRating }) => (
+                        <MovieCard special key={_id} id={slug || _id} title={title} image={thumbnail} duration={duration} view={views} rate={averageRating} />
                     ))}
                     {loading && Array.from({ length: 12 }).map((_, index) => (
                         <MovieCardSkeleton special key={index} />

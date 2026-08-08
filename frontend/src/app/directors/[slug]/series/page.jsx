@@ -53,8 +53,8 @@ const DirectorSeriesPage = ({ params: { slug: directorId } }) => {
 
             <div className="grid grid-cols-5 gap-8 mt-10">
 
-                {!loading && series.map(({ _id, title, totalEpisodes, thumbnail, views, rate }) => (
-                    <MovieCard key={_id} series id={_id} title={title} image={thumbnail} episodes={totalEpisodes} view={views} rate={rate} />
+                {!loading && series.map(({ _id, slug, title, totalEpisodes, thumbnail, views, rate }) => (
+                    <MovieCard key={_id} series id={slug || _id} title={title} image={thumbnail} episodes={totalEpisodes} view={views} rate={rate} />
                 ))}
                 {loading && Array.from({ length: 12 }).map((_, index) => (
                     <MovieCardSkeleton key={index} />

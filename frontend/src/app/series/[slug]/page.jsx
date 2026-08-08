@@ -29,7 +29,7 @@ export const generateMetadata = async ({ params }) => {
     return buildMetadata({
         title: series.title,
         description: describeTitle({ ...series, year: series.release_date, kind: "series" }),
-        path: `/series/${params.slug}`,
+        path: `/series/${series.slug || params.slug}`,
         image: posterUrl(series.cover || series.thumbnail),
     });
 };

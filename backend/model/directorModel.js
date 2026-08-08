@@ -1,7 +1,18 @@
 const mongoose = require('mongoose');
+const slugPlugin = require('./plugins/slugPlugin');
 const shortid = require('shortid');
 
 const directorSchema = new mongoose.Schema({
+    //! the public URL for this record. Generated once on creation and then
+    //! left alone — renaming must not change an address that is already
+    //! linked or indexed. Sparse so records predating slugs don't collide on
+    //! a shared null while the backfill runs.
+    slug: {
+        type: String,
+        unique: true,
+        sparse: true,
+        index: true,
+    },
     directorId: {
         type: String,
         default: shortid.generate,
@@ -50,5 +61,7 @@ const directorSchema = new mongoose.Schema({
         required: false
     },
 });
+
+directorSchema.plugin(slugPlugin, { source: 'fullName' });
 
 module.exports = mongoose.model('Directors', directorSchema);
