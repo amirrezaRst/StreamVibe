@@ -58,16 +58,9 @@ const describe = (media, { type, path, extra = {} }) => ({
     actor: people(media.actors).length ? people(media.actors) : undefined,
     aggregateRating: rating(media.imdb_rating, media.views),
     award: media.awards?.length ? media.awards.map(item => item.name) : undefined,
-    trailer: media.trailer
-        ? {
-            "@type": "VideoObject",
-            name: `${media.title} — trailer`,
-            description: `Official trailer for ${media.title}.`,
-            thumbnailUrl: posterUrl(media.thumbnail),
-            contentUrl: posterUrl(media.trailer),
-            uploadDate: isoDate(media.publish_date) || isoDate(media.release_date),
-        }
-        : undefined,
+    //! no `trailer` VideoObject here — the catalogue has no real trailer
+    //! video, and a VideoObject whose contentUrl is a JPEG is exactly the kind
+    //! of mismatched structured data a validator flags rather than rewards
     ...extra,
 });
 
