@@ -30,7 +30,6 @@
     "stripe": "^22.4.0"
   },
   "devDependencies": {
-    "@liara/cli": "^7.0.7",
     "cross-env": "^7.0.3",
     "nodemon": "^3.1.1"
   }

@@ -16,7 +16,7 @@ connectDb();
 
 //! cors options
 const corsOptions = {
-    origin: ["http://localhost:3000", "https://streamvibe-live.liara.run"],
+    origin: ["http://localhost:3000", "https://streamvibe-live.liara.run", "https://streamvibe.arostami.dev"],
     credentials: true,
 };
 
