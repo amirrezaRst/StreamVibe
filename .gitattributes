@@ -1,0 +1,7 @@
+# Files a Linux runner or server executes must keep LF endings regardless of
+# the platform they were authored on. core.autocrlf=true on Windows otherwise
+# commits CRLF, and a shell script carrying carriage returns fails with
+# "$'\r': command not found" on the runner.
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.sh    text eol=lf
