@@ -33,7 +33,7 @@ const SingleDirectorPage = async ({ params }) => {
 
     const { director } = data;
     const { movies, series } = data;
-    const { fullName, bio, country, birthDate, birthPlace, profile, death_date } = director;
+    const { fullName, bio, country, birthDate, birthPlace, profile, death_date, awards } = director;
 
     return (
         <>
@@ -85,10 +85,10 @@ const SingleDirectorPage = async ({ params }) => {
                                 }
                                 <div className="tracking-wide">
                                     <p className="text-c-grey-60 3xl:text-lg xl:text-super-base text-super-sm mb-0.5">Awards</p>
-                                    <p>
-                                        <span className="text-white 3xl:text-base xl:text-super-sm text-sm tracking-wide capitalize">
-                                            Academy Award for Best Original Screenplay
-                                        </span>
+                                    <p className="text-white 3xl:text-base xl:text-super-sm text-sm tracking-wide capitalize">
+                                        {awards?.length
+                                            ? awards.map((award) => `${award.name} (${award.year})`).join(', ')
+                                            : "No awards on record yet"}
                                     </p>
                                 </div>
 
