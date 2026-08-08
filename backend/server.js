@@ -49,6 +49,7 @@ app.use('/api/movie', require('./router/movieRoutes'));
 app.use('/api/series', require('./router/seriesRoutes'));
 app.use('/api/actor', require('./router/actorRoutes'));
 app.use('/api/director', require('./router/directorRoutes'));
+app.use('/api/musician', require('./router/musicianRoutes'));
 app.use('/api/review', require('./router/reviewRoutes'));
 app.use('/api/season', require('./router/seasonRoutes'));
 app.use('/api/episode', require('./router/episodeRoutes'));

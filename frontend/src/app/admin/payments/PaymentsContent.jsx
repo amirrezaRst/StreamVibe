@@ -21,7 +21,7 @@ const when = (iso) => new Date(iso).toLocaleString("en-US", {
 
 const Tile = ({ label, value, tone }) => (
     <div className="bg-c-black-10 border border-c-black-15 rounded-[10px] py-3 px-3.5 flex-1 min-w-[140px]">
-        <p className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-black-30 mb-1.5">{label}</p>
+        <p className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-grey-55 mb-1.5">{label}</p>
         <p className={`text-[21px] font-extrabold tracking-[-0.02em] tabular-nums leading-tight ${tone}`}>{value}</p>
     </div>
 );
@@ -70,7 +70,7 @@ const PaymentsContent = () => {
             key: "intentId",
             label: "Gateway",
             render: (entry) => (
-                <span className="font-mono text-[10.5px] text-c-black-30" title={entry.intentId || ""}>
+                <span className="font-mono text-[10.5px] text-c-grey-55" title={entry.intentId || ""}>
                     {entry.intentId ? `${entry.intentId.slice(0, 14)}…` : "—"}
                 </span>
             ),
@@ -108,7 +108,7 @@ const PaymentsContent = () => {
                             { id: "refund", label: "Refunds" },
                         ]}
                     />
-                    <span className="ms-auto text-[11px] text-c-black-30">
+                    <span className="ms-auto text-[11px] text-c-grey-55">
                         Ordered by when the money moved, not when the booking was made.
                     </span>
                 </div>

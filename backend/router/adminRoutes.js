@@ -3,7 +3,7 @@ const { Router } = require('express');
 const {
     getOverview, getBookings, refundBooking, getUsers, setUserRole,
     getMovies, getSeries, getPeople, getReviews, moderateReview, moderateReviews, setReviewSpoiler, deleteReview,
-    getPayments,
+    getPayments, search,
 } = require('../controller/adminController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
 const Authenticate = require('../middleware/Authenticate');
@@ -21,6 +21,7 @@ const router = Router();
 router.use(Authenticate, Authorize(["admin"]));
 
 router.get("/overview", getOverview);
+router.get("/search", search);
 
 router.get("/bookings", getBookings);
 //! declared before "/bookings/:id", or "payments" would never be reached

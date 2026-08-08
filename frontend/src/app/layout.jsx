@@ -2,59 +2,70 @@ import { ToastContainer } from "react-toastify";
 
 import { manrope } from "@/constants/Fonts";
 import MainLayout from "@/components/layout/MainLayout";
+import { DEFAULT_OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/constants/site";
 
 import "./globals.css";
 import 'react-toastify/dist/ReactToastify.css';
 
 
 
-const appName = "StreamVibe - Watch and Discover Movies & TV Shows Online";
-const appDesc = "StreamVibe: Watch and download the latest movies and TV series from around the world in high quality. Enjoy a vast library of diverse genres, with subtitles and dubbed options. StreamVibe offers the ultimate streaming experience for movie and series enthusiasts.";
+const appName = `${SITE_NAME} - ${SITE_TAGLINE}`;
 
 export const metadata = {
-  title: appName,
-  description: appDesc,
-  url: process.env.NEXT_PUBLIC_BASE_URL,
+  //! metadataBase is what lets every other page hand back a relative canonical
+  //! and a relative OG image. Without it Next drops relative URLs entirely and
+  //! warns at build time rather than failing, which is easy to never notice.
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: appName,
+    template: `%s · ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  keywords: ["watch movies online", "stream tv series", "cinema tickets", "movie streaming", SITE_NAME],
   openGraph: {
     title: appName,
-    description: appDesc,
-    images: [`${process.env.NEXT_PUBLIC_BASE_URL}/images/header-banner-white.jpg`],
+    description: SITE_DESCRIPTION,
+    images: [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630, alt: SITE_NAME }],
     type: "website",
     locale: "en_US",
-    siteName: appName
+    siteName: SITE_NAME,
+    url: SITE_URL,
   },
-  alternate: {
+  twitter: {
+    card: "summary_large_image",
+    title: appName,
+    description: SITE_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
+  },
+  alternates: {
     canonical: "/",
   },
   robots: {
     index: true,
     follow: true,
-    nocache: true,
     googleBot: {
       index: true,
       follow: true,
       noimageindex: false,
       'max-snippet': -1,
+      'max-image-preview': 'large',
     }
   },
+  //! left relative on purpose — metadataBase resolves them, and an unset
+  //! NEXT_PUBLIC_BASE_URL used to bake the literal string "undefined" into
+  //! every icon href
   icons: {
     icon: [
-      { url: `${process.env.NEXT_PUBLIC_BASE_URL}/images/favicon-16x16.png`, sizes: '16x16', type: 'image/png' },
-      { url: `${process.env.NEXT_PUBLIC_BASE_URL}/images/favicon-32x32.png`, sizes: '32x32', type: 'image/png' },
-      // { url: `${process.env.NEXT_PUBLIC_BASE_URL}/images/favicon-64x64.png`, sizes: '64x64', type: 'image/png' },
-      // { url: `${process.env.NEXT_PUBLIC_BASE_URL}/images/favicon-128x128.png`, sizes: '128x128', type: 'image/png' },
-      // { url: `${process.env.NEXT_PUBLIC_BASE_URL}/images/favicon-512x512.png`, sizes: '512x512', type: 'image/png' },
+      { url: '/images/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/images/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
     ],
-    shortcut: [`${process.env.NEXT_PUBLIC_BASE_URL}/images/android-chrome-192x192.png`],
+    shortcut: ['/images/android-chrome-192x192.png'],
     apple: [
-      { url: `${process.env.NEXT_PUBLIC_BASE_URL}/images/apple-touch-icon.png`, sizes: '180x180', type: 'image/png' },
+      { url: '/images/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     ],
-    android: [
-      { url: `${process.env.NEXT_PUBLIC_BASE_URL}/images/android-chrome-192x192.png`, sizes: '192x192', type: 'image/png' },
-      { url: `${process.env.NEXT_PUBLIC_BASE_URL}/images/android-chrome-256x256.png`, sizes: '256x256', type: 'image/png' },
-    ],
-    safari: [
-      { url: `${process.env.NEXT_PUBLIC_BASE_URL}/images/safari-pinned-tab.svg`, color: '#000000' },
+    other: [
+      { rel: 'mask-icon', url: '/images/safari-pinned-tab.svg', color: '#E50000' },
     ],
   },
 };

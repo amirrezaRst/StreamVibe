@@ -485,8 +485,11 @@ export const CameraIcon = (props) => {
 export const DownloadIcon = (props) => {
     return (
         <svg {...props} width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <g id="Interface / Download">
-                <path id="Vector" d="M6 21H18M12 3V17M12 17L17 12M12 17L7 12" stroke="#999999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            {/*//! the ids the design tool exported are gone: nothing referenced
+                them, and every download row on a series page rendered this icon
+                again, duplicating them across the document */}
+            <g>
+                <path d="M6 21H18M12 3V17M12 17L17 12M12 17L7 12" stroke="#999999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </g>
         </svg>
     )
@@ -633,6 +636,16 @@ export const CheckIcon = (props) => {
     return (
         <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
             <polyline points="20 6 9 17 4 12" />
+        </svg>
+    )
+}
+
+export const MusicIcon = (props) => {
+    return (
+        <svg {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 18V6.5C9 5.94772 9.39831 5.47755 9.94055 5.37516L18.4406 3.75516C19.1449 3.62144 19.8 4.16108 19.8 4.87829V15.5" stroke="#999999" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M6.5 21C7.88071 21 9 19.8807 9 18.5C9 17.1193 7.88071 16 6.5 16C5.11929 16 4 17.1193 4 18.5C4 19.8807 5.11929 21 6.5 21Z" stroke="#999999" strokeWidth="1.5" />
+            <path d="M17.3 18C18.6807 18 19.8 16.8807 19.8 15.5C19.8 14.1193 18.6807 13 17.3 13C15.9193 13 14.8 14.1193 14.8 15.5C14.8 16.8807 15.9193 18 17.3 18Z" stroke="#999999" strokeWidth="1.5" />
         </svg>
     )
 }

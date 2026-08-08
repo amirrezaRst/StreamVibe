@@ -18,7 +18,7 @@ const MediaCell = ({ image, title, subtitle, rounded }) => (
         </div>
         <div className="min-w-0">
             <p className="text-c-grey-90 font-bold truncate capitalize">{title}</p>
-            {subtitle && <p className="text-[10.5px] text-c-black-30 truncate">{subtitle}</p>}
+            {subtitle && <p className="text-[10.5px] text-c-grey-55 truncate">{subtitle}</p>}
         </div>
     </div>
 );

@@ -19,8 +19,8 @@ const MovieGenreSection = ({movies,genres}) => {
                 <Suspense fallback={Array.from({ length: 5 }).map((_, index) => {
                     <MovieCardSkeleton special key={index} />
                 })}>
-                    {movies.map(({ _id, title, duration, thumbnail, views, rate }) => (
-                        <MovieCard special key={_id} id={_id} title={title} image={thumbnail} duration={duration} view={views} rate={rate} />
+                    {movies.map(({ _id, slug, title, duration, thumbnail, views, rate }) => (
+                        <MovieCard special key={_id} id={slug || _id} title={title} image={thumbnail} duration={duration} view={views} rate={rate} />
                     ))}
                 </Suspense>
 

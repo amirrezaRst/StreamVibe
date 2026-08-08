@@ -13,7 +13,7 @@ const when = (iso) => new Date(iso).toLocaleString("en-US", {
 
 const Row = ({ label, children }) => (
     <div className="flex justify-between items-center gap-4 py-2 border-b border-c-black-15 last:border-b-0 text-[12.5px]">
-        <span className="text-c-black-30 shrink-0">{label}</span>
+        <span className="text-c-grey-55 shrink-0">{label}</span>
         <span className="text-c-grey-90 font-bold text-end break-all">{children}</span>
     </div>
 );
@@ -41,12 +41,12 @@ const TheirSeats = ({ seatMap, seats }) => {
     return (
         <div className="bg-c-black-06 border border-c-black-15 rounded-[9px] py-3.5 px-2.5">
             <div className="h-[4px] mx-auto mb-1 rounded-full w-1/2 bg-gradient-to-r from-transparent via-c-black-25 to-transparent" />
-            <p className="text-center text-[9px] font-extrabold tracking-[0.22em] uppercase text-c-black-30 mb-3">Screen</p>
+            <p className="text-center text-[9px] font-extrabold tracking-[0.22em] uppercase text-c-grey-55 mb-3">Screen</p>
 
             <div className="flex flex-col gap-1 items-center w-max mx-auto">
                 {visible.map(row => (
                     <div key={row.row} className="flex items-center gap-1">
-                        <span className="w-3.5 text-center text-[9px] text-c-black-30 font-extrabold shrink-0">{row.row}</span>
+                        <span className="w-3.5 text-center text-[9px] text-c-grey-55 font-extrabold shrink-0">{row.row}</span>
                         {row.seats.map((seat, i) => {
                             const label = seatLabel(row.row, seat.number);
                             const mine = theirs.has(label);
@@ -70,7 +70,7 @@ const TheirSeats = ({ seatMap, seats }) => {
                 ))}
             </div>
 
-            <p className="text-center text-[10.5px] text-c-black-30 mt-3">
+            <p className="text-center text-[10.5px] text-c-grey-55 mt-3">
                 {seats.map(seat => seat.label).join(", ")} · {seats[0]?.tier} · {money(seats[0]?.price)} each
             </p>
         </div>
@@ -164,7 +164,7 @@ const BookingDrawer = ({ bookingId, onClose, onChanged }) => {
 
                             {data.seatMap && (
                                 <>
-                                    <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-black-30 mt-4 mb-2">
+                                    <h3 className="text-[10.5px] font-extrabold uppercase tracking-[0.07em] text-c-grey-55 mt-4 mb-2">
                                         Their seats
                                     </h3>
                                     <TheirSeats seatMap={data.seatMap} seats={booking.seats} />

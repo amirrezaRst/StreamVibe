@@ -58,8 +58,8 @@ const MovieGenrePage = ({ params: { genre } }) => {
 
                 <div className="grid 2xl:grid-cols-5 xl:grid-cols-4 md:grid-cols-3 grid-cols-1 gap-8 mt-10">
 
-                    {!loading ? movies.map(({ _id, title, duration, thumbnail, views, rate }) => (
-                        <MovieCard special key={_id} id={_id} title={title} image={thumbnail} duration={duration} view={views} rate={rate} />
+                    {!loading ? movies.map(({ _id, slug, title, duration, thumbnail, views, rate }) => (
+                        <MovieCard special key={_id} id={slug || _id} title={title} image={thumbnail} duration={duration} view={views} rate={rate} />
                     )) : !loading && movies.length < 1 && (
                         <div className="flex justify-center mt-10">
                             <h1 className="text-white">No Movies Found</h1>
@@ -80,7 +80,7 @@ const MovieGenrePage = ({ params: { genre } }) => {
                             {loading ? 'Loading' : 'Load More'}
                             <div className={loading ? "block" : "hidden"} role="status">
                                 <SpinnerSvg />
-                                <span class="sr-only">Loading...</span>
+                                <span className="sr-only">Loading...</span>
                             </div>
                         </button>
                     </div>

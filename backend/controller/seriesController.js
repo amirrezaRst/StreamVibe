@@ -47,7 +47,11 @@ exports.getSeries = async (req, res) => {
             })
             .populate({
                 path: 'actors',
-                select: 'actorId profile fullName'
+                select: 'actorId slug profile fullName'
+            })
+            .populate({
+                path: 'musician',
+                select: 'fullName slug profile birthPlace country'
             });
 
         if (!series) return res.status(404).json({ status: 404, message: "Series not found" });
@@ -195,6 +199,7 @@ exports.trendingSeries = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     views: 1,
                     totalEpisodes: 1,
                     averageRating: 1,
@@ -275,6 +280,7 @@ exports.newReleasedSeries = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     views: 1,
                     totalEpisodes: 1,
                     averageRating: 1,
@@ -350,6 +356,7 @@ exports.popularSeries = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     views: 1,
                     totalEpisodes: 1,
                     averageRating: 1,
@@ -430,6 +437,7 @@ exports.getSeriesByGenre = async (req, res) => {
             {
                 $project: {
                     title: 1,
+                    slug: 1,
                     totalEpisodes: 1,
                     duration: 1,
                     rate: 1,

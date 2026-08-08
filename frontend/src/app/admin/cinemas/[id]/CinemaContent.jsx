@@ -22,7 +22,7 @@ const HallRow = ({ hall, cinemaId, onDelete }) => {
 
             <div className="min-w-0">
                 <p className="text-[13.5px] font-extrabold">{hall.name}</p>
-                <p className="text-[11.5px] text-c-black-30">
+                <p className="text-[11.5px] text-c-grey-55">
                     {empty
                         ? `${hall.screenType} · no seat map yet`
                         : `${hall.screenType} · ${hall.rows} rows · ${hall.totalSeats} seats`}

@@ -161,7 +161,7 @@ const SupportContent = () => {
                                         <span className="text-[12.5px] font-bold text-c-grey-90 truncate flex-1">{ticket.subject}</span>
                                         <Pill status={ticket.status} />
                                     </div>
-                                    <p className="text-[11px] text-c-black-30 truncate">
+                                    <p className="text-[11px] text-c-grey-55 truncate">
                                         {ticket.email} · {shortDate(ticket.createdAt)}
                                     </p>
                                     <p className="text-[11.5px] text-c-grey-60 truncate mt-0.5">{ticket.message}</p>
@@ -172,7 +172,7 @@ const SupportContent = () => {
                         {open && (
                             <div className="p-4 md:p-[18px]">
                                 <h2 className="text-[15px] font-extrabold mb-1.5">{open.subject}</h2>
-                                <div className="flex items-center gap-2.5 flex-wrap text-[11.5px] text-c-black-30 pb-3 mb-3 border-b border-c-black-15">
+                                <div className="flex items-center gap-2.5 flex-wrap text-[11.5px] text-c-grey-55 pb-3 mb-3 border-b border-c-black-15">
                                     <Pill status={open.status} />
                                     <span className="text-c-grey-65">{open.fullName} &lt;{open.email}&gt;</span>
                                     <span>·</span>
@@ -180,7 +180,7 @@ const SupportContent = () => {
                                     {/*//! whether the sender has an account changes how you answer,
                                         and anonymous senders cannot be replied to in-product */}
                                     <span>·</span>
-                                    <span className={open.user ? "text-[#7CADEA]" : "text-c-black-30"}>
+                                    <span className={open.user ? "text-[#7CADEA]" : "text-c-grey-55"}>
                                         {open.user ? "Signed-in member" : "Not signed in"}
                                     </span>
                                 </div>

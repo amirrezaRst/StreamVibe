@@ -5,13 +5,13 @@ import { SearchIcon } from "./AdminIcons";
 export const SearchField = ({ value, onChange, placeholder }) => (
     <label className="flex items-center gap-2 bg-c-black-06 border border-c-black-20 rounded-[7px] py-1.5 px-2.5
         focus-within:border-c-black-25 duration-150 min-w-[200px]">
-        <SearchIcon className="w-3.5 h-3.5 text-c-black-30 shrink-0" />
+        <SearchIcon className="w-3.5 h-3.5 text-c-grey-55 shrink-0" />
         <input
             type="search"
             value={value}
             onChange={(event) => onChange(event.target.value)}
             placeholder={placeholder}
-            className="bg-transparent text-xs text-c-grey-90 placeholder:text-c-black-30 outline-none w-full"
+            className="bg-transparent text-xs text-c-grey-90 placeholder:text-c-grey-55 outline-none w-full"
         />
     </label>
 );
@@ -28,7 +28,7 @@ export const Segmented = ({ options, value, onChange }) => (
                     ${value === option.id ? "bg-c-red-45/[0.12] text-c-red-80" : "text-c-grey-60 hover:text-c-grey-90"}`}
             >
                 {option.label}
-                {option.count !== undefined && <span className="opacity-70 ms-1.5">{option.count}</span>}
+                {option.count !== undefined && <span className="ms-1.5 tabular-nums">{option.count}</span>}
             </button>
         ))}
     </div>

@@ -2,6 +2,13 @@ import WelcomeSection from "./WelcomeSection";
 import SupportForm from "./SupportForm";
 import AskedQuestions from "@/components/question/AskedQuestions";
 import SubscriptionBox from "@/components/subscription/SubscriptionBox";
+import { buildMetadata } from "@/utils/metadata";
+
+export const metadata = buildMetadata({
+    title: "Support",
+    description: "Answers to the questions we get most, and a form that reaches a real person if yours is not among them.",
+    path: "/support",
+});
 
 const SupportPage = () => {
     return (

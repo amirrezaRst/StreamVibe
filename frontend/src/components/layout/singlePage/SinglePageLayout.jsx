@@ -3,7 +3,7 @@ import Sidebar from "./Sidebar";
 import SubscriptionBox from "@/components/subscription/SubscriptionBox";
 
 const SinglePageLayout = ({ children, data, type }) => {
-    const { _id: id, title, description, cover, language, genres, director, release_date, imdb_rating, rotten_rating } = data;
+    const { _id: id, title, description, cover, language, genres, director, musician, release_date, imdb_rating, rotten_rating } = data;
 
     return (
         <main className="container py-6">
@@ -32,6 +32,7 @@ const SinglePageLayout = ({ children, data, type }) => {
                     language={language}
                     rating={[{ source: 'IMDb', score: imdb_rating }, { source: 'Rotten Tomatoes', score: rotten_rating }]}
                     director={director}
+                    musician={musician}
                     genres={genres}
                     type={type}
                 />

@@ -3,6 +3,13 @@ import NewReleasedSection from "../explore/series/NewReleasedSection";
 import PopularSeriesSection from "../explore/series/PopularSeriesSection";
 import TopSeriesSection from "../explore/series/TopSeriesSection";
 import TrendingSeriesSection from "../explore/series/TrendingSection";
+import { buildMetadata } from "@/utils/metadata";
+
+export const metadata = buildMetadata({
+    title: "TV Series",
+    description: "Browse every series on StreamVibe — trending now, newly released, most popular, and the top rated in each genre.",
+    path: "/series",
+});
 
 const SeriesPage = () => {
     return (

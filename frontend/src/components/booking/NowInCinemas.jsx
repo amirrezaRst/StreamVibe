@@ -42,7 +42,10 @@ const NowInCinemas = async ({ city }) => {
                         key={movie._id}
                         className="bg-c-black-08 border border-c-black-15 rounded-xl p-2.5 hover:border-c-black-25 hover:-translate-y-[3px] transition-all duration-150"
                     >
-                        <Link href={`/movies/${movie._id}`}>
+                        {/*//! the readable address for browsing; the booking
+                            links below stay on the _id, which is what the
+                            showtime and seat-hold endpoints key on */}
+                        <Link href={`/movies/${movie.slug || movie._id}`}>
                             <div className="w-full aspect-thumbnail rounded-lg overflow-hidden bg-c-black-12">
                                 {movie.thumbnail && (
                                     <Image

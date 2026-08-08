@@ -4,7 +4,8 @@ import ActorItemProfile from "./ActoritemProfile";
 import ActorItemInfo from "./ActorItemInfo";
 
 const SearchActorItem = ({ type, data, handleClose }) => {
-    const { _id: id, fullName, profile, country, birthDate, birthPlace, bio } = data;
+    const { _id, slug, fullName, profile, country, birthDate, birthPlace, bio } = data;
+    const id = slug || _id;
 
     return (
         <div className="w-full px-5 py-4 flex  gap-6 bg-c-black-10/65 backdrop-blur-sm border-2 border-c-black-15 rounded-xl">

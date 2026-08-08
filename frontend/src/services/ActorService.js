@@ -6,7 +6,7 @@ export const fetchActor = async (slug) => {
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error("Error fetching director:", error);
+        console.error("Error fetching actor:", error);
     }
 }
 

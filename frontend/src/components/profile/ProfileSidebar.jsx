@@ -69,7 +69,7 @@ const ProfileSidebar = ({ user, counts, activeTab, onSelect, onSignOut, signingO
         <div className="flex lg:block gap-2 overflow-x-auto lg:overflow-visible [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {PROFILE_TABS.map(group => (
                 <div key={group.label} className="lg:mb-1 shrink-0">
-                    <div className="hidden lg:block text-[10.5px] font-bold uppercase tracking-[0.07em] text-c-black-30 pt-3.5 pb-1.5 px-2.5">
+                    <div className="hidden lg:block text-[10.5px] font-bold uppercase tracking-[0.07em] text-c-grey-55 pt-3.5 pb-1.5 px-2.5">
                         {group.label}
                     </div>
                     <ul className="flex lg:flex-col gap-2 lg:gap-0.5 list-none m-0 p-0">

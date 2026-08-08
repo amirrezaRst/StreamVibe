@@ -1,7 +1,18 @@
 const mongoose = require('mongoose');
+const slugPlugin = require('./plugins/slugPlugin');
 
 
 const movieModel = mongoose.Schema({
+    //! the public URL for this record. Generated once on creation and then
+    //! left alone — renaming must not change an address that is already
+    //! linked or indexed. Sparse so records predating slugs don't collide on
+    //! a shared null while the backfill runs.
+    slug: {
+        type: String,
+        unique: true,
+        sparse: true,
+        index: true,
+    },
     title: {
         type: String,
         required: [true, 'Title is required'],
@@ -10,6 +21,11 @@ const movieModel = mongoose.Schema({
         type: String,
         default: "",
         require: false
+    },
+    musician: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Musicians',
+        required: false,
     },
     director: {
         type: mongoose.Schema.Types.ObjectId,
@@ -168,5 +184,7 @@ const movieModel = mongoose.Schema({
         ref: "Actors"
     },
 })
+
+movieModel.plugin(slugPlugin, { source: 'title', year: 'release_date' });
 
 module.exports = mongoose.model('Movies', movieModel);

@@ -59,7 +59,7 @@ const ReviewQueueRow = ({ review, selected, focused, onToggleSelect, onModerate,
                     <span className="text-c-red-45 text-[11px] tracking-[1px]" aria-label={`${review.rating} out of 5`}>
                         {"★".repeat(Math.round(review.rating))}{"☆".repeat(5 - Math.round(review.rating))}
                     </span>
-                    <span className="text-[11px] text-c-black-30 truncate capitalize">
+                    <span className="text-[11px] text-c-grey-55 truncate capitalize">
                         on {review.media?.title || "a deleted title"}
                     </span>
                     <span className={`text-[10.5px] font-extrabold py-0.5 px-2 rounded-full capitalize ${STATUS_TONES[review.status]}`}>
