@@ -1,4 +1,5 @@
 const path = require('path');
+const { creditsFor, collaboratorsFrom } = require('../utils/personCredits');
 
 const { createActorValidation, editActorValidation } = require('../validation/actorValidation');
 const Actor = require('../model/actorModel');
@@ -44,230 +45,49 @@ exports.allActors = async (req, res) => {
 
 exports.getActor = async (req, res) => {
     try {
-        const actor = await Actor.findById(req.params.id);
-        if (!actor) return res.status(404).json({ status: 404, message: "Director not found" });
+        //! resolved by the slug middleware, so this is already the record
+        const actor = req.record;
 
-        const movies = await Movie.aggregate([
-            { $match: { actors: actor._id } },
-            {
-                $lookup: {
-                    from: 'reviews',
-                    localField: '_id',
-                    foreignField: 'media',
-                    as: 'reviews'
-                }
-            },
-            {
-                $addFields: {
-                    rate: { $avg: '$reviews.rating' }
-                }
-            },
-            { $sort: { release_date: -1 } },
-            { $limit: 12 },
-            {
-                $project: {
-                    title: 1,
-                    slug: 1,
-                    thumbnail: 1,
-                    views: 1,
-                    duration: 1,
-                    rate: 1,
-                    actors: 1
-                }
-            }
-        ]);
-
-        const series = await Series.aggregate([
-            { $match: { actors: actor._id } },
-            {
-                $lookup: {
-                    from: 'reviews',
-                    localField: '_id',
-                    foreignField: 'media',
-                    as: 'reviews'
-                }
-            },
-            {
-                $addFields: {
-                    rate: { $avg: '$reviews.rating' }
-                }
-            },
-            {
-                $lookup: {
-                    from: 'seasons',
-                    localField: '_id',
-                    foreignField: 'series',
-                    as: 'seasons'
-                }
-            },
-            {
-                $addFields: {
-                    totalEpisodes: { $sum: { $map: { input: '$seasons', as: 'season', in: { $size: '$$season.episodes' } } } }
-                }
-            },
-            { $sort: { release_date: -1 } },
-            { $limit: 12 },
-            {
-                $project: {
-                    title: 1,
-                    slug: 1,
-                    thumbnail: 1,
-                    views: 1,
-                    totalEpisodes: 1,
-                    rate: 1,
-                }
-            }
-        ]);
+        const credits = await creditsFor({ actors: actor._id });
+        const collaborators = await collaboratorsFrom(credits, { role: 'actor', excludeId: actor._id });
 
         res.status(200).json({
             status: 200,
             message: "fetch data successfully",
             actor,
-            movies,
-            series
+            ...credits,
+            collaborators,
         });
     } catch (err) {
-        res.status(500).json({
-            status: 500,
-            message: err.message
-        });
+        res.status(500).json({ status: 500, message: err.message });
     }
 };
 
-
-exports.getActorMovies = async (req, res) => {
+//! the paginated "see all" page behind each carousel
+const paginatedCredits = (CreditModel, key) => async (req, res) => {
     try {
-        const actor = await Actor.findById(req.params.id).select("fullName");
-        if (!actor) return res.status(404).json({ status: 404, message: "Actor not found" });
-
+        const actor = req.record;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
 
-        const movies = await Movie.aggregate([
-            { $match: { actors: actor._id } },
-            {
-                $lookup: {
-                    from: 'reviews',
-                    localField: '_id',
-                    foreignField: 'media',
-                    as: 'reviews'
-                }
-            },
-            {
-                $addFields: {
-                    rate: { $avg: '$reviews.rating' }
-                }
-            },
-            { $sort: { release_date: -1 } },
-            { $skip: (page - 1) * limit },
-            { $limit: parseInt(limit) },
-            {
-                $project: {
-                    title: 1,
-                    slug: 1,
-                    thumbnail: 1,
-                    views: 1,
-                    duration: 1,
-                    rate: 1
-                }
-            }
-        ]);
-
-        const totalMovies = await Movie.countDocuments({ actors: actor._id });
-        const totalPages = Math.ceil(totalMovies / limit);
+        const credits = await creditsFor({ actors: actor._id }, { limit, skip: (page - 1) * limit });
+        const total = await CreditModel.countDocuments({ actors: actor._id });
+        const totalPages = Math.ceil(total / limit);
 
         res.status(200).json({
             status: 200,
             message: "Fetch data successfully",
-            actor,
-            movies,
-            pagination: {
-                currentPage: page,
-                totalPages,
-                hasNextPage: page < totalPages
-            }
+            actor: { fullName: actor.fullName, slug: actor.slug },
+            [key]: credits[key],
+            pagination: { currentPage: page, totalPages, hasNextPage: page < totalPages },
         });
     } catch (err) {
-        res.status(500).json({
-            status: 500,
-            message: err.message
-        });
+        res.status(500).json({ status: 500, message: err.message });
     }
 };
 
-
-exports.getActorSeries = async (req, res) => {
-    try {
-        const actor = await Actor.findById(req.params.id).select("fullName");
-        if (!actor) return res.status(404).json({ status: 404, message: "Actor not found" });
-
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-
-        const series = await Series.aggregate([
-            { $match: { actors: actor._id } },
-            {
-                $lookup: {
-                    from: 'reviews',
-                    localField: '_id',
-                    foreignField: 'media',
-                    as: 'reviews'
-                }
-            },
-            {
-                $addFields: {
-                    rate: { $avg: '$reviews.rating' }
-                }
-            },
-            {
-                $lookup: {
-                    from: 'seasons',
-                    localField: '_id',
-                    foreignField: 'series',
-                    as: 'seasons'
-                }
-            },
-            {
-                $addFields: {
-                    totalEpisodes: { $sum: { $map: { input: '$seasons', as: 'season', in: { $size: '$$season.episodes' } } } }
-                }
-            },
-            { $sort: { release_date: -1 } },
-            { $skip: (page - 1) * limit },
-            { $limit: parseInt(limit) },
-            {
-                $project: {
-                    title: 1,
-                    slug: 1,
-                    thumbnail: 1,
-                    views: 1,
-                    totalEpisodes: 1,
-                    rate: 1
-                }
-            }
-        ]);
-
-        const totalSeries = await Series.countDocuments({ actors: actor._id });
-        const totalPages = Math.ceil(totalSeries / limit);
-
-        res.status(200).json({
-            status: 200,
-            message: "Fetch data successfully",
-            actor,
-            series,
-            pagination: {
-                currentPage: page,
-                totalPages,
-                hasNextPage: page < totalPages
-            }
-        });
-    } catch (err) {
-        res.status(500).json({
-            status: 500,
-            message: err.message
-        });
-    }
-};
+exports.getActorMovies = paginatedCredits(Movie, 'movies');
+exports.getActorSeries = paginatedCredits(Series, 'series');
 
 
 //! Post Request

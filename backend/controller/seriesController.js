@@ -47,7 +47,11 @@ exports.getSeries = async (req, res) => {
             })
             .populate({
                 path: 'actors',
-                select: 'actorId profile fullName'
+                select: 'actorId slug profile fullName'
+            })
+            .populate({
+                path: 'musician',
+                select: 'fullName slug profile birthPlace country'
             });
 
         if (!series) return res.status(404).json({ status: 404, message: "Series not found" });
