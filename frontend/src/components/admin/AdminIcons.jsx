@@ -56,6 +56,15 @@ export const StarOutlineIcon = (props) => (
     <Icon {...props}><path d="M12 2.5l2.9 5.9 6.6 1-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-1z" /></Icon>
 );
 
+//! a wide framed image with a play triangle — the hero banner the spotlight
+//! console curates, not a generic "star" already spoken for by Reviews
+export const BannerIcon = (props) => (
+    <Icon {...props}>
+        <rect x="2" y="5" width="20" height="14" rx="2" />
+        <path d="M10.5 9.6l4.5 2.4-4.5 2.4z" fill="currentColor" stroke="none" />
+    </Icon>
+);
+
 export const SearchIcon = (props) => (
     <Icon {...props}><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></Icon>
 );

@@ -227,3 +227,50 @@ export const deleteReview = async (reviewId) => {
     const response = await apiFetch(`/admin/reviews/${reviewId}`, { method: "DELETE" });
     if (!response.ok) throw await asError(response, "Couldn't remove that review.");
 };
+
+//? Spotlight
+export const fetchSpotlightSlides = () =>
+    get("/admin/spotlight", "Couldn't load the spotlight.");
+
+export const searchSpotlightCandidates = (q) =>
+    get(`/admin/spotlight/search${query({ q })}`, "Couldn't search the catalogue.");
+
+export const addSpotlightSlide = async (kind, media) => {
+    const response = await apiFetch("/admin/spotlight", {
+        method: "POST",
+        body: JSON.stringify({ kind, media }),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't add that title to the spotlight.");
+
+    return response.json();
+};
+
+//! the console sends the full ordered id list after a drag, not a delta —
+//! simpler to persist and matches how the drag state is already held
+export const reorderSpotlightSlides = async (order) => {
+    const response = await apiFetch("/admin/spotlight/reorder", {
+        method: "PATCH",
+        body: JSON.stringify({ order }),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't save the new order.");
+
+    return response.json();
+};
+
+export const toggleSpotlightSlide = async (slideId, active) => {
+    const response = await apiFetch(`/admin/spotlight/${slideId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ active }),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't update that slide.");
+
+    return response.json();
+};
+
+export const removeSpotlightSlide = async (slideId) => {
+    const response = await apiFetch(`/admin/spotlight/${slideId}`, { method: "DELETE" });
+    if (!response.ok) throw await asError(response, "Couldn't remove that slide.");
+};
