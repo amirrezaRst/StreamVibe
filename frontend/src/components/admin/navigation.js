@@ -2,7 +2,7 @@ import {
     BookmarkIcon, EnvelopeIcon, HeartIcon, SeatGridIcon, UserCircleIcon,
 } from "@/assets/Svgs";
 import {
-    CalendarIcon, CardIcon, FilmIcon, GridIcon, HouseIcon, PeopleIcon, StackIcon, StarOutlineIcon,
+    BannerIcon, CalendarIcon, CardIcon, FilmIcon, GridIcon, HouseIcon, PeopleIcon, StackIcon, StarOutlineIcon,
 } from "./AdminIcons";
 
 /**
@@ -26,6 +26,7 @@ export const NAV_GROUPS = [
             { id: "movies", label: "Movies", href: "/admin/movies", icon: FilmIcon, shortcut: "m" },
             { id: "series", label: "Series", href: "/admin/series", icon: StackIcon, shortcut: "e" },
             { id: "people", label: "People", href: "/admin/people", icon: PeopleIcon, shortcut: "p" },
+            { id: "spotlight", label: "Spotlight", href: "/admin/spotlight", icon: BannerIcon, shortcut: "l" },
         ],
     },
     {

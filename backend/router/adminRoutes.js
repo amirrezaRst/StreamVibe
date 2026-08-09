@@ -11,6 +11,10 @@ const Authorize = require('../middleware/Authorize');
 const {
     getCinemas, getCinema, getHall, getSchedule, getBooking, getSchedulableMovies,
 } = require('../controller/adminCinemaController');
+const {
+    getSpotlightSlides, searchSpotlightCandidates, addSpotlightSlide,
+    reorderSpotlightSlides, toggleSpotlightSlide, removeSpotlightSlide,
+} = require('../controller/adminSpotlightController');
 const { setUserRoleValidation, refundValidation } = require('../validation/adminValidation');
 const { moderateReviewValidation, moderateManyValidation, setSpoilerValidation } = require('../validation/reviewValidation');
 
@@ -50,5 +54,14 @@ router.patch("/reviews/status", moderateManyValidation, moderateReviews);
 router.patch("/reviews/:id/status", [ValidateObjectId, moderateReviewValidation], moderateReview);
 router.patch("/reviews/:id/spoiler", [ValidateObjectId, setSpoilerValidation], setReviewSpoiler);
 router.delete("/reviews/:id", ValidateObjectId, deleteReview);
+
+//? Spotlight
+router.get("/spotlight", getSpotlightSlides);
+//! declared before "/spotlight/reorder", or "reorder" would be read as a slide id
+router.get("/spotlight/search", searchSpotlightCandidates);
+router.post("/spotlight", addSpotlightSlide);
+router.patch("/spotlight/reorder", reorderSpotlightSlides);
+router.patch("/spotlight/:id", ValidateObjectId, toggleSpotlightSlide);
+router.delete("/spotlight/:id", ValidateObjectId, removeSpotlightSlide);
 
 module.exports = router;
