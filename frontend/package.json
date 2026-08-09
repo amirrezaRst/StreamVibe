@@ -16,7 +16,7 @@
     "react-hook-form": "^7.52.0",
     "react-rating": "^2.0.5",
     "react-toastify": "^10.0.5",
-    "sharp": "^0.35.3",
+    "sharp": "^0.33.5",
     "zustand": "^4.5.4"
   },
   "devDependencies": {
