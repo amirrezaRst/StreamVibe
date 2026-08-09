@@ -227,7 +227,7 @@ const ACTORS = {
     'Taissa Farmiga': { g: 'female', y: 1994, c: 'United States', p: 'Los Angeles, California' },
     'Tim Allen': { g: 'male', y: 1953, c: 'United States', p: 'Denver, Colorado' },
     'Tim Robbins': { g: 'male', y: 1958, c: 'United States', p: 'West Covina, California' },
-    'Timothe Chalamet': { g: 'male', y: 1995, c: 'United States', p: 'New York City, New York' },
+    'Timothée Chalamet': { g: 'male', y: 1995, c: 'United States', p: 'New York City, New York' },
     'Tom Hanks': { g: 'male', y: 1956, c: 'United States', p: 'Concord, California' },
     'Tom Hardy': { g: 'male', y: 1977, c: 'United Kingdom', p: 'London, England' },
     'Tom Pelphrey': { g: 'male', y: 1982, c: 'United States', p: 'Howell, New Jersey' },
