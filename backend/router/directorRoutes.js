@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllDirectors, getDirector, updateDirector, deleteDirector, createDirector, getDirectorMovies, getDirectorSeries } = require('../controller/directorController');
+const { getAllDirectors, browseDirectors, getDirector, updateDirector, deleteDirector, createDirector, getDirectorMovies, getDirectorSeries } = require('../controller/directorController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
 const resolveBySlug = require('../middleware/ResolveBySlug');
 
@@ -12,6 +12,7 @@ const router = express.Router();
 
 
 router.get("/directorList", getAllDirectors);
+router.get("/browse", browseDirectors);
 router.post("/", [Authenticate, Authorize(["admin"])], createDirector);
 router.get("/seriesList/:id", resolveDirector, getDirectorSeries);
 router.get("/moviesList/:id", resolveDirector, getDirectorMovies);

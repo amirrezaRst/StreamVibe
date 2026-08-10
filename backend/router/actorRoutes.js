@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { allActors, getActor, createActor, updateActor, deleteActor, getActorMovies, getActorSeries } = require('../controller/actorController');
+const { allActors, browseActors, getActor, createActor, updateActor, deleteActor, getActorMovies, getActorSeries } = require('../controller/actorController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
 const resolveBySlug = require('../middleware/ResolveBySlug');
 
@@ -11,6 +11,7 @@ const router = Router();
 
 
 router.get("/actorList", allActors)
+router.get("/browse", browseActors)
 
 router.post("/", [Authenticate, Authorize(["admin"])], createActor);
 router.get("/seriesList/:id", resolveActor, getActorSeries);

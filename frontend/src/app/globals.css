@@ -52,6 +52,57 @@
   }
 }
 
+/*! Person card skeleton — a base colour pulse plus a diagonal light sweep
+    layered on top, staggered per card via the --sk-delay custom property so
+    a grid of them breathes instead of pulsing in lockstep. Both layers are
+    disabled under reduced motion, same as every other animation in the app. */
+@keyframes skeleton-pulse {
+  0%, 100% { background-color: theme("colors.c-black-15"); }
+  50% { background-color: theme("colors.c-black-20"); }
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 2.1s ease-in-out infinite;
+  animation-delay: var(--sk-delay, 0ms);
+}
+
+@keyframes skeleton-sweep {
+  0% { transform: translateX(-120%); }
+  55%, 100% { transform: translateX(120%); }
+}
+
+.skeleton-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.045) 44%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.045) 56%,
+    transparent 70%);
+  transform: translateX(-120%);
+  animation: skeleton-sweep 2.1s ease-in-out infinite;
+  animation-delay: var(--sk-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-pulse {
+    animation: none;
+    background-color: theme("colors.c-black-15");
+  }
+
+  .skeleton-sweep::after {
+    animation: none;
+    display: none;
+  }
+}
+
 /*! Custom Scrollbar  */
 .custom-scrollbar-sm::-webkit-scrollbar {
   width: 8px;

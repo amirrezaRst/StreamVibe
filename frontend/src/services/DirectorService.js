@@ -35,3 +35,16 @@ export const fetchDirectorMovies = async (directorId, currentPage, page) => {
         console.error("Error fetching series:", error);
     }
 }
+
+export const fetchDirectors = async (page, search) => {
+    try {
+        const query = new URLSearchParams({ page: page || 1, ...(search ? { search } : {}) });
+        const response = await apiFetch(`/director/browse?${query}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    } catch (error) {
+        console.error("Error fetching directors:", error);
+    }
+}

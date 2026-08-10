@@ -1,20 +1,12 @@
+import PeopleBrowser from "@/components/person/PeopleBrowser";
 import { buildMetadata } from "@/utils/metadata";
 
-//! same as /actors — a placeholder heading, held out of the index until there
-//! is a real listing behind it
 export const metadata = buildMetadata({
     title: "Directors",
-    description: "Browse the directors in the StreamVibe catalogue.",
+    description: "Browse every director in the StreamVibe catalogue — search by name and open a profile for their full filmography.",
     path: "/directors",
-    index: false,
 });
 
-const DirectorsPage = () => {
-    return (
-        <section>
-            <h1>Directors</h1>
-        </section>
-    );
-}
+const DirectorsPage = () => <PeopleBrowser roleKey="director" />;
 
 export default DirectorsPage;

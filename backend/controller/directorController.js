@@ -1,5 +1,6 @@
 const path = require('path');
 const { creditsFor, collaboratorsFrom } = require('../utils/personCredits');
+const { paginatedPeople } = require('../utils/personList');
 
 const Director = require('../model/directorModel');
 const Movie = require('../model/movieModel');
@@ -38,6 +39,9 @@ exports.getAllDirectors = async (req, res) => {
         });
     }
 };
+
+//! the /directors browse page — paginated, name-searchable, unlike getAllDirectors above
+exports.browseDirectors = paginatedPeople(Director);
 
 exports.getDirector = async (req, res) => {
     try {
