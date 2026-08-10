@@ -1,5 +1,6 @@
 const path = require('path');
 const { creditsFor, collaboratorsFrom } = require('../utils/personCredits');
+const { paginatedPeople } = require('../utils/personList');
 
 const { createActorValidation, editActorValidation } = require('../validation/actorValidation');
 const Actor = require('../model/actorModel');
@@ -28,6 +29,9 @@ exports.allActors = async (req, res) => {
         res.status(500).json({ status: 500, message: error.message });
     }
 };
+
+//! the /actors browse page — paginated, name-searchable, unlike allActors above
+exports.browseActors = paginatedPeople(Actor);
 
 // exports.getActor = async (req, res) => {
 //     const actorId = req.params.id;

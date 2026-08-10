@@ -649,3 +649,15 @@ export const MusicIcon = (props) => {
         </svg>
     )
 }
+
+//! a candle rather than a headstone or ribbon — vigil imagery reads as
+//! remembrance without the graphic, morbid connotation those alternatives carry
+export const MemoriamIcon = (props) => {
+    return (
+        <svg {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3c1.5 2 2.3 3.4 2.3 4.6a2.3 2.3 0 11-4.6 0C9.7 6.4 10.5 5 12 3z" fill="currentColor" />
+            <rect x="9.5" y="9" width="5" height="10.5" rx="1" stroke="currentColor" strokeWidth="1.4" />
+            <path d="M7 19.5h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+        </svg>
+    )
+}

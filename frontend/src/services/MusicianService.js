@@ -26,3 +26,13 @@ export const fetchMusicianSeries = async (musicianId, currentPage, page) => {
         console.error("Error fetching musician series:", error);
     }
 }
+
+export const fetchMusicians = async (page, search) => {
+    try {
+        const query = new URLSearchParams({ page: page || 1, ...(search ? { search } : {}) });
+        const response = await apiFetch(`/musician/browse?${query}`);
+        return response.json();
+    } catch (error) {
+        console.error("Error fetching musicians:", error);
+    }
+}

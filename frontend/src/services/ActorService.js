@@ -36,3 +36,16 @@ export const fetchActorMovies = async (actorId, currentPage, page) => {
         console.error("Error fetching series:", error);
     }
 }
+
+export const fetchActors = async (page, search) => {
+    try {
+        const query = new URLSearchParams({ page: page || 1, ...(search ? { search } : {}) });
+        const response = await apiFetch(`/actor/browse?${query}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+    } catch (error) {
+        console.error("Error fetching actors:", error);
+    }
+}
