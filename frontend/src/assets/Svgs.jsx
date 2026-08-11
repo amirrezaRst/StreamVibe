@@ -650,6 +650,15 @@ export const MusicIcon = (props) => {
     )
 }
 
+export const LockIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <rect x="4" y="10.5" width="16" height="10.5" rx="2" />
+            <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" />
+        </svg>
+    )
+}
+
 //! a candle rather than a headstone or ribbon — vigil imagery reads as
 //! remembrance without the graphic, morbid connotation those alternatives carry
 export const MemoriamIcon = (props) => {
