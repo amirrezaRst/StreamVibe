@@ -50,7 +50,7 @@ const run = async () => {
                 title: ep.title,
                 description: ep.description,
                 releaseDate: (ep.airDate || new Date()).toString(),
-                runtime: result.runtime,
+                runtime: ep.runtime,
                 episodeNumber: ep.number,
                 seasonNumber: 1,
                 series: series._id,

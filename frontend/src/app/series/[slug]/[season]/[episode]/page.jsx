@@ -51,10 +51,17 @@ const SingleEpisodePage = async ({ params }) => {
 
                     <section className="bg-c-black-10 border border-c-black-15 xl:py-9 xl:px-9 md:px-5 md:py-5 px-3.5 py-3.5 rounded-2.5xl">
                         <div className="aspect-video rounded-[0.9rem] overflow-hidden">
+                            {/*//! without an explicit height, a <video> with no
+                                width/height attributes sizes itself off its
+                                *poster* image's own intrinsic ratio (a portrait
+                                movie cover) rather than this wrapper's 16:9 box —
+                                the element renders far taller than the visible
+                                area, pushing the native controls bar below the
+                                fold along with most of the poster itself */}
                             <video
                                 src="/images/short-video.mp4"
                                 poster={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${pictures[0]}`}
-                                className="w-full"
+                                className="w-full h-full object-cover"
                                 controls
                             />
                         </div>
