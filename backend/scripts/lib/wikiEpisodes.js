@@ -112,13 +112,23 @@ const parseEpisodeBlocks = (wikitext) => {
         const number = parseInt(numberRaw, 10);
         if (!number) continue;
 
-        const title = cleanWikitext(field('Title')).replace(/^"|"$/g, '');
+        const titleField = field('Title');
+        const title = cleanWikitext(titleField).replace(/^"|"$/g, '');
         const airDateField = field('OriginalAirDate') || field('AirDate');
         const summary = field('ShortSummary') || field('Aux4');
+
+        //! some episodes (often the premiere and finale, sometimes the whole
+        //! season for a well-documented show) are wikilinked to their own
+        //! article — [[Pilot (Breaking Bad)|Pilot]] or plain [[Cat's in the
+        //! Bag...]] — which is where a real per-episode runtime can be read
+        //! from; plain unlinked text means no such article exists
+        const wikilink = titleField.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
+        const articleTitle = wikilink ? wikilink[1].trim() : null;
 
         episodes.push({
             number,
             title: title || `Episode ${number}`,
+            articleTitle,
             airDate: parseStartDate(airDateField),
             description: summary ? clipSummary(summary) : '',
         });
@@ -128,13 +138,37 @@ const parseEpisodeBlocks = (wikitext) => {
 
 //! the per-episode template rarely carries its own runtime — the show's
 //! main infobox states a range ("43–58 minutes"); the midpoint stands in
-//! for every episode rather than leaving the field unset
+//! for every episode that doesn't have its own article (see below) to read
+//! an exact figure from
 const parseRuntime = (wikitext) => {
     const m = wikitext.match(/\|\s*(?:running_time|runtime)\s*=\s*([^\n|]+)/i);
     if (!m) return null;
     const numbers = [...m[1].matchAll(/\d+/g)].map((n) => parseInt(n[0], 10));
     if (!numbers.length) return null;
     return Math.round(numbers.reduce((a, b) => a + b, 0) / numbers.length);
+};
+
+//! {{Infobox television episode}} states its own exact runtime as `length`
+//! ("58 minutes") rather than the show-wide infobox's `running_time` range
+const parseEpisodeLength = (wikitext) => {
+    const m = wikitext.match(/\|\s*length\s*=\s*([^\n|]+)/i);
+    if (!m) return null;
+    const numbers = [...m[1].matchAll(/\d+/g)].map((n) => parseInt(n[0], 10));
+    if (!numbers.length) return null;
+    //! "42-45 minutes" for a single episode is rare but not unheard of —
+    //! same midpoint treatment as the show-wide range
+    return Math.round(numbers.reduce((a, b) => a + b, 0) / numbers.length);
+};
+
+//! only episodes wikilinked to their own article (see parseEpisodeBlocks)
+//! get a lookup at all — most don't, and that's the norm, not a failure
+const fetchEpisodeRuntime = async (articleTitle) => {
+    try {
+        const wikitext = await pageWikitext(articleTitle, 0);
+        return wikitext ? parseEpisodeLength(wikitext) : null;
+    } catch {
+        return null;
+    }
 };
 
 //! priority order per host: a "Season 1 (YYYY)" heading is unambiguously the
@@ -144,12 +178,19 @@ const parseRuntime = (wikitext) => {
 //! A generic "Episodes" heading is the last resort for single-season shows,
 //! and its content isn't guaranteed to stop before "Season 2" starts —
 //! callers truncate for that, this just locates the best starting point
+//! British shows say "Series 1", not "Season 1" (Sherlock, Black Mirror,
+//! Peaky Blinders all do); a show split into staggered international
+//! releases (Money Heist) says "Part 1" instead — same heading, same
+//! meaning, different word each time
+const SEASON_WORD = '(?:season|series|part)';
 const bestSectionOn = (sections) => {
     if (!sections) return null;
     const plain = (line) => line.replace(/<[^>]+>/g, '');
-    const dated = sections.find((s) => /^season\s*1\s*\(/i.test(plain(s.line)));
-    if (dated) return { index: dated.index, scoped: true };
-    const season1 = sections.find((s) => /^season\s*1\b/i.test(plain(s.line)));
+    const dated = new RegExp(`^${SEASON_WORD}\\s*1\\s*[:(]`, 'i');
+    const bare = new RegExp(`^${SEASON_WORD}\\s*1\\b`, 'i');
+    const datedMatch = sections.find((s) => dated.test(plain(s.line)));
+    if (datedMatch) return { index: datedMatch.index, scoped: true };
+    const season1 = sections.find((s) => bare.test(plain(s.line)));
     if (season1) return { index: season1.index, scoped: true };
     const episodes = sections.find((s) => /^episodes$/i.test(plain(s.line)));
     if (episodes) return { index: episodes.index, scoped: false };
@@ -175,11 +216,14 @@ const findSeasonOneSection = async (title) => {
     return null;
 };
 
-//! Season 1 content never legitimately contains a "Season 2" heading, so
-//! cutting the wikitext there is always safe — needed whenever the section
-//! fetched was the broader "Episodes" parent rather than "Season 1" itself
+//! Season 1 content never legitimately contains a "Season 2"/"Series 2"
+//! heading, so cutting there is always safe — applied unconditionally as a
+//! safety net, not just for the unscoped "Episodes" fallback, because a few
+//! shows (Money Heist's "Season 1: Parts 1 and 2") turned out to nest a
+//! second season's heading inside what MediaWiki still reports as one
+//! section rather than stopping cleanly at the fetched section's boundary
 const truncateBeforeNextSeason = (wikitext) => {
-    const m = wikitext.match(/\n=+\s*Season\s*2\b/i);
+    const m = wikitext.match(new RegExp(`\\n=+\\s*${SEASON_WORD}\\s*2\\b`, 'i'));
     return m ? wikitext.slice(0, m.index) : wikitext;
 };
 
@@ -199,7 +243,7 @@ const fetchSeasonOne = async (showTitle) => {
 
     let wikitext = await pageWikitext(located.host, located.index);
     if (!wikitext) return null;
-    if (!located.scoped) wikitext = truncateBeforeNextSeason(wikitext);
+    wikitext = truncateBeforeNextSeason(wikitext);
 
     //! a season with its own spun-off article ("Breaking Bad season 1")
     //! shows up here as either a bare transclusion marker ({{:Page}}, pulling
@@ -216,7 +260,7 @@ const fetchSeasonOne = async (showTitle) => {
         wikitext = episodesMatch
             ? await pageWikitext(seasonArticle, episodesMatch.index)
             : await pageWikitext(seasonArticle);
-        if (wikitext && !episodesMatch?.scoped) wikitext = truncateBeforeNextSeason(wikitext);
+        if (wikitext) wikitext = truncateBeforeNextSeason(wikitext);
         located.host = seasonArticle;
     }
     EPISODE_BLOCK.lastIndex = 0;
@@ -225,12 +269,23 @@ const fetchSeasonOne = async (showTitle) => {
     const episodes = parseEpisodeBlocks(wikitext);
     if (!episodes.length) return null;
 
-    //! runtime lives on the main show article's infobox, not the season
-    //! article's — read it there regardless of where the episodes came from
+    //! the show-wide runtime lives on the main article's infobox, not the
+    //! season article's — read it there regardless of where the episodes
+    //! came from, as the fallback for episodes with no article of their own
     const mainWikitext = located.host === title ? wikitext : await pageWikitext(title, 0);
-    const runtime = (mainWikitext && parseRuntime(mainWikitext)) || 45;
+    const defaultRuntime = (mainWikitext && parseRuntime(mainWikitext)) || 45;
 
-    return { source: located.host, runtime, episodes };
+    //! one lookup per wikilinked episode, sequentially and rate-limited by
+    //! the caller between fetchSeasonOne calls — not everything at once,
+    //! since a well-documented show can wikilink every episode in a season
+    for (const episode of episodes) {
+        episode.runtime = episode.articleTitle
+            ? (await fetchEpisodeRuntime(episode.articleTitle)) || defaultRuntime
+            : defaultRuntime;
+        delete episode.articleTitle;
+    }
+
+    return { source: located.host, runtime: defaultRuntime, episodes };
 };
 
 module.exports = { fetchSeasonOne, cleanWikitext, clipSummary };
