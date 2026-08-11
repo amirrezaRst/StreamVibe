@@ -5,6 +5,7 @@ const Episode = require('../model/episodeModel');
 const Season = require('../model/seasonModel');
 const { episodeUploader } = require('../utils/videoUploader');
 const { createEpisodeValidation } = require('../validation/episodeValidation');
+const { guardQuality } = require('../utils/downloadGuard');
 
 
 //! Single Episode
@@ -46,7 +47,7 @@ exports.getEpisodeByEpisodeNumber = async (req, res) => {
         })
             .populate(
                 {
-                    path: "series", select: "title director release_date genres rotten_rating imdb_rating actors",
+                    path: "series", select: "title trailer director release_date genres rotten_rating imdb_rating actors",
                     populate: { path: "director actors", select: "directorId actorId fullName profile birthPlace" },
                 })
             .select("title files pictures");
@@ -159,6 +160,9 @@ exports.downloadEpisode = async (req, res) => {
     }
 
     try {
+        const denied = await guardQuality(Episode, url, req.entitlement);
+        if (denied) return res.status(denied.status).json(denied);
+
         const videosDir = path.join(__dirname, "..", "public", "videos");
         const file = path.join(videosDir, path.basename(url));
 

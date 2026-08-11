@@ -24,7 +24,7 @@ const SubscriptionBox = () => {
                         }
                     </p>
                 </div>
-                <Link href="/subscription">
+                <Link href="/subscriptions">
                     <button
                         className="bg-c-red-45 text-white 3xl:text-[1.35rem] md:text-base text-super-sm rounded-md 3xl:py-4 md:py-2.5 py-2 3xl:px-8 px-4"
                     >

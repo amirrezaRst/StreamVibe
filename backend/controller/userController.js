@@ -11,6 +11,7 @@ const { generateAccessToken, generateRefreshToken } = require("../utils/tokenUti
 const { setRefreshTokenCookie, setTokenCookie } = require("../utils/cookieUtils");
 const { sendPasswordResetEmail } = require("../utils/mailer");
 const { resolveMedia } = require("../utils/mediaLookup");
+const { entitlementFor } = require("../utils/subscription");
 
 //! Get Request
 exports.allUser = async (req, res) => {
@@ -32,7 +33,11 @@ exports.singleUser = async (req, res) => {
             if (!user) {
                 return res.status(404).json({ status: 404, message: "User not found" });
             }
-            return res.status(200).json({ status: 200, user, message: "User fetch successfully" });
+            //! resolved here rather than derived on the client: this is also
+            //! where a lapsed subscription gets flipped to 'expired', so the
+            //! UI can never be looking at a stale 'active'
+            const entitlement = await entitlementFor(user);
+            return res.status(200).json({ status: 200, user, entitlement, message: "User fetch successfully" });
         }
         else if (refreshToken) {
             const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
@@ -54,7 +59,8 @@ exports.singleUser = async (req, res) => {
             await user.save();
             // console.log(refreshToken)
             user.refreshToken = undefined;
-            return res.status(200).json({ status: 200, user, message: "User fetch successfully" });
+            const entitlement = await entitlementFor(user);
+            return res.status(200).json({ status: 200, user, entitlement, message: "User fetch successfully" });
         }
 
         else {
@@ -498,6 +504,17 @@ exports.addSubscription = async (req, res) => {
 
         const startDate = new Date();
         if (freeTrial) {
+            //! the UI hides the button once the trial is spent, but that is not
+            //! a control — without this check the same account could re-claim
+            //! the 7 free days indefinitely by calling the endpoint directly
+            const existing = await userModel.findById(userId).select('timeTrial');
+            if (!existing) {
+                return res.status(404).json({ status: 404, message: "User not found" });
+            }
+            if (existing.timeTrial) {
+                return res.status(409).json({ status: 409, message: "The free trial has already been used on this account" });
+            }
+
             const endDate = new Date();
             endDate.setDate(startDate.getDate() + 7);  // for a 7 day trial
 

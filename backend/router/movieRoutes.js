@@ -7,6 +7,7 @@ const resolveBySlug = require('../middleware/ResolveBySlug');
 const resolveMovie = resolveBySlug(require('../model/movieModel'));
 const Authorize = require('../middleware/Authorize');
 const Authenticate = require('../middleware/Authenticate');
+const RequireSubscription = require('../middleware/RequireSubscription');
 
 const router = Router();
 
@@ -21,7 +22,9 @@ router.get("/new-released", newReleased);
 router.get("/popular-movies", popularMovies);
 router.get("/moviesByGenre/:genre", getMoviesByGenre);
 
-router.post("/download", downloadMovie);
+//! the paywall: this endpoint hands over the actual file, so it checks the
+//! live subscription rather than relying on the UI having hidden the button
+router.post("/download", [Authenticate, RequireSubscription({ requireDownload: true })], downloadMovie);
 
 router.route("/:id")
     .get(resolveMovie, singleMovie)

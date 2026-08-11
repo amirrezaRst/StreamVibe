@@ -1,12 +1,19 @@
 "use client"
-import { DownloadIcon } from "@/assets/Svgs";
+import { DownloadIcon, LockIcon } from "@/assets/Svgs";
+import { isQualityWithinPlan } from "@/constants/PlanAccess";
 import { downloadMovieApi } from "@/services/MovieService";
 import { downloadEpisodeApi } from "@/services/SeriesService";
 import { useState } from "react";
 
 
-const DownloadItem = ({ moviePage, quality, size, url, seriesTitle, season, episode }) => {
+const DownloadItem = ({ moviePage, quality, size, url, seriesTitle, season, episode, maxQuality, canDownload }) => {
     const [isDownloading, setIsDownloading] = useState(false);
+
+    //! two separate reasons a row can be locked: the plan excludes downloads
+    //! outright (Basic), or this particular file is above the plan's ceiling.
+    //! The server enforces both again in downloadGuard — this only decides
+    //! whether to offer the button
+    const locked = !canDownload || !isQualityWithinPlan(quality, maxQuality);
 
     const handleDownload = async () => {
         setIsDownloading(true);
@@ -60,14 +67,27 @@ const DownloadItem = ({ moviePage, quality, size, url, seriesTitle, season, epis
                 <p className="text-white tracking-wide md:text-super-sm text-xs">_</p>
             </div>
             <div className="flex items-center justify-end">
-                <button
-                    className="bg-c-black-10 hover:bg-c-black-12 border border-c-black-15 rounded-lg 
-                                md:py-2 md:px-6 py-1 px-3 lg:text-base md:text-super-sm max-md:text-xs text-c-grey-70 flex items-center"
-                    onClick={handleDownload}
-                    disabled={isDownloading}
-                >
-                    Download <DownloadIcon className="md:w-5 w-3.5 ml-2" />
-                </button>
+                {locked ? (
+                    <span
+                        className="border border-c-black-15 rounded-lg md:py-2 md:px-6 py-1 px-3
+                            lg:text-base md:text-super-sm max-md:text-xs text-c-grey-60 flex items-center gap-2"
+                        title={canDownload
+                            ? `${quality} is above your plan's ${maxQuality} ceiling`
+                            : "Downloads are not included in your plan"}
+                    >
+                        <LockIcon className="md:w-4 w-3.5 h-4" aria-hidden="true" />
+                        Locked
+                    </span>
+                ) : (
+                    <button
+                        className="bg-c-black-10 hover:bg-c-black-12 border border-c-black-15 rounded-lg
+                                    md:py-2 md:px-6 py-1 px-3 lg:text-base md:text-super-sm max-md:text-xs text-c-grey-70 flex items-center"
+                        onClick={handleDownload}
+                        disabled={isDownloading}
+                    >
+                        Download <DownloadIcon className="md:w-5 w-3.5 ml-2" />
+                    </button>
+                )}
             </div>
         </div>
     );

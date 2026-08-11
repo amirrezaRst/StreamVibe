@@ -5,6 +5,7 @@ const Review = require("../model/reviewModel");
 const { createMovieValidation } = require("../validation/movieValidation");
 const { movieUploader } = require('../utils/videoUploader');
 const { deleteMediaReferences } = require('../utils/cascadeDelete');
+const { guardQuality } = require('../utils/downloadGuard');
 
 
 //! Get Request
@@ -377,6 +378,9 @@ exports.downloadMovie = async (req, res) => {
     }
 
     try {
+        const denied = await guardQuality(Movie, url, req.entitlement);
+        if (denied) return res.status(denied.status).json(denied);
+
         const videosDir = path.join(__dirname, "..", "public", "videos");
         const file = path.join(videosDir, path.basename(url));
 
