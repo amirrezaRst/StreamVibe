@@ -5,3 +5,6 @@
 # OS noise
 .DS_Store
 Thumbs.db
+
+# Personal Claude Code permission overrides — not team policy
+.claude/settings.local.json

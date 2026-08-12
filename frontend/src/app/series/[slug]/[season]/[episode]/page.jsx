@@ -64,6 +64,7 @@ const SingleEpisodePage = async ({ params }) => {
                                 poster={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${pictures[0]}`}
                                 trailer={series.trailer}
                                 title={seriesTitle}
+                                qualities={files}
                             />
                         </div>
                         <div className="mt-6">

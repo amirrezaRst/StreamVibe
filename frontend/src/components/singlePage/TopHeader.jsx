@@ -1,9 +1,51 @@
-import Image from "next/image";
+"use client";
 
+import Image from "next/image";
+import { useState } from "react";
+
+import { LeftArrowSvg } from "@/assets/Svgs";
+import WatchPlayer from "./WatchPlayer";
 import HeaderCallToAction from "../singlePage/HeaderCallToAction";
 
+/**
+ * Movies had no player at all — "Play Now" was a `<button>` with no
+ * `onClick`. This is the same hero box (`watching` swaps its content) rather
+ * than a route to a separate watch page, both because that box is already
+ * the right shape and size, and because leaving the poster hero one click
+ * away instead of a full navigation keeps the ergonomics closer to a
+ * Netflix-style "play in place" than to a full page swap.
+ *
+ * A series has no single thing to play here — it plays a given episode — so
+ * its "Play Now" is a plain Link to the first one; only a film owns this
+ * in-place toggle.
+ */
+const TopHeader = ({ id, kind, title, description, cover, poster, trailer, files }) => {
+    const [watching, setWatching] = useState(false);
 
-const TopHeader = ({ id, kind, title, description, cover }) => {
+    if (watching) {
+        return (
+            <div className="relative w-full xl:h-[80vh] md:h-[60vh] h-[50vh] overflow-hidden rounded-xl bg-black">
+                <WatchPlayer
+                    src="/images/short-video.mp4"
+                    poster={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${poster}`}
+                    trailer={trailer}
+                    title={title}
+                    qualities={files}
+                />
+                <button
+                    type="button"
+                    onClick={() => setWatching(false)}
+                    aria-label="Back to details"
+                    className="absolute top-4 left-4 z-20 w-10 h-10 rounded-full bg-black/55 border border-white/15
+                        backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/75 duration-150
+                        focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+                >
+                    <LeftArrowSvg className="w-4 h-4 stroke-current" aria-hidden="true" />
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="relative w-full xl:h-[80vh] md:h-[60vh] h-[50vh] overflow-hidden rounded-xl">
             {/*//! this cover is the largest thing on the page and almost always
@@ -30,7 +72,7 @@ const TopHeader = ({ id, kind, title, description, cover }) => {
                 >
                     {!description || description === "" ? "No description available yet!" : description}
                 </p>
-                <HeaderCallToAction mediaId={id} kind={kind} />
+                <HeaderCallToAction mediaId={id} kind={kind} onPlay={() => setWatching(true)} />
             </div>
 
         </div>
