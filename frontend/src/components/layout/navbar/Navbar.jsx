@@ -51,10 +51,16 @@ const Navbar = () => {
                         </Link>
                     }
 
+                    {/*//! no onClick — there is no mobile menu drawer built yet for
+                        this to open. Left as a labelled, inert placeholder rather
+                        than removed, since the mobile nav gap is a separate,
+                        larger piece of work than this fix */}
                     <button
+                        type="button"
+                        aria-label="Menu"
                         className="w-11 h-11 rounded-lg btn-black-10 border border-c-black-15 md:hidden flex justify-center items-center "
                     >
-                        <MenuSvg />
+                        <MenuSvg aria-hidden="true" />
                     </button>
                 </div>
             </div>

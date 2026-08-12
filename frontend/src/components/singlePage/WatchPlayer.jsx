@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { LockIcon, PlaySvg } from "@/assets/Svgs";
+import StreamVibePlayer from "@/components/player/StreamVibePlayer";
 import useUserStore from "@/stores/useUserStore";
 
 //! the `trailer` field holds whatever was uploaded for a title, which across
@@ -70,7 +71,7 @@ const Overlay = ({ poster, signedIn }) => (
  * and it mirrors the server-side check in RequireSubscription rather than
  * being the only thing standing between a visitor and the file.
  */
-const WatchPlayer = ({ src, poster, trailer, title }) => {
+const WatchPlayer = ({ src, poster, trailer, title, qualities }) => {
     const user = useUserStore((state) => state.user);
     const entitlement = useUserStore((state) => state.entitlement);
     const loading = useUserStore((state) => state.loading);
@@ -87,22 +88,22 @@ const WatchPlayer = ({ src, poster, trailer, title }) => {
 
     if (unlocked) {
         return (
-            <video
+            <StreamVibePlayer
                 src={src}
                 poster={poster}
-                className="w-full h-full object-cover"
-                controls
+                title={title}
+                qualities={qualities}
+                maxQuality={entitlement.capabilities.maxQuality}
             />
         );
     }
 
     if (playingTrailer) {
         return (
-            <video
+            <StreamVibePlayer
                 src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${trailer}`}
                 poster={poster}
-                className="w-full h-full object-cover"
-                controls
+                title={title}
                 autoPlay
             />
         );

@@ -132,3 +132,20 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #4d4d4d;
 }
+
+/*! StreamVibePlayer's buffering indicator — the mark is four petals around a
+    shared centre, rotationally symmetric, so spinning it is the one motion
+    the shape was actually built for rather than a generic ring bolted on. */
+@keyframes sv-spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-sv-spin {
+  animation: sv-spin 1.15s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-sv-spin {
+    animation: none;
+  }
+}

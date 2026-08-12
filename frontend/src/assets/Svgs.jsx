@@ -670,3 +670,76 @@ export const MemoriamIcon = (props) => {
         </svg>
     )
 }
+
+//! ---- StreamVibePlayer chrome ----
+export const PauseSvg = (props) => {
+    return (
+        <svg {...props} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="4" width="4" height="16" rx="1" />
+            <rect x="14" y="4" width="4" height="16" rx="1" />
+        </svg>
+    )
+}
+
+export const Replay10Icon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M11 5 6 9l5 4" />
+            <path d="M6 9h7a5 5 0 0 1 0 10h-1" />
+        </svg>
+    )
+}
+
+export const Forward10Icon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="m13 5 5 4-5 4" />
+            <path d="M18 9h-7a5 5 0 0 0 0 10h1" />
+        </svg>
+    )
+}
+
+export const VolumeIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M11 5 6 9H3v6h3l5 4z" />
+            <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+            <path d="M18.5 5.5a9 9 0 0 1 0 13" />
+        </svg>
+    )
+}
+
+export const MutedIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M11 5 6 9H3v6h3l5 4z" />
+            <path d="m16 9 5 6" />
+            <path d="m21 9-5 6" />
+        </svg>
+    )
+}
+
+export const FullscreenIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
+        </svg>
+    )
+}
+
+export const FullscreenExitIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M9 3v3a2 2 0 0 1-2 2H4M15 3v3a2 2 0 0 0 2 2h3M9 21v-3a2 2 0 0 0-2-2H4M15 21v-3a2 2 0 0 1 2-2h3" />
+        </svg>
+    )
+}
+
+export const QualityGearIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+        </svg>
+    )
+}

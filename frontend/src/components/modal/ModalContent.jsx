@@ -11,8 +11,8 @@ const ModalContent = ({ user, title, isOpen, setIsOpen, children }) => {
         >
             <div className={`${user === null || user === undefined ? "hidden" : "flex"} items-center justify-between gap-3 mb-5`}>
                 <h6 className="text-white font-semibold lg:text-xl md:text-lg text-base">{title}</h6>
-                <button className="p-1.5" onClick={() => setIsOpen(false)}>
-                    <XmarkIcon />
+                <button type="button" className="p-1.5" onClick={() => setIsOpen(false)} aria-label="Close">
+                    <XmarkIcon aria-hidden="true" />
                 </button>
             </div>
 
