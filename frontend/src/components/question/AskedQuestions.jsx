@@ -21,7 +21,7 @@ const AskedQuestions = () => {
     };
 
     return (
-        <section className="container mt-16">
+        <section id="faq" className="container mt-16 scroll-mt-24">
             <QuestionTitle setIsOpen={setIsOpen} />
             <div className="grid md:grid-cols-2 gap-x-10 md:mt-8 mt-10">
                 {questions.map(({ id, question, answer }) => (

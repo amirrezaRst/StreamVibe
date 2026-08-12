@@ -1,6 +1,6 @@
 const { Router } = require('express');
 
-const { allMusicians, getMusician, getMusicianMovies, getMusicianSeries } = require('../controller/musicianController');
+const { allMusicians, browseMusicians, getMusician, getMusicianMovies, getMusicianSeries } = require('../controller/musicianController');
 const resolveBySlug = require('../middleware/ResolveBySlug');
 
 const router = Router();
@@ -9,6 +9,7 @@ const router = Router();
 const resolveMusician = resolveBySlug(require('../model/musicianModel'));
 
 router.get('/musicianList', allMusicians);
+router.get('/browse', browseMusicians);
 router.get('/seriesList/:id', resolveMusician, getMusicianSeries);
 router.get('/moviesList/:id', resolveMusician, getMusicianMovies);
 

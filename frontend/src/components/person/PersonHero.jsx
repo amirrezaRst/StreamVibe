@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { CalendarIcon, GlobalOutlineIcon } from "@/assets/Svgs";
+import { CalendarIcon, GlobalOutlineIcon, MemoriamIcon } from "@/assets/Svgs";
 
 /**
  * The portrait sits on a backdrop tinted from the person's own poster art, the
@@ -13,7 +13,7 @@ import { CalendarIcon, GlobalOutlineIcon } from "@/assets/Svgs";
  */
 const PersonHero = ({ person, role, backdrop }) => {
     const { fullName, birthDate, birthPlace, country, profile, death_date } = person;
-    const RoleIcon = role.Icon;
+    const RoleIcon = death_date ? MemoriamIcon : role.Icon;
 
     //! most birthplaces are already "City, Country" — appending the country
     //! again to those produced "Frankfurt, Germany, Germany"
@@ -57,9 +57,12 @@ const PersonHero = ({ person, role, backdrop }) => {
                 <div className="min-w-0">
                     {/*//! the role reads as a credit line rather than a coloured
                         pill — the same letterspaced-caps-over-a-rule vocabulary
-                        the film sidebar uses for its own labels */}
-                    <span className="inline-flex items-center gap-2 pb-2 mb-3 border-b border-c-red-45/50
-                        text-[10.5px] font-extrabold uppercase tracking-[0.16em] text-c-grey-70">
+                        the film sidebar uses for its own labels. The rule turns
+                        gold and the icon swaps to a candle once death_date is
+                        set — the same in-memoriam colour the browse-page card
+                        uses, so the two surfaces read as one system */}
+                    <span className={`inline-flex items-center gap-2 pb-2 mb-3 border-b text-[10.5px] font-extrabold uppercase tracking-[0.16em]
+                        ${death_date ? "border-[#E8B663]/55 text-[#E8B663]" : "border-c-red-45/50 text-c-grey-70"}`}>
                         <RoleIcon className="w-3.5 h-3.5" aria-hidden="true" />
                         {role.label}
                     </span>

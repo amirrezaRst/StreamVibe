@@ -2,6 +2,7 @@ const Musician = require('../model/musicianModel');
 const Movie = require('../model/movieModel');
 const Series = require('../model/seriesModel');
 const { creditsFor, collaboratorsFrom } = require('../utils/personCredits');
+const { paginatedPeople } = require('../utils/personList');
 
 /**
  * Composers, read the same way directors are. The person page renders all
@@ -17,6 +18,9 @@ exports.allMusicians = async (req, res) => {
         res.status(500).json({ status: 500, message: error.message });
     }
 };
+
+//! the /musicians browse page — paginated, name-searchable, unlike allMusicians above
+exports.browseMusicians = paginatedPeople(Musician);
 
 exports.getMusician = async (req, res) => {
     try {

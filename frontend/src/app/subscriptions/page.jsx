@@ -1,5 +1,6 @@
 import SubscriptionBox from "@/components/subscription/SubscriptionBox";
 import SubscriptionPlan from "@/components/subscription/SubscriptionPlan";
+import SubscriptionsCompare from "./SubscriptionsCompare";
 import { buildMetadata } from "@/utils/metadata";
 
 export const metadata = buildMetadata({
@@ -20,6 +21,10 @@ const SubscriptionsPage = () => {
                     <p className="text-c-grey-60 lg:text-sm md:text-super-xs text-xs">
                         StreamVibe offers three different plans to fit your needs: Basic, Standard, and Premium. Compare the features of each plan and choose the one that is right for you.
                     </p>
+                </div>
+
+                <div className="bg-c-black-10 border border-c-black-15 rounded-2xl xl:p-8 md:p-6 p-4 mt-6">
+                    <SubscriptionsCompare />
                 </div>
             </section>
 

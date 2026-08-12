@@ -44,14 +44,18 @@ const STATIC_ROUTES = [
     entry("/series/most-popular", 0.7, "daily"),
     entry("/subscriptions", 0.6, "monthly"),
     entry("/support", 0.5, "monthly"),
+    entry("/actors", 0.6, "weekly"),
+    entry("/directors", 0.6, "weekly"),
+    entry("/musicians", 0.6, "weekly"),
 ];
 
 const sitemap = async () => {
-    const [movies, series, actors, directors, movieGenres, seriesGenres] = await Promise.all([
+    const [movies, series, actors, directors, musicians, movieGenres, seriesGenres] = await Promise.all([
         collect("/movie", data => data.movies),
         collect("/series", data => data.series),
         collect("/actor/actorList", data => data.actors || data),
         collect("/director/directorList", data => data.directors || data),
+        collect("/musician/musicianList", data => data.musicians || data),
         collect("/movie/categories", data => Object.keys(data || {})),
         collect("/series/categories", data => Object.keys(data || {})),
     ]);
@@ -73,6 +77,7 @@ const sitemap = async () => {
         ...seriesGenres.map(genre => entry(`/series/genres/${encodeURIComponent(genre)}`, 0.6)),
         ...actors.map(actor => entry(`/actors/${address(actor)}`, 0.5, "monthly")),
         ...directors.map(director => entry(`/directors/${address(director)}`, 0.5, "monthly")),
+        ...musicians.map(musician => entry(`/musicians/${address(musician)}`, 0.5, "monthly")),
     ];
 };
 

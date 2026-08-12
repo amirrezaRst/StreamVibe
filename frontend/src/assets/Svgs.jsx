@@ -266,6 +266,15 @@ export const LinkedinSvg = (props) => {
 }
 
 
+export const GithubSvg = (props) => {
+    return (
+        <svg
+            {...props} width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.333-1.755-1.333-1.755-1.089-.744.084-.729.084-.729 1.205.084 1.84 1.237 1.84 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.468-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" fill="white" />
+        </svg>
+    )
+}
+
 export const SearchSvg = (props) => {
     return (
         <svg {...props} width="25" height="25" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -646,6 +655,100 @@ export const MusicIcon = (props) => {
             <path d="M9 18V6.5C9 5.94772 9.39831 5.47755 9.94055 5.37516L18.4406 3.75516C19.1449 3.62144 19.8 4.16108 19.8 4.87829V15.5" stroke="#999999" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M6.5 21C7.88071 21 9 19.8807 9 18.5C9 17.1193 7.88071 16 6.5 16C5.11929 16 4 17.1193 4 18.5C4 19.8807 5.11929 21 6.5 21Z" stroke="#999999" strokeWidth="1.5" />
             <path d="M17.3 18C18.6807 18 19.8 16.8807 19.8 15.5C19.8 14.1193 18.6807 13 17.3 13C15.9193 13 14.8 14.1193 14.8 15.5C14.8 16.8807 15.9193 18 17.3 18Z" stroke="#999999" strokeWidth="1.5" />
+        </svg>
+    )
+}
+
+export const LockIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <rect x="4" y="10.5" width="16" height="10.5" rx="2" />
+            <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" />
+        </svg>
+    )
+}
+
+//! a candle rather than a headstone or ribbon — vigil imagery reads as
+//! remembrance without the graphic, morbid connotation those alternatives carry
+export const MemoriamIcon = (props) => {
+    return (
+        <svg {...props} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3c1.5 2 2.3 3.4 2.3 4.6a2.3 2.3 0 11-4.6 0C9.7 6.4 10.5 5 12 3z" fill="currentColor" />
+            <rect x="9.5" y="9" width="5" height="10.5" rx="1" stroke="currentColor" strokeWidth="1.4" />
+            <path d="M7 19.5h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+        </svg>
+    )
+}
+
+//! ---- StreamVibePlayer chrome ----
+export const PauseSvg = (props) => {
+    return (
+        <svg {...props} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="4" width="4" height="16" rx="1" />
+            <rect x="14" y="4" width="4" height="16" rx="1" />
+        </svg>
+    )
+}
+
+export const Replay10Icon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M11 5 6 9l5 4" />
+            <path d="M6 9h7a5 5 0 0 1 0 10h-1" />
+        </svg>
+    )
+}
+
+export const Forward10Icon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="m13 5 5 4-5 4" />
+            <path d="M18 9h-7a5 5 0 0 0 0 10h1" />
+        </svg>
+    )
+}
+
+export const VolumeIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M11 5 6 9H3v6h3l5 4z" />
+            <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+            <path d="M18.5 5.5a9 9 0 0 1 0 13" />
+        </svg>
+    )
+}
+
+export const MutedIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M11 5 6 9H3v6h3l5 4z" />
+            <path d="m16 9 5 6" />
+            <path d="m21 9-5 6" />
+        </svg>
+    )
+}
+
+export const FullscreenIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
+        </svg>
+    )
+}
+
+export const FullscreenExitIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M9 3v3a2 2 0 0 1-2 2H4M15 3v3a2 2 0 0 0 2 2h3M9 21v-3a2 2 0 0 0-2-2H4M15 21v-3a2 2 0 0 1 2-2h3" />
+        </svg>
+    )
+}
+
+export const QualityGearIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
         </svg>
     )
 }

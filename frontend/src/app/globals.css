@@ -33,6 +33,76 @@
   }
 }
 
+/*! Spotlight carousel content entrance — title, synopsis and the button row
+    rise in with a short stagger (set via inline animation-delay) rather than
+    appearing all at once. Disabled under reduced motion, same as every other
+    animation in the app. */
+@keyframes carousel-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.carousel-rise {
+  animation: carousel-rise 650ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carousel-rise {
+    animation: none;
+  }
+}
+
+/*! Person card skeleton — a base colour pulse plus a diagonal light sweep
+    layered on top, staggered per card via the --sk-delay custom property so
+    a grid of them breathes instead of pulsing in lockstep. Both layers are
+    disabled under reduced motion, same as every other animation in the app. */
+@keyframes skeleton-pulse {
+  0%, 100% { background-color: theme("colors.c-black-15"); }
+  50% { background-color: theme("colors.c-black-20"); }
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 2.1s ease-in-out infinite;
+  animation-delay: var(--sk-delay, 0ms);
+}
+
+@keyframes skeleton-sweep {
+  0% { transform: translateX(-120%); }
+  55%, 100% { transform: translateX(120%); }
+}
+
+.skeleton-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.045) 44%,
+    rgba(255, 255, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.045) 56%,
+    transparent 70%);
+  transform: translateX(-120%);
+  animation: skeleton-sweep 2.1s ease-in-out infinite;
+  animation-delay: var(--sk-delay, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-pulse {
+    animation: none;
+    background-color: theme("colors.c-black-15");
+  }
+
+  .skeleton-sweep::after {
+    animation: none;
+    display: none;
+  }
+}
+
 /*! Custom Scrollbar  */
 .custom-scrollbar-sm::-webkit-scrollbar {
   width: 8px;
@@ -61,4 +131,21 @@
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #4d4d4d;
+}
+
+/*! StreamVibePlayer's buffering indicator — the mark is four petals around a
+    shared centre, rotationally symmetric, so spinning it is the one motion
+    the shape was actually built for rather than a generic ring bolted on. */
+@keyframes sv-spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-sv-spin {
+  animation: sv-spin 1.15s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-sv-spin {
+    animation: none;
+  }
 }
