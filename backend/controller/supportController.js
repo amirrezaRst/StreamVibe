@@ -1,4 +1,5 @@
 const Support = require('../model/supportModel');
+const notify = require('../utils/notify');
 
 
 //! Get all support tickets
@@ -102,6 +103,20 @@ exports.setSupportStatus = async (req, res) => {
 
         if (!support) {
             return res.status(404).json({ status: 404, message: 'Support ticket not found' });
+        }
+
+        //! anonymous tickets (no `user`) have nowhere to deliver a notification;
+        //! 'pending' is the default a fresh ticket already starts in, so it's
+        //! not a transition worth surfacing
+        if (support.user && ['in progress', 'resolved'].includes(support.status)) {
+            const label = support.status === 'in progress' ? 'In Progress' : 'Resolved';
+            await notify({
+                user: support.user,
+                variant: support.status === 'in progress' ? 'ticket_progress' : 'ticket_resolved',
+                message: `Your ticket "${support.subject}" is now ${label}.`,
+                link: '/profile?tab=tickets',
+                dedupeKey: `ticket:${support._id}:${support.status}`,
+            });
         }
 
         res.status(200).json({

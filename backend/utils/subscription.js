@@ -1,5 +1,12 @@
 const userModel = require('../model/userModel');
-const { planCapabilities, NO_ACCESS } = require('../constants/plans');
+const { planCapabilities, PLANS, NO_ACCESS } = require('../constants/plans');
+const notify = require('./notify');
+
+const EXPIRING_SOON_DAYS = 3;
+
+const daysUntil = (date) => Math.ceil((new Date(date) - Date.now()) / (1000 * 60 * 60 * 24));
+
+const planLabel = (plan) => PLANS[plan]?.label || plan;
 
 /**
  * Reading a subscription is also where it expires.
@@ -35,7 +42,32 @@ const entitlementFor = async (user) => {
         //! keep the in-memory copy honest too, so a caller that goes on to
         //! serialise this user doesn't ship the stale 'active' to the client
         subscription.status = 'expired';
+
+        await notify({
+            user: user._id,
+            variant: 'sub_expired',
+            message: `Your ${planLabel(subscription.plan)} plan has expired. Renew anytime to pick up where you left off.`,
+            link: '/subscriptions',
+            dedupeKey: `sub-expired:${new Date(subscription.endDate).toISOString()}`,
+        });
+
         return { active: false, plan: subscription.plan, capabilities: NO_ACCESS };
+    }
+
+    //! same "check on read" philosophy as the expiry flip above, rather than a
+    //! cron that would have to be kept alive separately just to catch this
+    //! window — whichever page load happens to land inside the last
+    //! EXPIRING_SOON_DAYS creates the warning, deduped per endDate so renewing
+    //! (which changes endDate) is what clears the way for the next one
+    const daysLeft = subscription.endDate ? daysUntil(subscription.endDate) : null;
+    if (daysLeft !== null && daysLeft <= EXPIRING_SOON_DAYS) {
+        await notify({
+            user: user._id,
+            variant: 'sub_expiring',
+            message: `Your ${planLabel(subscription.plan)} plan expires in ${daysLeft <= 1 ? '1 day' : `${daysLeft} days`}. Renew to keep your current quality and downloads.`,
+            link: '/subscriptions',
+            dedupeKey: `sub-expiring:${new Date(subscription.endDate).toISOString()}`,
+        });
     }
 
     return {
