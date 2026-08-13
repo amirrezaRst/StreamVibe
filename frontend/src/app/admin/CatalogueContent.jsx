@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
+import Link from "next/link";
 import { toast } from "react-toastify";
 
 import { deleteMovie, deleteSeries, fetchCatalogue } from "@/services/AdminService";
@@ -18,6 +19,16 @@ const joined = (value) => {
     if (Array.isArray(value)) return value.length ? value.join(", ") : "—";
     return value || "—";
 };
+
+const FilesPill = ({ count }) => (
+    <span className={`text-[10px] font-extrabold py-0.5 px-2 rounded-full whitespace-nowrap
+        ${count > 0 ? "bg-[#3DA872]/[0.14] text-[#6FCB9C]" : "bg-[#D99A34]/[0.14] text-[#E8B663]"}`}
+    >
+        {count > 0 ? (count === 1 ? "1 quality" : `${count} qualities`) : "No files"}
+    </span>
+);
+
+const linkButton = "rounded-[7px] py-1.5 px-2.5 text-[11px] font-bold border border-c-black-20 bg-c-black-12 text-c-grey-65 hover:text-c-grey-90 duration-150";
 
 /**
  * Movies and series are the same table with one column swapped — runtime for
@@ -69,6 +80,11 @@ const CatalogueContent = ({ kind }) => {
         series
             ? { key: "seasons", label: "Seasons", align: "end", render: (row) => number(row.seasons) }
             : { key: "duration", label: "Runtime", align: "end", render: (row) => (row.duration ? `${row.duration}m` : "—") },
+        //! surfaces what used to be invisible: an empty `files` array on a
+        //! movie looked identical to one with real download files. Series
+        //! don't get this column — their files live per-episode, one level
+        //! down, where the series workspace page already shows them.
+        ...(series ? [] : [{ key: "files", label: "Files", render: (row) => <FilesPill count={row.fileCount || 0} /> }]),
         { key: "views", label: "Views", align: "end", sortable: true, render: (row) => number(row.views) },
         {
             key: "rate",
@@ -91,7 +107,15 @@ const CatalogueContent = ({ kind }) => {
                 subtitle={list.pagination
                     ? `${number(list.pagination.total)} ${series ? "series" : "titles"} in the catalog`
                     : "Loading the catalog"}
-            />
+            >
+                <Link
+                    href={series ? "/admin/series/new" : "/admin/movies/new"}
+                    className="rounded-[7px] py-[7px] px-3.5 text-[12.5px] font-bold bg-c-red-45 border border-c-red-45
+                        text-white hover:bg-c-red-45/85 duration-150"
+                >
+                    + New {series ? "series" : "movie"}
+                </Link>
+            </PageHeader>
 
             <div className="p-[18px]">
                 <div className="flex items-center gap-2.5 flex-wrap mb-3">
@@ -128,9 +152,14 @@ const CatalogueContent = ({ kind }) => {
                     pagination={list.pagination}
                     onPageChange={list.setPage}
                     rowActions={(row) => (
-                        <TableButton tone="danger" onClick={() => remove(row)} disabled={list.busy}>
-                            Delete
-                        </TableButton>
+                        <div className="flex items-center gap-1.5 justify-end">
+                            <Link href={series ? `/admin/series/${row._id}` : `/admin/movies/${row._id}/edit`} className={linkButton}>
+                                Edit
+                            </Link>
+                            <TableButton tone="danger" onClick={() => remove(row)} disabled={list.busy}>
+                                Delete
+                            </TableButton>
+                        </div>
                     )}
                     empty={
                         <EmptyList
