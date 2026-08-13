@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { LockIcon, PlaySvg } from "@/assets/Svgs";
+import { LockIcon, PlaySvg, XmarkIcon } from "@/assets/Svgs";
 import StreamVibePlayer from "@/components/player/StreamVibePlayer";
 import useUserStore from "@/stores/useUserStore";
 
@@ -11,8 +11,10 @@ import useUserStore from "@/stores/useUserStore";
 //! the current catalogue is a cover image rather than a clip. Treating only
 //! real video extensions as playable means the trailer button appears the day
 //! actual trailers are uploaded, and stays hidden until then, without this
-//! component having to know anything about the seed data
-const PLAYABLE = /\.(mp4|webm|ogg|mov|m4v)$/i;
+//! component having to know anything about the seed data.
+//! Exported so TopHeader can decide, before this component ever mounts,
+//! whether its own pre-play "Trailer" button belongs on the hero.
+export const PLAYABLE = /\.(mp4|webm|ogg|mov|m4v)$/i;
 
 const Overlay = ({ poster, signedIn }) => (
     <div className="relative w-full h-full">
@@ -86,6 +88,41 @@ const WatchPlayer = ({ src, poster, trailer, title, qualities }) => {
         return <div className="w-full h-full skeleton-pulse skeleton-sweep bg-c-black-15" />;
     }
 
+    //! checked before `unlocked` so the trailer is reachable regardless of
+    //! plan status — a subscriber never used to see this at all, since the
+    //! locked-only path below was the only place the trailer button lived
+    if (playingTrailer) {
+        return (
+            <div className="relative w-full h-full">
+                {/*//! distinct `key` from the main-content instance below —
+                    without it, switching in/out of trailer mode re-renders the
+                    same StreamVibePlayer with new props instead of remounting
+                    it, and activeSrc/activeQuality (set once via useState's
+                    lazy initializer) never picks up the new source */}
+                <StreamVibePlayer
+                    key="trailer"
+                    src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${trailer}`}
+                    poster={poster}
+                    title={title}
+                    autoPlay
+                />
+                <button
+                    type="button"
+                    onClick={() => setPlayingTrailer(false)}
+                    aria-label="Close trailer"
+                    className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-black/55 border border-white/15
+                        backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/75 duration-150
+                        focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+                >
+                    <XmarkIcon className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+            </div>
+        );
+    }
+
+    //! once actually watching, the player is the whole point — no trailer
+    //! entry point competes with it here. That choice lives one step earlier,
+    //! on the hero itself (TopHeader's own "Trailer" button, next to Play Now)
     if (unlocked) {
         return (
             <StreamVibePlayer
@@ -94,17 +131,6 @@ const WatchPlayer = ({ src, poster, trailer, title, qualities }) => {
                 title={title}
                 qualities={qualities}
                 maxQuality={entitlement.capabilities.maxQuality}
-            />
-        );
-    }
-
-    if (playingTrailer) {
-        return (
-            <StreamVibePlayer
-                src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${trailer}`}
-                poster={poster}
-                title={title}
-                autoPlay
             />
         );
     }

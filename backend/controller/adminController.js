@@ -7,6 +7,7 @@ const Movie = require('../model/movieModel');
 const Series = require('../model/seriesModel');
 const Actor = require('../model/actorModel');
 const Director = require('../model/directorModel');
+const Musician = require('../model/musicianModel');
 const User = require('../model/userModel');
 const Support = require('../model/supportModel');
 const Review = require('../model/reviewModel');
@@ -609,20 +610,62 @@ const catalogueList = (Model, extraProjection = {}) => async (req, res) => {
     }
 };
 
-exports.getMovies = catalogueList(Movie, { duration: 1, director: 1 });
+//! surfaces what used to be invisible: a title with an empty `files` array
+//! looked identical to one with real download files anywhere in this table
+exports.getMovies = catalogueList(Movie, {
+    duration: 1, director: 1,
+    fileCount: { $size: { $ifNull: ['$files', []] } },
+    qualities: { $ifNull: ['$files.quality', []] },
+});
 exports.getSeries = catalogueList(Series, { seasons: { $size: { $ifNull: ['$seasons', []] } } });
+
+//! the public GET /movie/:id and GET /series/:id bump `views` on every read —
+//! fine for a visitor, wrong for an admin opening the edit form, which would
+//! silently inflate the view count just by looking at it. These are the same
+//! read without that side effect.
+exports.getMovieDetail = async (req, res) => {
+    try {
+        const movie = await Movie.findById(req.params.id).populate("actors director musician");
+        if (!movie) return res.status(404).json({ status: 404, message: "Movie not found" });
+
+        res.status(200).json({ status: 200, movie });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+exports.getSeriesDetail = async (req, res) => {
+    try {
+        const series = await Series.findById(req.params.id)
+            .populate("actors director musician")
+            .populate({ path: 'seasons', model: 'Seasons', populate: { path: 'episodes', model: 'Episodes' } });
+        if (!series) return res.status(404).json({ status: 404, message: "Series not found" });
+
+        res.status(200).json({ status: 200, series });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
 
 
 /**
- * Actors and directors are the same job wearing two collections, so the console
- * shows them as one section with a switch. `kind` picks which.
+ * Actors, directors and composers are the same job wearing three collections,
+ * so the console shows them as one section with a switch. `kind` picks which.
  *
  * The credit counts are the reason this exists rather than the plain list
  * endpoints: knowing a person is attached to nothing is what tells you they are
  * safe to delete.
  */
+const PERSON_KINDS = {
+    //! how each role is named on a movie/series document — the cast is a list
+    //! (`actors`), the other two are single references
+    actors: { model: () => Actor, creditField: 'actors' },
+    directors: { model: () => Director, creditField: 'director' },
+    musicians: { model: () => Musician, creditField: 'musician' },
+};
+
 exports.getPeople = async (req, res) => {
-    const directors = req.query.kind === 'directors';
+    const kind = PERSON_KINDS[req.query.kind] ? req.query.kind : 'actors';
 
     try {
         const page = Math.max(parseInt(req.query.page) || 1, 1);
@@ -632,9 +675,8 @@ exports.getPeople = async (req, res) => {
         if (req.query.search) match.fullName = new RegExp(escapeRegex(req.query.search), 'i');
         if (req.query.country) match.country = req.query.country;
 
-        const Model = directors ? Director : Actor;
-        //! a movie names its director on `director` and its cast on `actors`
-        const creditField = directors ? 'director' : 'actors';
+        const Model = PERSON_KINDS[kind].model();
+        const creditField = PERSON_KINDS[kind].creditField;
 
         const [people, total] = await Promise.all([
             Model.aggregate([
@@ -666,7 +708,7 @@ exports.getPeople = async (req, res) => {
         res.status(200).json({
             status: 200,
             message: "People fetched successfully",
-            kind: directors ? 'directors' : 'actors',
+            kind,
             items: people,
             pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
         });

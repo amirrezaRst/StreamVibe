@@ -2,7 +2,7 @@ const path = require('path');
 
 const Movie = require("../model/movieModel");
 const Review = require("../model/reviewModel");
-const { createMovieValidation } = require("../validation/movieValidation");
+const { createMovieValidation, updateMovieValidation } = require("../validation/movieValidation");
 const { movieUploader } = require('../utils/videoUploader');
 const { deleteMediaReferences } = require('../utils/cascadeDelete');
 const { guardQuality } = require('../utils/downloadGuard');
@@ -400,11 +400,19 @@ exports.downloadMovie = async (req, res) => {
 
 
 //! Put Request
-exports.updateMovie = async (req, res) => {
+exports.updateMovie = [movieUploader, updateMovieValidation, async (req, res) => {
     const movieId = req.params.id;
 
     try {
-        const movie = await Movie.findByIdAndUpdate(movieId, req.body, {
+        const { newFiles, removeFileUrls, ...rest } = req.body;
+        const update = { $set: rest };
+
+        //! appended, not overwritten — re-saving the edit form after adding a
+        //! 4K file must not silently drop the 1080p one already there
+        if (newFiles?.length) update.$push = { files: { $each: newFiles } };
+        if (removeFileUrls?.length) update.$pull = { files: { url: { $in: removeFileUrls } } };
+
+        const movie = await Movie.findByIdAndUpdate(movieId, update, {
             new: true,
             runValidators: true
         });
@@ -416,7 +424,7 @@ exports.updateMovie = async (req, res) => {
     } catch (error) {
         res.status(500).json({ status: 500, message: error.message });
     }
-};
+}];
 
 //! Delete Request
 exports.deleteMovie = async (req, res) => {

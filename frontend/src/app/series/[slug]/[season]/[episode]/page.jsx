@@ -102,7 +102,7 @@ const SingleEpisodePage = async ({ params }) => {
 
                             <Director custom director={director} />
 
-                            <Musician custom musician={{ name: 'Kyle Dixon', country: 'USA', image: '/images/musician.jpg' }} />
+                            <Musician custom musician={series.musician} />
 
                         </div>
 

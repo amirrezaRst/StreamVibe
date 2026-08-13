@@ -4,7 +4,7 @@ const path = require('path');
 const Episode = require('../model/episodeModel');
 const Season = require('../model/seasonModel');
 const { episodeUploader } = require('../utils/videoUploader');
-const { createEpisodeValidation } = require('../validation/episodeValidation');
+const { createEpisodeValidation, updateEpisodeValidation } = require('../validation/episodeValidation');
 const { guardQuality } = require('../utils/downloadGuard');
 
 
@@ -47,8 +47,8 @@ exports.getEpisodeByEpisodeNumber = async (req, res) => {
         })
             .populate(
                 {
-                    path: "series", select: "title trailer director release_date genres rotten_rating imdb_rating actors",
-                    populate: { path: "director actors", select: "directorId actorId fullName profile birthPlace" },
+                    path: "series", select: "title trailer director musician release_date genres rotten_rating imdb_rating actors",
+                    populate: { path: "director actors musician", select: "directorId actorId fullName slug profile birthPlace country" },
                 })
             .select("title files pictures");
 
@@ -73,22 +73,8 @@ exports.getEpisodeByEpisodeNumber = async (req, res) => {
 
 exports.createEpisode = [episodeUploader, createEpisodeValidation, async (req, res) => {
     //! must send seriesTitle in the body
+    //! pictures/files are already mapped onto req.body by createEpisodeValidation
     try {
-        if (req.files.pictures) {
-            const pictureUrls = req.files.pictures.map(picture => picture.filename);
-            req.body.pictures = pictureUrls;
-        }
-        else return res.status(400).json({ status: 400, message: "Pictures are required" });
-        if (req.files.files) {
-            const fileUrls = req.files.files.map(file => file.filename);
-            req.body.files = fileUrls.map((url, index) => ({
-                quality: "1080p",
-                url
-            }));
-        }
-
-        else return res.status(400).json({ status: 400, message: "Files are required" });
-
         const season = await Season.findOne({ series: req.body.series, seasonNumber: req.body.seasonNumber });
         if (!season) return res.status(404).json({ status: 404, message: "Season not found" });
 
@@ -110,13 +96,22 @@ exports.createEpisode = [episodeUploader, createEpisodeValidation, async (req, r
     }
 }];
 
-//! must edit this controller
-exports.updateEpisode = async (req, res) => {
+exports.updateEpisode = [episodeUploader, updateEpisodeValidation, async (req, res) => {
     try {
-        const episode = await Episode.findByIdAndUpdate(req.params.id, req.body, {
+        const { newFiles, removeFileUrls, ...rest } = req.body;
+        const update = { $set: rest };
+
+        //! appended, not overwritten — re-saving the edit form after adding a
+        //! 4K file must not silently drop the 1080p one already there
+        if (newFiles?.length) update.$push = { files: { $each: newFiles } };
+        if (removeFileUrls?.length) update.$pull = { files: { url: { $in: removeFileUrls } } };
+
+        const episode = await Episode.findByIdAndUpdate(req.params.id, update, {
             new: true,
             runValidators: true
         });
+        if (!episode) return res.status(404).json({ status: 404, message: "Episode not found" });
+
         res.status(200).json({
             status: 200,
             message: "Episode updated successfully",
@@ -130,7 +125,7 @@ exports.updateEpisode = async (req, res) => {
             message: err.message
         });
     }
-};
+}];
 
 exports.deleteEpisode = async (req, res) => {
     try {

@@ -38,6 +38,7 @@ const app = express().use(express.json({
 app.use("/public", express.static(path.join(__dirname, "public", "actor")));
 app.use("/public", express.static(path.join(__dirname, "public", "cover")));
 app.use("/public", express.static(path.join(__dirname, "public", "director")));
+app.use("/public", express.static(path.join(__dirname, "public", "musician")));
 app.use("/public", express.static(path.join(__dirname, "public", "profile")));
 app.use("/public", express.static(path.join(__dirname, "public", "thumbnail")));
 app.use("/public", express.static(path.join(__dirname, "public", "trailer")));
@@ -62,6 +63,7 @@ app.use("/api/showtime", require('./router/showtimeRoutes'));
 app.use("/api/booking", require('./router/bookingRoutes'));
 app.use("/api/payment", require('./router/paymentRoutes'));
 app.use("/api/admin", require('./router/adminRoutes'));
+app.use("/api/notification", require('./router/notificationRoutes'));
 
 //! Global error handler — last resort for thrown/next(err) errors that
 //! bypassed a controller's own try/catch (e.g. middleware, multer, bad JSON body)

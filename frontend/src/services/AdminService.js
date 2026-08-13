@@ -1,4 +1,5 @@
 import { apiFetch } from "./apiClient";
+import { uploadRequest } from "./uploadClient";
 
 //! the console is the only caller of these, and every one of them is behind the
 //! same admin gate — so a 403 here means "you should not be on this page",
@@ -67,6 +68,16 @@ export const fetchCatalogue = (kind, params) =>
 
 export const fetchPeople = (params) =>
     get(`/admin/people${query(params)}`, "Couldn't load people.");
+
+//! actor/director/musician writes are plain multipart POST/PUT (one profile
+//! photo, no progress-tracked video files), so a bare uploadRequest call is
+//! enough — no queue, no separate per-file request the way movie/series need
+export const createActor = (formData) => uploadRequest("/actor", formData);
+export const updateActor = (actorId, formData) => uploadRequest(`/actor/${actorId}`, formData, { method: "PUT" });
+export const createDirector = (formData) => uploadRequest("/director", formData);
+export const updateDirector = (directorId, formData) => uploadRequest(`/director/${directorId}`, formData, { method: "PUT" });
+export const createMusician = (formData) => uploadRequest("/musician", formData);
+export const updateMusician = (musicianId, formData) => uploadRequest(`/musician/${musicianId}`, formData, { method: "PUT" });
 
 export const fetchPayments = (params) =>
     get(`/admin/payments${query(params)}`, "Couldn't load payments.");
@@ -183,6 +194,7 @@ export const deleteMovie = remove("movie", "Couldn't delete that movie.");
 export const deleteSeries = remove("series", "Couldn't delete that series.");
 export const deleteActor = remove("actor", "Couldn't delete that actor.");
 export const deleteDirector = remove("director", "Couldn't delete that director.");
+export const deleteMusician = remove("musician", "Couldn't delete that composer.");
 export const deleteUser = remove("user/user", "Couldn't delete that user.");
 
 export const fetchReviews = (params) =>
@@ -274,3 +286,55 @@ export const removeSpotlightSlide = async (slideId) => {
     const response = await apiFetch(`/admin/spotlight/${slideId}`, { method: "DELETE" });
     if (!response.ok) throw await asError(response, "Couldn't remove that slide.");
 };
+
+//? Catalog composer — movies, series, seasons, episodes
+//! reads go through the admin-only detail endpoints (no view-count side
+//! effect from an admin just opening the edit form); writes go through
+//! uploadRequest since these are multipart bodies that can carry video files
+export const fetchMovieDetail = (movieId) =>
+    get(`/admin/movies/${movieId}`, "Couldn't load that movie.");
+
+export const createMovie = (formData, { onProgress } = {}) =>
+    uploadRequest("/movie", formData, { onProgress });
+
+export const updateMovie = (movieId, formData, { onProgress } = {}) =>
+    uploadRequest(`/movie/${movieId}`, formData, { method: "PUT", onProgress });
+
+export const fetchSeriesDetail = (seriesId) =>
+    get(`/admin/series/${seriesId}`, "Couldn't load that series.");
+
+export const createSeries = (formData, { onProgress } = {}) =>
+    uploadRequest("/series", formData, { onProgress });
+
+export const updateSeries = (seriesId, formData, { onProgress } = {}) =>
+    uploadRequest(`/series/${seriesId}`, formData, { method: "PUT", onProgress });
+
+export const createSeason = async (payload) => {
+    const response = await apiFetch("/season", {
+        method: "POST",
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw await asError(response, "Couldn't create that season.");
+
+    return response.json();
+};
+
+export const fetchEpisode = (episodeId) =>
+    get(`/episode/${episodeId}`, "Couldn't load that episode.");
+
+export const createEpisode = (formData, { onProgress } = {}) =>
+    uploadRequest("/episode", formData, { onProgress });
+
+export const updateEpisode = (episodeId, formData, { onProgress } = {}) =>
+    uploadRequest(`/episode/${episodeId}`, formData, { method: "PUT", onProgress });
+
+//? People picker — director/musician/cast search while composing a title
+export const searchDirectors = (q) =>
+    get(`/director/browse${query({ search: q, limit: 8 })}`, "Couldn't search directors.");
+
+export const searchActors = (q) =>
+    get(`/actor/browse${query({ search: q, limit: 8 })}`, "Couldn't search actors.");
+
+export const searchMusicians = (q) =>
+    get(`/musician/browse${query({ search: q, limit: 8 })}`, "Couldn't search composers.");

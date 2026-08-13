@@ -11,6 +11,15 @@ import { isQualityWithinPlan, QUALITY_LADDER } from "@/constants/PlanAccess";
 
 const IDLE_MS = 2600;
 
+//! `qualities[].url` is stored as a bare filename (the download endpoint on
+//! the backend resolves it straight off disk, so it never needed a host) —
+//! but a <video src> is a browser request, not a server-side file read, so
+//! it needs the backend's public host in front of it the same way poster/
+//! trailer URLs already get. `src` itself is left alone: it already arrives
+//! either fully-qualified (trailer playback) or as a Next.js /public path
+//! (the placeholder clip), neither of which should be touched here.
+const resolveQualityUrl = (url) => (url ? `${process.env.NEXT_PUBLIC_IMAGE_URL}/${url}` : url);
+
 const fmt = (seconds) => {
     if (!isFinite(seconds)) return "0:00";
     const m = Math.floor(seconds / 60);
@@ -57,9 +66,10 @@ const StreamVibePlayer = ({ src, poster, qualities, maxQuality, title, autoPlay 
     const [fullscreen, setFullscreen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [activeQuality, setActiveQuality] = useState(qualities?.[0]?.quality ?? null);
-    const [activeSrc, setActiveSrc] = useState(
-        qualities?.find((q) => q.quality === activeQuality)?.url ?? src
-    );
+    const [activeSrc, setActiveSrc] = useState(() => {
+        const initial = qualities?.find((q) => q.quality === (qualities?.[0]?.quality ?? null));
+        return initial ? resolveQualityUrl(initial.url) : src;
+    });
 
     const playedPct = duration ? (current / duration) * 100 : 0;
 
@@ -183,7 +193,7 @@ const StreamVibePlayer = ({ src, poster, qualities, maxQuality, title, autoPlay 
         const resumeAt = video.currentTime;
         const wasPlaying = playing;
         setActiveQuality(q.quality);
-        setActiveSrc(q.url);
+        setActiveSrc(resolveQualityUrl(q.url));
         setMenuOpen(false);
         requestAnimationFrame(() => {
             video.currentTime = resumeAt;
