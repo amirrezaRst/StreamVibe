@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { LockIcon, PlaySvg } from "@/assets/Svgs";
+import { LockIcon, PlaySvg, XmarkIcon } from "@/assets/Svgs";
 import StreamVibePlayer from "@/components/player/StreamVibePlayer";
 import useUserStore from "@/stores/useUserStore";
 
@@ -86,26 +86,65 @@ const WatchPlayer = ({ src, poster, trailer, title, qualities }) => {
         return <div className="w-full h-full skeleton-pulse skeleton-sweep bg-c-black-15" />;
     }
 
-    if (unlocked) {
+    //! checked before `unlocked` so the trailer is reachable regardless of
+    //! plan status — a subscriber never used to see this at all, since the
+    //! locked-only path below was the only place the trailer button lived
+    if (playingTrailer) {
         return (
-            <StreamVibePlayer
-                src={src}
-                poster={poster}
-                title={title}
-                qualities={qualities}
-                maxQuality={entitlement.capabilities.maxQuality}
-            />
+            <div className="relative w-full h-full">
+                {/*//! distinct `key` from the main-content instance below —
+                    without it, switching in/out of trailer mode re-renders the
+                    same StreamVibePlayer with new props instead of remounting
+                    it, and activeSrc/activeQuality (set once via useState's
+                    lazy initializer) never picks up the new source */}
+                <StreamVibePlayer
+                    key="trailer"
+                    src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${trailer}`}
+                    poster={poster}
+                    title={title}
+                    autoPlay
+                />
+                <button
+                    type="button"
+                    onClick={() => setPlayingTrailer(false)}
+                    aria-label="Close trailer"
+                    className="absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-black/55 border border-white/15
+                        backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/75 duration-150
+                        focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+                >
+                    <XmarkIcon className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+            </div>
         );
     }
 
-    if (playingTrailer) {
+    if (unlocked) {
         return (
-            <StreamVibePlayer
-                src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${trailer}`}
-                poster={poster}
-                title={title}
-                autoPlay
-            />
+            <div className="relative w-full h-full">
+                <StreamVibePlayer
+                    key="main"
+                    src={src}
+                    poster={poster}
+                    title={title}
+                    qualities={qualities}
+                    maxQuality={entitlement.capabilities.maxQuality}
+                />
+                {hasTrailer && (
+                    //! sits below the player's own top-right watermark
+                    //! (StreamVibePlayer, same corner) rather than on top of it
+                    <button
+                        type="button"
+                        onClick={() => setPlayingTrailer(true)}
+                        className="absolute top-14 right-4 z-20 inline-flex items-center gap-1.5
+                            bg-black/55 hover:bg-black/75 border border-white/15 backdrop-blur-sm
+                            text-white text-[11px] font-semibold rounded-lg py-1.5 px-3 duration-150
+                            focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+                    >
+                        <PlaySvg className="w-3.5 h-3.5" aria-hidden="true" />
+                        Trailer
+                    </button>
+                )}
+            </div>
         );
     }
 
