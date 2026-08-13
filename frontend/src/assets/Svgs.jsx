@@ -292,10 +292,10 @@ export const BellSvg = (props) => {
     )
 }
 
-export const MenuSvg = () => {
+export const MenuSvg = (props) => {
     return (
         <svg
-            width="18" height="12" viewBox="0 0 18 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {...props} width="18" height="12" viewBox="0 0 18 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path fillRule="evenodd" clipRule="evenodd" d="M0 0.75C0 0.335786 0.335786 0 0.75 0H17.25C17.6642 0 18 0.335786 18 0.75C18 1.16421 17.6642 1.5 17.25 1.5H0.75C0.335786 1.5 0 1.16421 0 0.75ZM0 6C0 5.58579 0.335786 5.25 0.75 5.25H17.25C17.6642 5.25 18 5.58579 18 6C18 6.41421 17.6642 6.75 17.25 6.75H0.75C0.335786 6.75 0 6.41421 0 6ZM8.25 11.25C8.25 10.8358 8.58579 10.5 9 10.5H17.25C17.6642 10.5 18 10.8358 18 11.25C18 11.6642 17.6642 12 17.25 12H9C8.58579 12 8.25 11.6642 8.25 11.25Z" fill="white" />
         </svg>
     )
@@ -440,7 +440,10 @@ export const EyeIcon = (props) => {
 
 export const HomeIcon = (props) => {
     return (
-        <svg {...props} width="22" height="21" viewBox="0 0 22 21" className="inline" fill="none" xmlns="http://www.w3.org/2000/svg">
+        //! className was hardcoded after the {...props} spread, so any
+        //! caller-supplied className was silently discarded — falls back to
+        //! "inline" only when the caller doesn't pass its own
+        <svg {...props} width="22" height="21" viewBox="0 0 22 21" fill="none" xmlns="http://www.w3.org/2000/svg" className={props.className || "inline"}>
             <path d="M1.25 11.0001L10.2045 2.04557C10.6438 1.60623 11.3562 1.60623 11.7955 2.04557L20.75 11.0001M3.5 8.75007V18.8751C3.5 19.4964 4.00368 20.0001 4.625 20.0001H8.75V15.1251C8.75 14.5038 9.25368 14.0001 9.875 14.0001H12.125C12.7463 14.0001 13.25 14.5038 13.25 15.1251V20.0001H17.375C17.9963 20.0001 18.5 19.4964 18.5 18.8751V8.75007M7.25 20.0001H15.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
     )
