@@ -38,6 +38,7 @@ const app = express().use(express.json({
 app.use("/public", express.static(path.join(__dirname, "public", "actor")));
 app.use("/public", express.static(path.join(__dirname, "public", "cover")));
 app.use("/public", express.static(path.join(__dirname, "public", "director")));
+app.use("/public", express.static(path.join(__dirname, "public", "musician")));
 app.use("/public", express.static(path.join(__dirname, "public", "profile")));
 app.use("/public", express.static(path.join(__dirname, "public", "thumbnail")));
 app.use("/public", express.static(path.join(__dirname, "public", "trailer")));
