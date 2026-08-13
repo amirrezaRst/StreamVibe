@@ -11,8 +11,10 @@ import useUserStore from "@/stores/useUserStore";
 //! the current catalogue is a cover image rather than a clip. Treating only
 //! real video extensions as playable means the trailer button appears the day
 //! actual trailers are uploaded, and stays hidden until then, without this
-//! component having to know anything about the seed data
-const PLAYABLE = /\.(mp4|webm|ogg|mov|m4v)$/i;
+//! component having to know anything about the seed data.
+//! Exported so TopHeader can decide, before this component ever mounts,
+//! whether its own pre-play "Trailer" button belongs on the hero.
+export const PLAYABLE = /\.(mp4|webm|ogg|mov|m4v)$/i;
 
 const Overlay = ({ poster, signedIn }) => (
     <div className="relative w-full h-full">
@@ -118,33 +120,18 @@ const WatchPlayer = ({ src, poster, trailer, title, qualities }) => {
         );
     }
 
+    //! once actually watching, the player is the whole point — no trailer
+    //! entry point competes with it here. That choice lives one step earlier,
+    //! on the hero itself (TopHeader's own "Trailer" button, next to Play Now)
     if (unlocked) {
         return (
-            <div className="relative w-full h-full">
-                <StreamVibePlayer
-                    key="main"
-                    src={src}
-                    poster={poster}
-                    title={title}
-                    qualities={qualities}
-                    maxQuality={entitlement.capabilities.maxQuality}
-                />
-                {hasTrailer && (
-                    //! sits below the player's own top-right watermark
-                    //! (StreamVibePlayer, same corner) rather than on top of it
-                    <button
-                        type="button"
-                        onClick={() => setPlayingTrailer(true)}
-                        className="absolute top-14 right-4 z-20 inline-flex items-center gap-1.5
-                            bg-black/55 hover:bg-black/75 border border-white/15 backdrop-blur-sm
-                            text-white text-[11px] font-semibold rounded-lg py-1.5 px-3 duration-150
-                            focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
-                    >
-                        <PlaySvg className="w-3.5 h-3.5" aria-hidden="true" />
-                        Trailer
-                    </button>
-                )}
-            </div>
+            <StreamVibePlayer
+                src={src}
+                poster={poster}
+                title={title}
+                qualities={qualities}
+                maxQuality={entitlement.capabilities.maxQuality}
+            />
         );
     }
 
