@@ -47,8 +47,8 @@ exports.getEpisodeByEpisodeNumber = async (req, res) => {
         })
             .populate(
                 {
-                    path: "series", select: "title trailer director release_date genres rotten_rating imdb_rating actors",
-                    populate: { path: "director actors", select: "directorId actorId fullName profile birthPlace" },
+                    path: "series", select: "title trailer director musician release_date genres rotten_rating imdb_rating actors",
+                    populate: { path: "director actors musician", select: "directorId actorId fullName slug profile birthPlace country" },
                 })
             .select("title files pictures");
 
