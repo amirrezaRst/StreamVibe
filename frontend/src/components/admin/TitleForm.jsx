@@ -289,8 +289,16 @@ const TitleForm = ({ kind, id }) => {
         return <div className="p-[18px] text-c-grey-60 text-super-sm">{loadError}</div>;
     }
 
+    //! noValidate hands every field's min/max/required entirely to
+    //! react-hook-form, whose errors render inline via <Field error=…>.
+    //! Without it, the browser's own constraint validation can silently
+    //! block the whole submit — no request, no error near the Save button,
+    //! nothing but an easy-to-miss native tooltip on whichever field tripped
+    //! it — which is exactly what made a file upload look like it "did
+    //! nothing" when a pre-existing rating's decimal value didn't match a
+    //! numeric input's default step.
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form noValidate onSubmit={handleSubmit(onSubmit)}>
             <PageHeader
                 crumbs={[{ label: "Catalog" }, { label: isSeries ? "Series" : "Movies", href: isSeries ? "/admin/series" : "/admin/movies" }]}
                 title={alreadySaved ? `Edit ${record?.title || watch("title")}` : `New ${isSeries ? "series" : "movie"}`}
@@ -370,13 +378,21 @@ const TitleForm = ({ kind, id }) => {
                         </Field>
                     </div>
                     <div className="grid grid-cols-3 gap-3">
-                        <Field label="IMDb" required error={errors.imdb_rating} hint="0–10">
-                            <input type="number" step="0.1" min="0" max="10" className={control}
-                                {...register("imdb_rating", { required: "Required", min: { value: 0, message: "0–10" }, max: { value: 10, message: "0–10" } })} />
+                        {/*//! both ratings render through the same 5-star <StarRating> component
+                            (components/singlePage/Rating.jsx) regardless of source — this app
+                            scores everything out of 5, not IMDb's real 0–10 or Rotten Tomatoes'
+                            real 0–100. Confirmed against the actual seed data (e.g. 4.2, 3.9).
+                            step="0.1" matters as much as the range: without it a native number
+                            input defaults to step="1" and silently blocks the whole form's submit
+                            on any decimal value already in the data, with no visible error tied
+                            to the Save button — that blocked an admin's upload entirely. */}
+                        <Field label="IMDb" required error={errors.imdb_rating} hint="0–5">
+                            <input type="number" step="0.1" min="0" max="5" className={control}
+                                {...register("imdb_rating", { required: "Required", min: { value: 0, message: "0–5" }, max: { value: 5, message: "0–5" } })} />
                         </Field>
-                        <Field label="Rotten Tomatoes" required error={errors.rotten_rating} hint="0–100">
-                            <input type="number" min="0" max="100" className={control}
-                                {...register("rotten_rating", { required: "Required", min: { value: 0, message: "0–100" }, max: { value: 100, message: "0–100" } })} />
+                        <Field label="Rotten Tomatoes" required error={errors.rotten_rating} hint="0–5">
+                            <input type="number" step="0.1" min="0" max="5" className={control}
+                                {...register("rotten_rating", { required: "Required", min: { value: 0, message: "0–5" }, max: { value: 5, message: "0–5" } })} />
                         </Field>
                         <Field label="Top 250 rank" hint="1–250, leave blank otherwise">
                             <input type="number" min="1" max="250" className={control} {...register("top250rank")} />
