@@ -31,15 +31,18 @@ const PeopleContent = () => {
     const extraParams = useMemo(() => ({ kind }), [kind]);
     const list = useListState(fetchPeople, { extraParams });
 
+    //! the server refuses to delete anyone still attached to a title, so a
+    //! credited row says so up front instead of offering a confirm that is
+    //! only going to come back as an error
     const removeOne = (person) => {
-        //! the credit counts are exactly what makes this answerable — deleting
-        //! somebody attached to fourteen films is not the same decision
         const credits = person.movies + person.series;
-        const warning = credits
-            ? `${person.fullName} is credited on ${credits} title${credits === 1 ? "" : "s"}. Deleting them leaves those credits empty.`
-            : `${person.fullName} is credited on nothing.`;
 
-        if (!window.confirm(`${warning}\n\nDelete them? This cannot be undone.`)) return;
+        if (credits) {
+            toast.error(`${person.fullName} is credited on ${credits} title${credits === 1 ? "" : "s"}. Remove them from those titles first.`);
+            return;
+        }
+
+        if (!window.confirm(`${person.fullName} is credited on nothing.\n\nDelete them? This cannot be undone.`)) return;
 
         list.run(async () => {
             await remove(person._id);
@@ -48,14 +51,28 @@ const PeopleContent = () => {
     };
 
     const removeSelected = () => {
-        const ids = [...list.selected];
-        if (!window.confirm(`Delete ${ids.length} ${label}${ids.length === 1 ? "" : "s"}? This cannot be undone.`)) return;
+        const rows = list.rows.filter(row => list.selected.has(row._id));
+        const credited = rows.filter(row => row.movies + row.series > 0);
+        const free = rows.filter(row => row.movies + row.series === 0);
+
+        if (!free.length) {
+            toast.error(`All ${credited.length} selected ${credited.length === 1 ? label : `${label}s`} are still credited on titles.`);
+            return;
+        }
+
+        //! says exactly what it is about to do and what it is skipping —
+        //! silently deleting a subset of a selection is worse than refusing
+        const skipping = credited.length
+            ? `\n\n${credited.length} of them ${credited.length === 1 ? "is" : "are"} still credited and will be skipped.`
+            : "";
+
+        if (!window.confirm(`Delete ${free.length} ${free.length === 1 ? label : `${label}s`}?${skipping}\n\nThis cannot be undone.`)) return;
 
         list.run(async () => {
-            for (const id of ids) {
-                await remove(id);
+            for (const row of free) {
+                await remove(row._id);
             }
-            toast.success(`${ids.length} deleted`);
+            toast.success(`${free.length} deleted`);
         }).catch(error => toast.error(error.message));
     };
 

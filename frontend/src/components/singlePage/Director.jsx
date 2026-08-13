@@ -1,7 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 
+/**
+ * A title always names a director — it is required on the model — so the only
+ * way this arrives empty is a reference pointing at a record that is gone.
+ * Rendering nothing beats destructuring null and taking the whole page down
+ * with it: the film still has a cast, a synopsis and a player worth showing.
+ * The delete that could cause it is refused server-side (directorController),
+ * so this is the second line, not the only one.
+ */
 const Director = ({ custom, director }) => {
+    if (!director?.fullName) return null;
+
     const { _id, slug, fullName, birthPlace, profile } = director;
     const id = slug || _id;
     return (
