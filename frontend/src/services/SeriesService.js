@@ -56,15 +56,17 @@ export const getPopularSeries = async (currentPage, page) => {
     }
 }
 
+//! same reasoning as MovieService.fetchSingleMovies — this record is edited
+//! from the admin panel and must never serve a stale, pre-edit cache entry
 export const fetchSingleSeries = async (slug) => {
-    const res = await apiFetch(`/series/${slug}`);
+    const res = await apiFetch(`/series/${slug}`, { cache: 'no-store' });
     const data = await res.json();
     return data;
 }
 
 export const fetchSingleEpisode = async (series, season, episode) => {
     try {
-        const res = await apiFetch(`/episode/${series}/${season}/${episode}`);
+        const res = await apiFetch(`/episode/${series}/${season}/${episode}`, { cache: 'no-store' });
         const data = await res.json();
         return data.episode;
     } catch (error) {

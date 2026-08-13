@@ -56,8 +56,12 @@ export const getPopularMovies = async (currentPage, page) => {
     }
 }
 
+//! this record changes from the admin panel (new files, rating fixes,
+//! synopsis edits) and Next.js caches server-side fetch()es by default —
+//! without no-store, a visitor could keep seeing the pre-edit movie
+//! indefinitely, since nothing here ever revalidates that cache entry
 export const fetchSingleMovies = async (slug) => {
-    const res = await apiFetch(`/movie/${slug}`);
+    const res = await apiFetch(`/movie/${slug}`, { cache: 'no-store' });
     const data = await res.json();
     return data;
 }

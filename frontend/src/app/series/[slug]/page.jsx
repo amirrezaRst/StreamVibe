@@ -16,7 +16,7 @@ import { breadcrumbSchema, seriesSchema } from "@/utils/structuredData";
 //! same reason as the film page — this endpoint bumps the view count, so the
 //! title and the page body have to share one call rather than make two
 const fetchSingleSeries = cache(async (slug) => {
-    const res = await apiFetch(`/series/${slug}`);
+    const res = await apiFetch(`/series/${slug}`, { cache: 'no-store' });
     const data = await res.json();
     if (data?.status === 404) return notFound();
     return data;
