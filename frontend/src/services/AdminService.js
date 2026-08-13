@@ -69,13 +69,15 @@ export const fetchCatalogue = (kind, params) =>
 export const fetchPeople = (params) =>
     get(`/admin/people${query(params)}`, "Couldn't load people.");
 
-//! actor/director writes are plain multipart POST/PUT (one profile photo,
-//! no progress-tracked video files), so a bare uploadRequest call is enough —
-//! no queue, no separate per-file request the way movie/series files need
+//! actor/director/musician writes are plain multipart POST/PUT (one profile
+//! photo, no progress-tracked video files), so a bare uploadRequest call is
+//! enough — no queue, no separate per-file request the way movie/series need
 export const createActor = (formData) => uploadRequest("/actor", formData);
 export const updateActor = (actorId, formData) => uploadRequest(`/actor/${actorId}`, formData, { method: "PUT" });
 export const createDirector = (formData) => uploadRequest("/director", formData);
 export const updateDirector = (directorId, formData) => uploadRequest(`/director/${directorId}`, formData, { method: "PUT" });
+export const createMusician = (formData) => uploadRequest("/musician", formData);
+export const updateMusician = (musicianId, formData) => uploadRequest(`/musician/${musicianId}`, formData, { method: "PUT" });
 
 export const fetchPayments = (params) =>
     get(`/admin/payments${query(params)}`, "Couldn't load payments.");
@@ -192,6 +194,7 @@ export const deleteMovie = remove("movie", "Couldn't delete that movie.");
 export const deleteSeries = remove("series", "Couldn't delete that series.");
 export const deleteActor = remove("actor", "Couldn't delete that actor.");
 export const deleteDirector = remove("director", "Couldn't delete that director.");
+export const deleteMusician = remove("musician", "Couldn't delete that composer.");
 export const deleteUser = remove("user/user", "Couldn't delete that user.");
 
 export const fetchReviews = (params) =>

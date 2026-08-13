@@ -4,9 +4,13 @@ import { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { toast } from "react-toastify";
 
-import { createActor, createDirector, updateActor, updateDirector } from "@/services/AdminService";
+import {
+    createActor, createDirector, createMusician,
+    updateActor, updateDirector, updateMusician,
+} from "@/services/AdminService";
 import { fetchActor } from "@/services/ActorService";
 import { fetchDirector } from "@/services/DirectorService";
+import { fetchMusician } from "@/services/MusicianService";
 import ArtworkDropzone from "@/components/admin/upload/ArtworkDropzone";
 import { TrashIcon } from "@/assets/Svgs";
 
@@ -29,25 +33,48 @@ const emptyValues = {
     fullName: "", birthDate: "", birthPlace: "", country: "", bio: "", gender: "", awards: [],
 };
 
+//! the three roles are the same record in three collections, so the only real
+//! differences are which endpoints to call, what to read the response off, and
+//! whether birthPlace/country are required — Director's model requires them,
+//! Actor's and Musician's default them to ""
+const KINDS = {
+    actors: {
+        label: "actor", placeName: false,
+        fetch: fetchActor, pick: (data) => data.actor,
+        create: createActor, update: updateActor,
+    },
+    directors: {
+        label: "director", placeName: true,
+        fetch: fetchDirector, pick: (data) => data.director,
+        create: createDirector, update: updateDirector,
+    },
+    musicians: {
+        label: "composer", placeName: false,
+        fetch: fetchMusician, pick: (data) => data.musician,
+        create: createMusician, update: updateMusician,
+    },
+};
+
 /**
- * One drawer for actors and directors — the two collections are the same
- * shape, `kind` (passed down from PeopleContent's toggle, not stored on the
- * row itself) is what picks the endpoint and which fields are actually
- * required.
+ * One drawer for actors, directors and composers — the three collections are
+ * the same shape, `kind` (passed down from PeopleContent's toggle, not stored
+ * on the row itself) is what picks the endpoints and which fields are
+ * actually required.
  *
- * Director requires birthPlace/country at the model level; actor doesn't.
- * That's surfaced as a required marker that changes with `kind` rather than
- * a separate field set per kind — the two forms are identical otherwise, and
- * a duplicated layout would drift the moment one of them changes.
+ * Only directors require birthPlace/country at the model level. That's
+ * surfaced as a required marker that changes with `kind` rather than a
+ * separate field set per kind — the forms are identical otherwise, and a
+ * duplicated layout would drift the moment one of them changes.
  *
  * The row list (`PeopleContent`) is a lean, credit-count-annotated
  * projection — it doesn't carry birthPlace/bio/awards, so editing re-fetches
  * the full record by id before the form can render real values.
  */
 const PersonDrawer = ({ kind, person, onClose, onSaved }) => {
-    const directors = kind === "directors";
+    const config = KINDS[kind] || KINDS.actors;
     const editing = Boolean(person);
-    const label = directors ? "director" : "actor";
+    const label = config.label;
+    const placeRequired = config.placeName;
 
     const [loading, setLoading] = useState(editing);
     const [record, setRecord] = useState(null);
@@ -66,10 +93,10 @@ const PersonDrawer = ({ kind, person, onClose, onSaved }) => {
 
         (async () => {
             try {
-                const data = directors ? await fetchDirector(person._id) : await fetchActor(person._id);
+                const data = await config.fetch(person._id);
                 if (cancelled) return;
 
-                const item = directors ? data.director : data.actor;
+                const item = config.pick(data);
                 setRecord(item);
                 reset({
                     fullName: item.fullName || "", birthDate: item.birthDate || "",
@@ -87,7 +114,7 @@ const PersonDrawer = ({ kind, person, onClose, onSaved }) => {
 
         return () => { cancelled = true; };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [editing, directors, person?._id]);
+    }, [editing, kind, person?._id]);
 
     const buildFormData = (values) => {
         const formData = new FormData();
@@ -117,12 +144,12 @@ const PersonDrawer = ({ kind, person, onClose, onSaved }) => {
         try {
             const formData = buildFormData(values);
             const { promise } = editing
-                ? (directors ? updateDirector(person._id, formData) : updateActor(person._id, formData))
-                : (directors ? createDirector(formData) : createActor(formData));
+                ? config.update(person._id, formData)
+                : config.create(formData);
 
             const result = await promise;
             toast.success(editing ? `${values.fullName} saved` : `${values.fullName} added`);
-            onSaved(directors ? result.director : result.actor);
+            onSaved(config.pick(result));
         } catch (error) {
             toast.error(error.message);
         } finally {
@@ -193,21 +220,21 @@ const PersonDrawer = ({ kind, person, onClose, onSaved }) => {
                             <div className="grid grid-cols-2 gap-3">
                                 <Field
                                     label="Birth place"
-                                    required={directors}
+                                    required={placeRequired}
                                     error={errors.birthPlace}
-                                    hint={!directors ? "Optional for actors." : undefined}
+                                    hint={!placeRequired ? `Optional for ${label}s.` : undefined}
                                 >
                                     <input className={control} placeholder="Oxford, England"
-                                        {...register("birthPlace", directors ? { required: "Required for directors." } : {})} />
+                                        {...register("birthPlace", placeRequired ? { required: "Required for directors." } : {})} />
                                 </Field>
                                 <Field
                                     label="Country"
-                                    required={directors}
+                                    required={placeRequired}
                                     error={errors.country}
-                                    hint={!directors ? "Optional for actors." : undefined}
+                                    hint={!placeRequired ? `Optional for ${label}s.` : undefined}
                                 >
                                     <input className={control} placeholder="United Kingdom"
-                                        {...register("country", directors ? { required: "Required for directors." } : {})} />
+                                        {...register("country", placeRequired ? { required: "Required for directors." } : {})} />
                                 </Field>
                             </div>
 
