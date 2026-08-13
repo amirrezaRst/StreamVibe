@@ -2,7 +2,7 @@ const Review = require('../model/reviewModel');
 const Series = require('../model/seriesModel');
 const Episodes = require('../model/episodeModel');
 const { seriesUploader } = require('../utils/videoUploader');
-const { createSeriesValidation } = require('../validation/seriesValidation');
+const { createSeriesValidation, updateSeriesValidation } = require('../validation/seriesValidation');
 const { deleteSeasonsOfSeries, deleteMediaReferences } = require('../utils/cascadeDelete');
 
 
@@ -484,12 +484,14 @@ exports.createSeries = [seriesUploader, createSeriesValidation, async (req, res)
 }];
 
 //! must test and change the controller
-exports.updateSeries = async (req, res) => {
+exports.updateSeries = [seriesUploader, updateSeriesValidation, async (req, res) => {
     try {
         const series = await Series.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
         });
+        if (!series) return res.status(404).json({ status: 404, message: "Series not found" });
+
         res.status(200).json({
             status: 'success',
             data: {
@@ -502,7 +504,7 @@ exports.updateSeries = async (req, res) => {
             message: err.message
         });
     }
-};
+}];
 
 exports.deleteSeries = async (req, res) => {
     try {

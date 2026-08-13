@@ -45,8 +45,14 @@ const storage = multer.diskStorage({
 const IMAGE_TYPES = /\.(jpe?g|png|webp)$/i;
 const VIDEO_TYPES = /\.(mp4|mkv|webm|mov|avi)$/i;
 
+//! 'trailer' is a video clip too — this used to only special-case 'files',
+//! so every trailer upload was silently checked against the IMAGE extension
+//! list and rejected. Never caught before because nothing ever called this
+//! endpoint with a real trailer file until the admin upload form existed.
+const VIDEO_FIELDS = new Set(['files', 'trailer']);
+
 const fileFilter = (req, file, cb) => {
-    const isVideoField = file.fieldname === 'files';
+    const isVideoField = VIDEO_FIELDS.has(file.fieldname);
     const allowed = isVideoField ? VIDEO_TYPES : IMAGE_TYPES;
 
     if (!allowed.test(file.originalname)) {

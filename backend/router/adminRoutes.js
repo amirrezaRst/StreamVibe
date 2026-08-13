@@ -2,7 +2,7 @@ const { Router } = require('express');
 
 const {
     getOverview, getBookings, refundBooking, getUsers, setUserRole,
-    getMovies, getSeries, getPeople, getReviews, moderateReview, moderateReviews, setReviewSpoiler, deleteReview,
+    getMovies, getSeries, getMovieDetail, getSeriesDetail, getPeople, getReviews, moderateReview, moderateReviews, setReviewSpoiler, deleteReview,
     getPayments, search,
 } = require('../controller/adminController');
 const ValidateObjectId = require('../middleware/ValidateObjectId');
@@ -45,7 +45,9 @@ router.get("/users", getUsers);
 router.patch("/users/:id/role", [ValidateObjectId, setUserRoleValidation], setUserRole);
 
 router.get("/movies", getMovies);
+router.get("/movies/:id", ValidateObjectId, getMovieDetail);
 router.get("/series", getSeries);
+router.get("/series/:id", ValidateObjectId, getSeriesDetail);
 router.get("/people", getPeople);
 
 router.get("/reviews", getReviews);

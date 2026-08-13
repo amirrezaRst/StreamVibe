@@ -184,7 +184,7 @@ const MobileDrawer = ({ isOpen, onClose, pathname, triggerRef }) => {
                                     onClick={() => setNotifView(false)}
                                     className="w-9 h-9 rounded-lg btn-black-10 border border-c-black-15 flex items-center justify-center shrink-0"
                                 >
-                                    <LeftArrowSvg className="w-3.5 h-3.5 stroke-current" aria-hidden="true" />
+                                    <LeftArrowSvg className="w-3.5 h-3.5 stroke-white" aria-hidden="true" />
                                 </button>
                                 <h2 className="text-white font-extrabold text-[15px] flex-1 text-center">Notifications</h2>
                                 <button

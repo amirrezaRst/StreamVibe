@@ -755,3 +755,40 @@ export const QualityGearIcon = (props) => {
         </svg>
     )
 }
+
+export const UploadCloudIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <path d="M17 8l-5-5-5 5" />
+            <path d="M12 3v13" />
+        </svg>
+    )
+}
+
+export const TrashIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        </svg>
+    )
+}
+
+export const VideoFileIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="m10 8 6 4-6 4V8z" />
+            <rect x="2" y="4" width="20" height="16" rx="2" />
+        </svg>
+    )
+}
+
+export const AlertTriangleIcon = (props) => {
+    return (
+        <svg width="24" height="24" viewBox="0 0 24 24" {...strokeProps} {...props}>
+            <path d="M12 9v4M12 17h.01" />
+            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
+        </svg>
+    )
+}

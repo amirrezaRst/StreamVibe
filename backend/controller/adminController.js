@@ -609,8 +609,42 @@ const catalogueList = (Model, extraProjection = {}) => async (req, res) => {
     }
 };
 
-exports.getMovies = catalogueList(Movie, { duration: 1, director: 1 });
+//! surfaces what used to be invisible: a title with an empty `files` array
+//! looked identical to one with real download files anywhere in this table
+exports.getMovies = catalogueList(Movie, {
+    duration: 1, director: 1,
+    fileCount: { $size: { $ifNull: ['$files', []] } },
+    qualities: { $ifNull: ['$files.quality', []] },
+});
 exports.getSeries = catalogueList(Series, { seasons: { $size: { $ifNull: ['$seasons', []] } } });
+
+//! the public GET /movie/:id and GET /series/:id bump `views` on every read —
+//! fine for a visitor, wrong for an admin opening the edit form, which would
+//! silently inflate the view count just by looking at it. These are the same
+//! read without that side effect.
+exports.getMovieDetail = async (req, res) => {
+    try {
+        const movie = await Movie.findById(req.params.id).populate("actors director musician");
+        if (!movie) return res.status(404).json({ status: 404, message: "Movie not found" });
+
+        res.status(200).json({ status: 200, movie });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
+
+exports.getSeriesDetail = async (req, res) => {
+    try {
+        const series = await Series.findById(req.params.id)
+            .populate("actors director musician")
+            .populate({ path: 'seasons', model: 'Seasons', populate: { path: 'episodes', model: 'Episodes' } });
+        if (!series) return res.status(404).json({ status: 404, message: "Series not found" });
+
+        res.status(200).json({ status: 200, series });
+    } catch (error) {
+        res.status(500).json({ status: 500, message: error.message });
+    }
+};
 
 
 /**
