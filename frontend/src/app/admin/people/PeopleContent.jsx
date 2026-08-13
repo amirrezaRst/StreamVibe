@@ -7,6 +7,7 @@ import { deleteActor, deleteDirector, fetchPeople } from "@/services/AdminServic
 import DataTable from "@/components/admin/DataTable";
 import MediaCell from "@/components/admin/MediaCell";
 import PageHeader from "@/components/admin/PageHeader";
+import PersonDrawer from "@/components/admin/PersonDrawer";
 import useListState from "@/components/admin/useListState";
 import { BulkBar, EmptyList, SearchField, Segmented, TableButton } from "@/components/admin/ListToolbar";
 
@@ -16,6 +17,10 @@ const PeopleContent = () => {
     //! attention over a distinction nobody navigates by
     const [kind, setKind] = useState("actors");
     const directors = kind === "directors";
+
+    //! `undefined` = closed, `null` = open in create mode, an object = open
+    //! editing that row — three states, one piece of state
+    const [drawer, setDrawer] = useState(undefined);
 
     const extraParams = useMemo(() => ({ kind }), [kind]);
     const list = useListState(fetchPeople, { extraParams });
@@ -82,6 +87,15 @@ const PeopleContent = () => {
                         ]}
                     />
                     <SearchField value={list.search} onChange={list.setSearch} placeholder="Search by name" />
+                    <span className="flex-1" />
+                    <button
+                        type="button"
+                        onClick={() => setDrawer(null)}
+                        className="rounded-[7px] py-[7px] px-3.5 text-[12.5px] font-bold bg-c-red-45 border border-c-red-45
+                            text-white hover:bg-c-red-45/85 duration-150"
+                    >
+                        + Add {directors ? "director" : "actor"}
+                    </button>
                 </div>
 
                 {list.selected.size > 0 && (
@@ -103,9 +117,12 @@ const PeopleContent = () => {
                     pagination={list.pagination}
                     onPageChange={list.setPage}
                     rowActions={(person) => (
-                        <TableButton tone="danger" onClick={() => removeOne(person)} disabled={list.busy}>
-                            Delete
-                        </TableButton>
+                        <div className="flex items-center gap-1.5 justify-end">
+                            <TableButton onClick={() => setDrawer(person)}>Edit</TableButton>
+                            <TableButton tone="danger" onClick={() => removeOne(person)} disabled={list.busy}>
+                                Delete
+                            </TableButton>
+                        </div>
                     )}
                     empty={
                         <EmptyList
@@ -118,6 +135,15 @@ const PeopleContent = () => {
                     }
                 />
             </div>
+
+            {drawer !== undefined && (
+                <PersonDrawer
+                    kind={kind}
+                    person={drawer}
+                    onClose={() => setDrawer(undefined)}
+                    onSaved={() => { setDrawer(undefined); list.refresh(); }}
+                />
+            )}
         </>
     );
 }

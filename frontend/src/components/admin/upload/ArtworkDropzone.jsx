@@ -11,7 +11,15 @@ const IMAGE_URL = process.env.NEXT_PUBLIC_IMAGE_URL;
  * on the record in edit mode. A freshly-picked file always wins over
  * whatever was there before.
  */
-const ArtworkDropzone = ({ label, hint, required, ratio, video = false, file, existingUrl, onChange, error }) => {
+const RATIO_CLASSES = {
+    poster: "w-[62px] aspect-[2/3]",
+    //! a headshot, not a movie still — square and small enough to read as a
+    //! face-sized crop rather than a landscape frame. Matches the 600x600
+    //! square the backend's sharp pipeline actually produces for people.
+    avatar: "w-[62px] aspect-square",
+};
+
+const ArtworkDropzone = ({ label, hint, required, ratio, accept, video = false, file, existingUrl, onChange, error }) => {
     const inputRef = useRef(null);
     const [hot, setHot] = useState(false);
     const [previewUrl, setPreviewUrl] = useState(null);
@@ -24,7 +32,8 @@ const ArtworkDropzone = ({ label, hint, required, ratio, video = false, file, ex
     }, [file, video]);
 
     const filled = Boolean(file || existingUrl);
-    const ratioClass = ratio === "poster" ? "w-[62px] aspect-[2/3]" : "w-full aspect-video";
+    const ratioClass = RATIO_CLASSES[ratio] || "w-full aspect-video";
+    const rounded = ratio === "avatar";
 
     const pick = (fileList) => {
         const picked = fileList?.[0];
@@ -52,7 +61,7 @@ const ArtworkDropzone = ({ label, hint, required, ratio, video = false, file, ex
                     ${hot ? "border-c-red-45 bg-c-red-45/[0.04]" : !filled ? "border-c-black-25 hover:border-c-black-30" : "hover:border-c-black-25"}
                     ${error ? "!border-c-red-45" : ""}`}
             >
-                <div className={`mx-auto mb-2 rounded-[6px] bg-c-black-12 border border-c-black-20 grid place-items-center text-c-grey-55 overflow-hidden ${ratioClass}`}>
+                <div className={`mx-auto mb-2 ${rounded ? "rounded-full" : "rounded-[6px]"} bg-c-black-12 border border-c-black-20 grid place-items-center text-c-grey-55 overflow-hidden ${ratioClass}`}>
                     {previewUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={previewUrl} alt="" className="w-full h-full object-cover" />
@@ -70,7 +79,7 @@ const ArtworkDropzone = ({ label, hint, required, ratio, video = false, file, ex
                 <input
                     ref={inputRef}
                     type="file"
-                    accept={video ? ".mp4,.mkv,.webm,.mov,.avi" : ".jpg,.jpeg,.png,.webp"}
+                    accept={accept || (video ? ".mp4,.mkv,.webm,.mov,.avi" : ".jpg,.jpeg,.png,.webp")}
                     className="hidden"
                     onChange={(e) => { pick(e.target.files); e.target.value = ""; }}
                 />
