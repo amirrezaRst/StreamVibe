@@ -95,6 +95,12 @@ npm run dev
 ```
 This will start the backend server at http://localhost:5000. Ensure MongoDB is running locally or via your MongoDB cloud service.  
 
+4. Seed the catalogue: A fresh database has no movies, series, cast, cinemas or hero carousel — populate it with one command:
+```
+npm run seed
+```
+This runs every seed script in the order they depend on: real movie/series/actor/director data with generated art, slugs, composer credits and bios, cinemas/halls/showtimes, the explore-page spotlight, then real posters, cast photos and Season 1 episode data pulled from Wikipedia. On a machine with no network access, use `npm run seed:offline` instead to skip the Wikipedia-dependent steps (the catalogue still works, just with generated placeholder art and no episodes). Only run it once your database is empty or freshly seeded — re-running it later will reset thumbnail/cover/trailer art and uploaded video files back to placeholders, even ones a real admin upload or `fetchRealPosters` has since replaced.
+
 
 ### **3. Frontend Setup**  
 Now, you need to set up the frontend, which is located in the frontend folder.  
