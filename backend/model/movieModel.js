@@ -160,6 +160,14 @@ const movieModel = mongoose.Schema({
         url: {
             type: String,
             required: true
+        },
+        //! bytes on disk, captured from multer at upload time. Not required —
+        //! files uploaded before this field existed have none, and a backfill
+        //! script fills those in from disk rather than the schema forcing a
+        //! migration on documents that were already valid
+        size: {
+            type: Number,
+            required: false
         }
     }],
     release_status: {
