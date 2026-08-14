@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import SubscriptionPlanTitle from "./SubscriptionPlanTitle";
 
 import useUserStore from "@/stores/useUserStore";
+import { fetchPlans } from "@/services/SubscriptionService";
 import SubscriptionPlanSkeleton from "./SubscriptionPlanSkeleton";
 import SubscriptionPlanContent from "./SubscriptionPlanContent";
 
@@ -13,6 +14,18 @@ const SubscriptionPlan = () => {
     const user = useUserStore(state => state.user);
     const [time, setTime] = useState("monthly");
     const [loading, setLoading] = useState(false);
+    //! prices come from the server that will charge them, so the page cannot
+    //! advertise one number while checkout bills another
+    const [plans, setPlans] = useState(null);
+
+    useEffect(() => {
+        fetchPlans()
+            .then(({ plans: fetched }) => setPlans(fetched))
+            //! the cards still render from the bundled copy if this fails —
+            //! a pricing page that shows nothing is worse than one a beat stale,
+            //! and the charge is built server-side either way
+            .catch(() => setPlans(null));
+    }, []);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -35,7 +48,7 @@ const SubscriptionPlan = () => {
 
                 {loading ?
                     Array.from({ length: 3 }).map((_, index) => <SubscriptionPlanSkeleton key={index} />) :
-                    <SubscriptionPlanContent user={user} time={time} />
+                    <SubscriptionPlanContent user={user} time={time} plans={plans} />
                 }
 
             </div>

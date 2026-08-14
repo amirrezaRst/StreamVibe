@@ -18,6 +18,34 @@ const subscriptionSchema = new mongoose.Schema({
         type: String,
         enum: ['basic', 'standard', 'premium'],
     },
+    //! null for a free trial, which is the one way to hold a plan without
+    //! having paid for it
+    billingCycle: {
+        type: String,
+        enum: ['month', 'year', null],
+        default: null,
+    },
+    source: {
+        type: String,
+        enum: ['trial', 'checkout', 'admin'],
+        default: 'trial',
+    },
+    /**
+     * What was actually charged for this subscription. Mirrors the booking's
+     * payment sub-document, and for the same reason: without it there is no
+     * record tying an active plan to money that changed hands, so an
+     * activation cannot be told apart from one somebody granted themselves.
+     *
+     * `sessionId` is what makes activation idempotent — the browser returning
+     * and the webhook arriving both settle the same session, in either order.
+     */
+    payment: {
+        sessionId: { type: String, default: null, index: true, sparse: true },
+        intentId: { type: String, default: null },
+        amount: { type: Number, default: null },
+        currency: { type: String, default: null },
+        paidAt: { type: Date, default: null },
+    },
 });
 
 const userSchema = new mongoose.Schema({
