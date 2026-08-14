@@ -8,6 +8,7 @@ const Movie = require('../model/movieModel');
 const Series = require('../model/seriesModel');
 const uploadImage = require('../utils/upload');
 const { deleteFileIfExists } = require('../utils/fileUtils');
+const { blockIfCredited } = require('../utils/personCreditGuard');
 
 //! config uploader
 const upload = uploadImage({
@@ -138,6 +139,9 @@ exports.deleteActor = async (req, res) => {
     const actorId = req.params.id;
 
     try {
+        const blocked = await blockIfCredited('actor', actorId);
+        if (blocked) return res.status(409).json(blocked);
+
         const actor = await Actor.findByIdAndDelete(actorId);
         if (!actor) {
             return res.status(404).json({ status: 404, message: "Actor not found" });

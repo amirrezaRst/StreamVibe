@@ -7,13 +7,15 @@ const FreeTrialModalContent = ({ id, setIsOpen }) => {
 
     const handlePlan = async () => {
         try {
-            const data = await handleActivateSubscription(id, true);
+            await handleActivateSubscription(id, true);
             setIsOpen(false);
             toast.success("Free trial activated successfully.");
             await fetchUser();
         } catch (error) {
-            console.log(error);
-            toast.error("An error occurred. Please try again later.");
+            //! the server says exactly what went wrong — most usefully that the
+            //! trial has already been spent on this account, which a generic
+            //! "try again later" would send someone round the same loop
+            toast.error(error.message);
         }
     }
 

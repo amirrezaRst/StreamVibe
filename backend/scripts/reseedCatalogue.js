@@ -16,15 +16,24 @@ const { DIRECTORS, ACTORS } = require('./peopleData');
  * generated poster/avatar art instead of the broken test-upload filenames
  * that were there before.
  *
- * Existing documents are updated in place — never deleted and recreated —
+ * On a database that already has one movie/series per catalogueData.js entry,
+ * existing documents are updated in place — never deleted and recreated —
  * because showtimes, bookings, reviews and watchlists already reference
  * these _ids. The mapping from "which curated record goes on which document"
  * is purely positional: documents sorted by _id, zipped against
  * catalogueData.js in the same order. That order is fixed once by this
- * script; re-running it is safe and produces the same result (art is
- * seeded deterministically from the title/name, so file bytes don't churn).
+ * script; re-running it against such a database is safe and produces the
+ * same result (art is seeded deterministically from the title/name, so file
+ * bytes don't churn) — though note it always overwrites thumbnail/cover/
+ * trailer/files back to generated placeholders, so it should not be re-run
+ * once fetchRealPosters.js or real uploads have replaced them.
  *
- * Run once against the target database:
+ * On a genuinely empty database (a fresh clone, nothing seeded yet) there is
+ * nothing to zip positionally against, so one new document per catalogueData
+ * entry is created instead — this is what makes the script usable from
+ * scratch rather than only as a follow-up to some other, undocumented,
+ * initial fixture load.
+ *
  *   node scripts/reseedCatalogue.js
  */
 
@@ -149,14 +158,18 @@ const applyRecord = async ({ Actor, Director, doc, record }) => {
         await fs.mkdir(path.join(PUBLIC, dir), { recursive: true });
     }
 
-    const movies = await Movie.find().sort({ _id: 1 });
-    const series = await Series.find().sort({ _id: 1 });
+    let movies = await Movie.find().sort({ _id: 1 });
+    let series = await Series.find().sort({ _id: 1 });
 
-    if (movies.length !== MOVIES.length) {
-        throw new Error(`Expected ${MOVIES.length} movies in the database, found ${movies.length} — the positional mapping would be wrong. Aborting without writing anything.`);
+    if (movies.length === 0) {
+        movies = MOVIES.map(() => new Movie());
+    } else if (movies.length !== MOVIES.length) {
+        throw new Error(`Expected ${MOVIES.length} movies in the database (or 0, for a fresh seed), found ${movies.length} — the positional mapping would be wrong. Aborting without writing anything.`);
     }
-    if (series.length !== SERIES.length) {
-        throw new Error(`Expected ${SERIES.length} series in the database, found ${series.length} — the positional mapping would be wrong. Aborting without writing anything.`);
+    if (series.length === 0) {
+        series = SERIES.map(() => new Series());
+    } else if (series.length !== SERIES.length) {
+        throw new Error(`Expected ${SERIES.length} series in the database (or 0, for a fresh seed), found ${series.length} — the positional mapping would be wrong. Aborting without writing anything.`);
     }
 
     console.log(`Reseeding ${movies.length} movies...`);

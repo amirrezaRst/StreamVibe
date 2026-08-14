@@ -502,6 +502,19 @@ exports.addSubscription = async (req, res) => {
     try {
         const { plan, time, freeTrial } = req.body;
 
+        //! This endpoint used to switch on any paid plan for anyone who asked,
+        //! with the price coming from a frontend constant — so Premium was
+        //! free to whoever sent the request. Paid plans now go through Stripe
+        //! Checkout (subscriptionController), and only a settled session
+        //! activates one. An admin can still grant a plan by hand; that is a
+        //! deliberate, authorised act rather than a self-serve one.
+        if (!freeTrial && req.user.role !== 'admin') {
+            return res.status(402).json({
+                status: 402,
+                message: "Paid plans are activated by completing checkout.",
+            });
+        }
+
         const startDate = new Date();
         if (freeTrial) {
             //! the UI hides the button once the trial is spent, but that is not
@@ -524,6 +537,8 @@ exports.addSubscription = async (req, res) => {
                     startDate,
                     endDate,
                     plan: 'premium',
+                    billingCycle: null,
+                    source: 'trial',
                 },
                 timeTrial: true
             });
@@ -532,6 +547,8 @@ exports.addSubscription = async (req, res) => {
             }
             return res.status(200).json({ status: 200, message: "Free Trial activated" });
         }
+        //! admin-only from here down — a plan granted by hand, recorded as
+        //! such so it is never mistaken for one that was paid for
         const endDate = new Date();
         endDate.setDate(startDate.getDate() + time);
         const user = await userModel.findByIdAndUpdate(userId, {
@@ -540,6 +557,7 @@ exports.addSubscription = async (req, res) => {
                 startDate,
                 endDate,
                 plan,
+                source: 'admin',
             },
         });
 

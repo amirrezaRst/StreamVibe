@@ -31,7 +31,10 @@ const mapUploadedFiles = (req) => {
     if (invalid) return { files: null, error: `"${invalid}" is not a valid quality` };
 
     return {
-        files: req.files.files.map((file, index) => ({ quality: qualities[index], url: file.filename })),
+        //! multer already knows the byte count off the stream it just wrote to
+        //! disk — no reason to stat the file again later for something this
+        //! cheap to capture at upload time
+        files: req.files.files.map((file, index) => ({ quality: qualities[index], url: file.filename, size: file.size })),
         error: null,
     };
 };
@@ -89,7 +92,8 @@ exports.createMovieValidation = (req, res, next) => {
         pictures: joi.array().items(joi.string()),
         files: joi.array().items(joi.object({
             quality: joi.string().valid(...QUALITIES).required(),
-            url: joi.string().required()
+            url: joi.string().required(),
+            size: joi.number().required()
         }))
     });
 
@@ -150,7 +154,8 @@ exports.updateMovieValidation = (req, res, next) => {
         pictures: joi.array().items(joi.string()),
         newFiles: joi.array().items(joi.object({
             quality: joi.string().valid(...QUALITIES).required(),
-            url: joi.string().required()
+            url: joi.string().required(),
+            size: joi.number().required()
         })),
         removeFileUrls: joi.array().items(joi.string()),
     });

@@ -8,6 +8,7 @@ const { paginatedPeople } = require('../utils/personList');
 const uploadImage = require('../utils/upload');
 const { createMusicianValidation, editMusicianValidation } = require('../validation/musicianValidation');
 const { deleteFileIfExists } = require('../utils/fileUtils');
+const { blockIfCredited } = require('../utils/personCreditGuard');
 
 /**
  * Composers, read the same way directors are. The person page renders all
@@ -126,6 +127,9 @@ exports.deleteMusician = async (req, res) => {
     const musicianId = req.params.id;
 
     try {
+        const blocked = await blockIfCredited('musician', musicianId);
+        if (blocked) return res.status(409).json(blocked);
+
         const musician = await Musician.findByIdAndDelete(musicianId);
         if (!musician) {
             return res.status(404).json({ status: 404, message: "Musician not found" });

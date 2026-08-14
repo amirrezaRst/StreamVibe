@@ -15,7 +15,7 @@ const SubscriptionPlanItem = ({ time, title, subtitle, price, planType }) => {
         if (type === "freeTrial") {
             setModalContent(<FreeTrialModalContent id={user?._id} setIsOpen={setIsOpen} />);
         } else {
-            setModalContent(<SubscriptionModalContent id={user?._id} time={time} plan={planType} setIsOpen={setIsOpen} />);
+            setModalContent(<SubscriptionModalContent time={time} plan={planType} price={price} setIsOpen={setIsOpen} />);
         }
         setIsOpen(true);
     };

@@ -8,6 +8,7 @@ const Series = require('../model/seriesModel');
 const uploadImage = require('../utils/upload');
 const { createDirectorValidation, editDirectorValidation } = require('../validation/directorValidation');
 const { deleteFileIfExists } = require('../utils/fileUtils');
+const { blockIfCredited } = require('../utils/personCreditGuard');
 
 
 //! config uploader
@@ -132,9 +133,15 @@ exports.updateDirector = [upload, editDirectorValidation, async (req, res) => {
 
 exports.deleteDirector = async (req, res) => {
     try {
+        //! checked before the delete, not after — a title's director is
+        //! required by its schema, so removing a credited one leaves documents
+        //! that cannot satisfy their own model and pages with nothing to render
+        const blocked = await blockIfCredited('director', req.params.id);
+        if (blocked) return res.status(409).json(blocked);
+
         const director = await Director.findByIdAndDelete(req.params.id);
         if (!director) {
-            return res.status(404).json({ status: 404, message: "Actor not found" })
+            return res.status(404).json({ status: 404, message: "Director not found" })
         }
         res.status(200).json({
             status: 204,
