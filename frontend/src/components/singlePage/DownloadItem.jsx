@@ -5,6 +5,19 @@ import { downloadMovieApi } from "@/services/MovieService";
 import { downloadEpisodeApi } from "@/services/SeriesService";
 import { useState } from "react";
 
+//! bytes on disk, as multer recorded them at upload time — files uploaded
+//! before that field existed show "—" instead of a made-up number
+const formatSize = (bytes) => {
+    if (bytes == null) return "—";
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    let value = bytes;
+    let unit = 0;
+    while (value >= 1024 && unit < units.length - 1) {
+        value /= 1024;
+        unit++;
+    }
+    return `${value.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
+};
 
 const DownloadItem = ({ moviePage, quality, size, url, seriesTitle, season, episode, maxQuality, canDownload }) => {
     const [isDownloading, setIsDownloading] = useState(false);
@@ -64,7 +77,7 @@ const DownloadItem = ({ moviePage, quality, size, url, seriesTitle, season, epis
             </div>
             <div className="md:col-span-2">
                 <p className="text-c-grey-60 md:text-super-base text-super-xs mb-1">Size</p>
-                <p className="text-white tracking-wide md:text-super-sm text-xs">_</p>
+                <p className="text-white tracking-wide md:text-super-sm text-xs">{formatSize(size)}</p>
             </div>
             <div className="flex items-center justify-end">
                 {locked ? (

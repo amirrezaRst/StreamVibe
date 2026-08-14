@@ -32,7 +32,7 @@ const DownloadSection = ({ files, seriesTitle, moviePage, season, episode }) => 
                     key={index}
                     moviePage={moviePage}
                     quality={file.quality}
-                    size={'1.2 GB'}
+                    size={file.size}
                     url={file.url}
                     seriesTitle={seriesTitle}
                     season={season}
