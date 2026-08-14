@@ -62,6 +62,7 @@ app.use("/api/cinema", require('./router/cinemaRoutes'));
 app.use("/api/showtime", require('./router/showtimeRoutes'));
 app.use("/api/booking", require('./router/bookingRoutes'));
 app.use("/api/payment", require('./router/paymentRoutes'));
+app.use("/api/subscription", require('./router/subscriptionRoutes'));
 app.use("/api/admin", require('./router/adminRoutes'));
 app.use("/api/notification", require('./router/notificationRoutes'));
 

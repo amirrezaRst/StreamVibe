@@ -2,6 +2,7 @@ const Booking = require('../model/bookingModel');
 const BookedSeat = require('../model/bookedSeatModel');
 const BOOKING_POPULATE = require('../utils/bookingPopulate');
 const { stripe, isConfigured, toMinorUnits, fromMinorUnits } = require('../utils/stripe');
+const { activatePaidPlan } = require('./subscriptionController');
 
 const frontAddress = () => (process.env.FRONT_ADDRESS || '').replace(/\/$/, '');
 
@@ -300,11 +301,18 @@ exports.handleWebhook = async (req, res) => {
     try {
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object;
-            const bookingId = session.metadata && session.metadata.bookingId;
+            const metadata = session.metadata || {};
 
-            if (bookingId && session.payment_status === 'paid') {
-                const booking = await Booking.findById(bookingId);
-                if (booking) await settlePaidSession(booking, session);
+            if (session.payment_status === 'paid') {
+                //! one webhook, two kinds of purchase — a seat booking and a
+                //! subscription are told apart by which id their session was
+                //! stamped with, since both arrive on this same event
+                if (metadata.bookingId) {
+                    const booking = await Booking.findById(metadata.bookingId);
+                    if (booking) await settlePaidSession(booking, session);
+                } else if (metadata.userId && metadata.plan) {
+                    await activatePaidPlan(metadata.userId, session);
+                }
             }
         }
     } catch (error) {
