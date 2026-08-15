@@ -20,7 +20,9 @@ const useUserStore = create(
                 const data = await response.json();
                 set({ user: data.user, entitlement: data.entitlement ?? null, loading: false });
             } catch (error) {
-                console.log(error)
+                //! the message is already kept in state for anything that wants
+                //! to show it; logging it as well only added noise on every
+                //! anonymous page load
                 set({ error: error.message, loading: false });
             }
         },

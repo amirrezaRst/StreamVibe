@@ -18,8 +18,10 @@ import { useCallback, useEffect, useState } from "react";
  * from loading, and it comes with a way out.
  *
  * @param fetcher a category service — resolves to an object keyed by genre on
- *   success, or [] on failure. Must be stable across renders (a module-level
- *   import is), since it drives the effect.
+ *   success. The two failure styles in the services are both handled: the
+ *   ones that swallow errors and return [], and the top-rated pair that throw.
+ *   Must be stable across renders (a module-level import is), since it drives
+ *   the effect.
  */
 export const useCategoryRail = (fetcher) => {
     const [entries, setEntries] = useState([]);
@@ -31,7 +33,19 @@ export const useCategoryRail = (fetcher) => {
     const load = useCallback(async (isActive) => {
         setStatus("loading");
 
-        const data = await fetcher();
+        let data;
+        try {
+            data = await fetcher();
+        } catch {
+            //! fetchTopRatedCategories throws rather than returning []. Left
+            //! uncaught in the callers' own effects it rejected unhandled and
+            //! never cleared loading, so the rail sat on skeletons for good.
+            if (isActive && !isActive()) return;
+            setEntries([]);
+            setStatus("error");
+            return;
+        }
+
         if (isActive && !isActive()) return;
 
         //! the services report failure by returning [], so an array is never a

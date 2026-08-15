@@ -18,7 +18,7 @@ const PopularSeriesSection = () => {
     useEffect(() => {
         const getSeries = async () => {
             const data = await getPopularSeries() || [];
-            setSeries(data.series);
+            setSeries(data?.series || []);
             setLoading(false);
         };
         getSeries();
