@@ -1,4 +1,5 @@
 import { cache, Suspense } from "react";
+import { notFound } from "next/navigation";
 
 import ReviewSection from "@/components/review/ReviewSection";
 import CastSection from "@/components/singlePage/CastSection";
@@ -14,13 +15,19 @@ import { fetchSingleEpisode } from "@/services/SeriesService";
 import { buildMetadata, posterUrl } from "@/utils/metadata";
 
 
-const loadEpisode = cache((seriesId, season, episode) =>
-    fetchSingleEpisode(seriesId, season, episode));
+//! bails out here rather than in the page body for the same reason as the film
+//! and series pages: generateMetadata resolves first, and a guard placed only
+//! in the body left a dead episode titling its 404 tab differently from every
+//! other dead page on the site
+const loadEpisode = cache(async (seriesId, season, episode) => {
+    const data = await fetchSingleEpisode(seriesId, season, episode);
+    if (!data) notFound();
+    return data;
+});
 
 export const generateMetadata = async ({ params }) => {
     const { slug, season, episode } = params;
     const data = await loadEpisode(slug, season, episode);
-    if (!data) return buildMetadata({ title: "Episode not found", index: false });
 
     //! "Show — S2E5 Title" rather than the episode name alone, which on its own
     //! ("Pilot", "Part One") tells a search result nothing about what it is
@@ -38,8 +45,6 @@ export const generateMetadata = async ({ params }) => {
 const SingleEpisodePage = async ({ params }) => {
     const { slug: seriesId, season, episode } = params;
     const seriesData = await loadEpisode(seriesId, season, episode);
-
-    if (!seriesData) return <EpisodePageSkeleton />;
 
     const { title, series, pictures, files } = seriesData;
     const { title: seriesTitle, director, release_date, genres, rotten_rating, imdb_rating, actors } = series;

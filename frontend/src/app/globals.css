@@ -149,3 +149,77 @@
     animation: none;
   }
 }
+
+/*! The 404/500 film card. Deliberately none of these is a spinner, a sweep or
+    a progress bar: an error page that appears to be working on something is
+    worse than one that plainly says it failed, because it invites the visitor
+    to wait for a recovery that is never coming.
+
+    What's left is the faint brightness wobble of film running through a
+    projector gate — atmosphere that could never be mistaken for a control. */
+@keyframes gate-flicker {
+  0%, 100% { filter: brightness(1); }
+  38% { filter: brightness(1.045); }
+  52% { filter: brightness(0.975); }
+  71% { filter: brightness(1.02); }
+}
+
+.animate-gate-flicker {
+  animation: gate-flicker 4.2s ease-in-out infinite;
+}
+
+/*! grain jumps between three positions rather than sliding, the way projected
+    grain actually resolves frame to frame — a smooth drift reads as fog */
+@keyframes gate-grain {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(-2%, 1.5%); }
+  66% { transform: translate(1.5%, -1%); }
+  100% { transform: translate(0, 0); }
+}
+
+.film-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+  animation: gate-grain 620ms steps(3) infinite;
+}
+
+.film-scanlines {
+  background: repeating-linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.028) 0px,
+      rgba(255, 255, 255, 0.028) 1px,
+      transparent 1px,
+      transparent 4px);
+}
+
+/*! sprocket holes along the top and bottom edge of the card, faded at both
+    ends so the run reads as continuing past the frame rather than stopping */
+.film-perforations {
+  background-image: repeating-linear-gradient(to right,
+      transparent 0px, transparent 13px,
+      rgba(255, 255, 255, 0.052) 13px, rgba(255, 255, 255, 0.052) 30px,
+      transparent 30px, transparent 43px);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+}
+
+/*! the perforations on the strip itself are brighter and tighter than the
+    card's — it is nearer the eye, and the two runs should not read as one */
+.film-strip-perforations {
+  background-image: repeating-linear-gradient(to right,
+      transparent 0px, transparent 9px,
+      rgba(255, 255, 255, 0.19) 9px, rgba(255, 255, 255, 0.19) 22px,
+      transparent 22px, transparent 31px);
+}
+
+.film-strip-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-gate-flicker,
+  .film-grain {
+    animation: none;
+  }
+}

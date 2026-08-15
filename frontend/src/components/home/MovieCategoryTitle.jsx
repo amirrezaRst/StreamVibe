@@ -1,6 +1,8 @@
 import SlidePagination from "../SlidePagination";
 
-const MovieCategoryTitle = ({ totalSlides, currentIndex, onNext, onPrev }) => {
+//! showPagination is off while the rail is in its error state — the arrows
+//! would still be there to click, scrolling a container that no longer exists
+const MovieCategoryTitle = ({ totalSlides, currentIndex, onNext, onPrev, showPagination = true }) => {
     return (
         <div className="flex items-end lg:mb-10 md:mb-8 mb-4">
 
@@ -10,12 +12,14 @@ const MovieCategoryTitle = ({ totalSlides, currentIndex, onNext, onPrev }) => {
                     Whether you are looking for a comedy to make you laugh, a drama to make you think, or a documentary to learn something new
                 </p>
             </div>
-            <SlidePagination
-                currentIndex={currentIndex}
-                total={totalSlides}
-                onNext={onNext}
-                onPrev={onPrev}
-            />
+            {showPagination && (
+                <SlidePagination
+                    currentIndex={currentIndex}
+                    total={totalSlides}
+                    onNext={onNext}
+                    onPrev={onPrev}
+                />
+            )}
 
         </div>
     );
