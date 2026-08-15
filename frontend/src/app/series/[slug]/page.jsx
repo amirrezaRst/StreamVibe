@@ -39,7 +39,9 @@ const SingleSeries = async ({ params }) => {
 
     const { series: seriesData, pictures } = await fetchSingleSeries(slug);
 
-    if (!seriesData || !pictures) return <SinglePageSkeleton />;
+    //! same reason as the film page — a missing series is a dead end, not a
+    //! slow one, and a skeleton would shimmer over it indefinitely
+    if (!seriesData || !pictures) notFound();
 
     const { _id: id, title, description, actors } = seriesData;
 

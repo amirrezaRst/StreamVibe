@@ -64,14 +64,14 @@ export const fetchSingleSeries = async (slug) => {
     return data;
 }
 
+//! deliberately not wrapped: the page treats a missing episode as a 404, so
+//! swallowing a network failure here turned "the API is down" into "this
+//! episode does not exist" — a confident lie. Letting it throw sends the
+//! visitor to error.jsx, which says the true thing and offers a retry.
 export const fetchSingleEpisode = async (series, season, episode) => {
-    try {
-        const res = await apiFetch(`/episode/${series}/${season}/${episode}`, { cache: 'no-store' });
-        const data = await res.json();
-        return data.episode;
-    } catch (error) {
-        console.log(error);
-    }
+    const res = await apiFetch(`/episode/${series}/${season}/${episode}`, { cache: 'no-store' });
+    const data = await res.json();
+    return data.episode;
 }
 
 

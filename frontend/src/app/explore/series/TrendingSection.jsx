@@ -16,7 +16,7 @@ const TrendingSeriesSection = () => {
     useEffect(() => {
         const getSeries = async () => {
             const data = await getTrendingSeries() || [];
-            setSeries(data.series);
+            setSeries(data?.series || []);
             setLoading(false);
         };
         getSeries();

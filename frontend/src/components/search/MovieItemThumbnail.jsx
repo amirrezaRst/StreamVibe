@@ -1,5 +1,4 @@
 const MovieItemThumbnail = ({ src, title }) => {
-    console.log(src)
     return (
         <img
             src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/${src}`}

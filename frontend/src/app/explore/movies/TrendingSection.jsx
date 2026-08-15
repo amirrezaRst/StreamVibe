@@ -18,7 +18,12 @@ const TrendingMoviesSection = () => {
     useEffect(() => {
         const getMovies = async () => {
             const data = await getTrendingMovies() || [];
-            setMovies(data.movies);
+            //! the service reports failure by returning [], whose .movies is
+            //! undefined — assigned straight to state that left the render
+            //! calling .map on undefined and taking the whole page down. An
+            //! empty list is the honest reading, and the empty-state copy
+            //! below already covers it.
+            setMovies(data?.movies || []);
             setLoading(false);
         };
         getMovies();

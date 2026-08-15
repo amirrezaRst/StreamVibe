@@ -39,8 +39,11 @@ const SignupPage = ({ page, setPage }) => {
                 if (status === 409) {
                     return setError("email", { type: "manual", message: "User already exists!" }); // Set error for user exists
                 }
-                console.log(errorData)
-                return toast.error("Signup failed! Please try again.");
+                //! the body was already parsed and then only logged to the
+                //! console — the server's own reason ("Password must be…") is
+                //! far more use to the person filling the form than a generic
+                //! failure, so show it when there is one
+                return toast.error(errorData?.message || "Signup failed! Please try again.");
             }
 
             const res = await response.json();

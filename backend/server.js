@@ -66,6 +66,18 @@ app.use("/api/subscription", require('./router/subscriptionRoutes'));
 app.use("/api/admin", require('./router/adminRoutes'));
 app.use("/api/notification", require('./router/notificationRoutes'));
 
+//! Anything under /api that matched no router above. Without this it fell
+//! through to Express's default handler, which answers an HTML error page —
+//! so a typo'd endpoint was the one response in the whole API that a client
+//! parsing JSON could not read. Scoped to /api so the static /public mounts
+//! keep their normal file-not-found behaviour.
+app.use('/api', (req, res) => {
+    res.status(404).json({
+        status: 404,
+        message: `Cannot ${req.method} ${req.baseUrl}${req.path}`,
+    });
+});
+
 //! Global error handler — last resort for thrown/next(err) errors that
 //! bypassed a controller's own try/catch (e.g. middleware, multer, bad JSON body)
 app.use((err, req, res, next) => {

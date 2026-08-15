@@ -18,7 +18,7 @@ const PopularMoviesSection = () => {
     useEffect(() => {
         const getMovies = async () => {
             const data = await getPopularMovies() || [];
-            setMovies(data.movies);
+            setMovies(data?.movies || []);
             setLoading(false);
         };
         getMovies();

@@ -1,4 +1,5 @@
 import { cache, Suspense } from "react";
+import { notFound } from "next/navigation";
 
 import ReviewSection from "@/components/review/ReviewSection";
 import CastSection from "@/components/singlePage/CastSection";
@@ -21,12 +22,16 @@ import { breadcrumbSchema, movieSchema } from "@/utils/structuredData";
  */
 const loadMovie = cache(async (slug) => {
     const { movie } = await fetchSingleMovies(slug);
+    //! bailing out here rather than in the page body, matching the series page:
+    //! generateMetadata resolves first, so a guard placed only in the body
+    //! still let a dead film label its own 404 tab "Film not found" while the
+    //! identical dead series said "Scene Missing"
+    if (!movie) notFound();
     return movie;
 });
 
 export const generateMetadata = async ({ params }) => {
     const movie = await loadMovie(params.slug);
-    if (!movie) return buildMetadata({ title: "Film not found", index: false });
 
     return buildMetadata({
         title: movie.title,
@@ -43,8 +48,6 @@ const SingleMovie = async ({ params }) => {
         loadMovie(slug),
         fetchShowtimesByMovie(slug),
     ]);
-
-    if (!movieData) return <SinglePageSkeleton />;
 
     const { _id: id, description, title, actors, files } = movieData;
 

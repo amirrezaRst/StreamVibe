@@ -18,7 +18,7 @@ const NewReleasedSection = () => {
     useEffect(() => {
         const getSeries = async () => {
             const data = await getNewReleasedSeries() || [];
-            SetSeries(data.series);
+            SetSeries(data?.series || []);
             setLoading(false);
         };
         getSeries();

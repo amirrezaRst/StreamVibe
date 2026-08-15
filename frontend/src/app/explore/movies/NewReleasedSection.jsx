@@ -18,7 +18,7 @@ const NewReleasedSection = () => {
     useEffect(() => {
         const getMovies = async () => {
             const data = await getNewReleasedMovies() || [];
-            setMovies(data.movies);
+            setMovies(data?.movies || []);
             setLoading(false);
         };
         getMovies();

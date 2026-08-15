@@ -6,6 +6,7 @@ import SearchMovieItem from "./SearchMovieItem";
 import SearchForm from "./SearchForm";
 import SearchMovieItemSkeleton from "./SearchMovieItemSkeleton";
 import { apiFetch } from "@/services/apiClient";
+import { toast } from "react-toastify";
 
 const SearchContainer = ({ isOpen, setIsOpen }) => {
     const [show, setShow] = useState(isOpen);
@@ -29,8 +30,12 @@ const SearchContainer = ({ isOpen, setIsOpen }) => {
             setLoading(false);
             return data;
         } catch (error) {
+            //! a failed search used to end here, logged to a console nobody has
+            //! open: the overlay just sat empty and looked like "no results"
+            //! for a query that was never actually run
             setLoading(false);
-            console.log(error);
+            setSearchResults([]);
+            toast.error("Search is unavailable right now. Please try again.");
         };
     };
 
