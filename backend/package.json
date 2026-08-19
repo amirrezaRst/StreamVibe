@@ -34,5 +34,8 @@
   "devDependencies": {
     "cross-env": "^7.0.3",
     "nodemon": "^3.1.1"
+  },
+  "overrides": {
+    "fast-xml-parser": "4.5.4"
   }
 }
